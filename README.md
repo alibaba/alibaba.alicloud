@@ -25,8 +25,8 @@ There are some playbook that can be used to operate ecs in the roles directory. 
 ## How to use ECS Module
 ### Install ecs SDK, footmark and ecsutils
 
-	$ sudo pip install aliyun-python-sdk-rds
-	$ sudo pip install aliyun-python-sdk-rds --upgrade
+	$ sudo pip install aliyun-python-sdk-ecs
+	$ sudo pip install aliyun-python-sdk-ecs --upgrade
 	$ sudo pip install footmark
 	$ sudo pip install ecsutils
 ### Install module/ecs.py
