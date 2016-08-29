@@ -29,7 +29,7 @@
 import os
 from time import sleep
 
-import koball.ecs.module as ecs_module
+import footmark.ecs.module as ecs_module
 
 class AnsibleACSError(Exception):
     pass

@@ -1,7 +1,7 @@
 import time
 from ast import literal_eval
 
-from koball.exception import ECSResponseError
+from footmark.exception import ECSResponseError
 
 # import ecs_util
 
@@ -503,6 +503,6 @@ def main():
 
 # import module snippets
 from ansible.module_utils.basic import *
-from ansible.module_utils.ecs import *
+from ecsutils.ecs import *
 # import ECSConnection
 main()
