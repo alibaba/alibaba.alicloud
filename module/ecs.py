@@ -503,6 +503,7 @@ def main():
 
 # import module snippets
 from ansible.module_utils.basic import *
+# from ansible.module_utils.ecs import *
 from ecsutils.ecs import *
 # import ECSConnection
 main()
