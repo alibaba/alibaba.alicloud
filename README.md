@@ -9,9 +9,9 @@ There are two files in the module directory:
   - This file is the ECS Module implement, contins getting playbook params and ecs operation, such as create, start, stop, restart and delete one or more ecs instances.
 
 ## utils/ecs.py
-In the utils directory, the file ecs.py identifies and gains playbook params, and provides this params to module/ecs.py. In addition, this file implements connection between ansible and aliyun ecs api via footmark.
+In the utils directory, the file ecs.py identifies and gains playbook params, and provides this params to module/ecs.py. In addition, this file implements connection between ansible and Alicloud ecs api via footmark.
 
-## 
+## footmark
 footmark is a Python package that provides interfaces to Alicloud Web Services, which allows Python developers to write software that makes use of Alicloud ECS. 
 ### Install footmark
 footmark can be intalled conveniently via pip:
@@ -23,8 +23,10 @@ footmark can be intalled conveniently via pip:
 There are some playbook that can be used to operate ecs in the roles directory. In every playbook, you need to input some params, and you can view every param description in the module/ecs_module.py
 
 ## How to use ECS Module
-### Install footmark and ecsutils
+### Install ecs SDK, footmark and ecsutils
 
+	$ sudo pip install aliyun-python-sdk-ecs
+	$ sudo pip install aliyun-python-sdk-ecs --upgrade
 	$ sudo pip install footmark
 	$ sudo pip install ecsutils
 ### Install module/ecs.py

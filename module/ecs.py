@@ -3,21 +3,9 @@ from ast import literal_eval
 
 from footmark.exception import ECSResponseError
 
-# import ecs_util
-
-# try:
-#     import boto.ecs
-#     from boto.ecs.blockdevicemapping import BlockDeviceType, BlockDeviceMapping
-#     from boto.exception import ECSResponseError
-#     from boto.vpc import VPCConnection
-#     HAS_BOTO = True
-# except ImportError:
-#     HAS_BOTO = False
-
 def get_instance_info(inst):
     """
-    Retrieves instance information from an instance
-    ID and returns it as a dictionary
+    Retrieves instance information from an instance ID and returns it as a dictionary
     """
     instance_info = {'id': inst.id,
                      # 'ami_launch_index': inst.ami_launch_index,
@@ -464,8 +452,8 @@ def main():
 
     # if region:
     #     try:
-    #         vpc = connect_to_aws(boto.vpc, region, **aws_connect_kwargs)
-    #     except boto.exception.NoAuthHandlerFound as e:
+    #         vpc = connect_to_acs(vpc_module, region, **acs_connect_kwargs)
+    #     except NoAuthHandlerFound as e:
     #         module.fail_json(msg = str(e))
     # else:
     #     vpc = None
@@ -505,5 +493,5 @@ def main():
 from ansible.module_utils.basic import *
 # from ansible.module_utils.ecs import *
 from ecsutils.ecs import *
-# import ECSConnection
+
 main()
