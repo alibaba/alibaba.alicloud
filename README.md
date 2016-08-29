@@ -9,23 +9,23 @@ There are two files in the module directory:
   - This file is the ECS Module implement, contins getting playbook params and ecs operation, such as create, start, stop, restart and delete one or more ecs instances.
 
 ## utils/ecs.py
-In the utils directory, the file ecs.py identifies and gains playbook params, and provides this params to module/ecs.py. In addition, this file implements connection between ansible and aliyun ecs api via koball.
+In the utils directory, the file ecs.py identifies and gains playbook params, and provides this params to module/ecs.py. In addition, this file implements connection between ansible and aliyun ecs api via footmark.
 
-## koball
-koball is a Python package that provides interfaces to Alicloud Web Services, which allows Python developers to write software that makes use of Alicloud ECS. 
-### Install koball
-Koball can be intalled conveniently via pip:
+## 
+footmark is a Python package that provides interfaces to Alicloud Web Services, which allows Python developers to write software that makes use of Alicloud ECS. 
+### Install footmark
+footmark can be intalled conveniently via pip:
 
-	$ sudo pip install koball
+	$ sudo pip install footmark
 
 
 ## roles
 There are some playbook that can be used to operate ecs in the roles directory. In every playbook, you need to input some params, and you can view every param description in the module/ecs_module.py
 
 ## How to use ECS Module
-### Install koball and ecsutils
+### Install footmark and ecsutils
 
-	$ sudo pip install koball
+	$ sudo pip install footmark
 	$ sudo pip install ecsutils
 ### Install module/ecs.py
 Download module/ecs.py and put ecs.py into library(if not, make it), and move the library to the playbook root directory. For example, my playbook root directory is ansible-roles, my playbook is start.yml, the final folder structure after install ecs module:
