@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Ansible ECS Module
 Ansible ECS Module is a new ansible module, and you can manage Alicloud ECS more flexibly and conveniently via it. Next to introduce simply this module.
 ## module/ecs.py
@@ -42,8 +41,4 @@ Before you execute playbook, you should input your access-key pairs(`acs_access_
 
 	$ ansible-playbook start.yml
 
-	   
-=======
-# readme
-	   
->>>>>>> cc166f979076f77b9e2392bb44a3fc44a53501eb
+
