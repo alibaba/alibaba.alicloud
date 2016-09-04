@@ -8,7 +8,7 @@
 import os
 from time import sleep
 
-import footmark.ecs.module as ecs_module
+import footmark.ecs
 
 class AnsibleACSError(Exception):
     pass
@@ -16,7 +16,7 @@ class AnsibleACSError(Exception):
 def acs_common_argument_spec():
     return dict(
         acs_secret_access_key=dict(aliases=['ecs_secret_key', 'secret_key']),
-        acs_access_key=dict(aliases=['ecs_access_key', 'access_key']),
+        acs_access_key_id=dict(aliases=['ecs_access_key', 'access_key']),
         security_token=dict(aliases=['access_token'], no_log=True),
     )
 
@@ -33,7 +33,7 @@ def get_acs_connection_info(module):
     '''
     Check module args for credentials, then check environment vars access_key
     '''
-    access_key = module.params.get('acs_access_key')
+    access_key = module.params.get('acs_access_key_id')
     secret_key = module.params.get('acs_secret_access_key')
     security_token = module.params.get('security_token')
     region = module.params.get('region')
@@ -79,7 +79,7 @@ def get_acs_connection_info(module):
             # in case security_token came in as empty string
             security_token = None
 
-    ecs_params = dict(acs_access_key=access_key, acs_secret_access_key=secret_key, security_token=security_token)
+    ecs_params = dict(acs_access_key_id=access_key, acs_secret_access_key=secret_key, security_token=security_token)
 
     return region, ecs_params
 
@@ -99,7 +99,7 @@ def ecs_connect(module):
     # If we have a region specified, connect to its endpoint.
     if region:
         try:
-            ecs = connect_to_acs(ecs_module, region, **ecs_params)
+            ecs = connect_to_acs(footmark.ecs, region, **ecs_params)
         except AnsibleACSError, e:
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method

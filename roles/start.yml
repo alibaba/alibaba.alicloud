@@ -14,7 +14,7 @@
   tasks: 
     - name: start instance
       ecs:
-        acs_access_key: '{{ acs_access_key }}'
+        acs_access_key_id: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         instance_ids: '{{ instance_ids }}'
