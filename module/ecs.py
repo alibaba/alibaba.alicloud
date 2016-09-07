@@ -9,22 +9,21 @@ def get_instance_info(inst):
     ID and returns it as a dictionary
     """
     instance_info = {'id': inst.id,
-                     # 'ami_launch_index': inst.ami_launch_index,
-                     'inner_ip': inst.inner_ip_address,
+                     'private_ip': inst.inner_ip_address,
                      'public_ip': inst.public_ip_address,
                      'image_id': inst.image_id,
                      'zone_id': inst.zone_id,
                      'region_id': inst.region_id,
                      'launch_time': inst.creation_time,
                      'instance_type': inst.instance_type,
-                     'status': inst.status,
-                     # 'tags': inst.tags,
+                     'state': inst.state,
+                     'tags': inst.tags,
                      # 'groups': dict((group.id, group.name) for group in inst.groups),
                      # 'groups': dict((group, group) for group in inst.groups),
                      'vpc_id': inst.vpc_id,
-                     'vswitch_id': inst.vswitch_id,
-                     'private_ip': inst.private_ip_address,
-                     # 'eip': inst.elastic_public_ip,
+                     'subnet_id': inst.subnet_id,
+                     'vpc_private_ip': inst.vpc_private_ip,
+                     'eip': inst.eip,
                      'io_optimized': inst.io_optimized
                      }
     try:
@@ -46,7 +45,7 @@ def terminate_instances(module, ecs, instance_ids, instance_tags):
     """
     Terminates a list of instances
     module: Ansible module object
-    ec2: authenticated ec2 connection object
+    ecs: authenticated ecs connection object
     termination_list: a list of instances to terminate in the form of
       [ {id: <inst-id>}, ..]
     Returns a dictionary of instance information
@@ -67,9 +66,8 @@ def terminate_instances(module, ecs, instance_ids, instance_tags):
 
     terminated_instance_ids = []
     region, connect_args = get_acs_connection_info(module)
-    # for res in ec2.get_all_instances(instance_ids):
-    for inst in ec2.get_all_instances(instance_ids=instance_ids, filters=filters):
-        if inst.status.lower() == 'deleted':
+    for inst in ecs.get_all_instances(instance_ids=instance_ids, filters=filters):
+        if inst.state == 'deleted':
             terminated_instance_ids.append(inst.id)
             instance_dict_array.append(get_instance_info(inst))
             try:
@@ -80,7 +78,7 @@ def terminate_instances(module, ecs, instance_ids, instance_tags):
 
     return (changed, instance_dict_array, terminated_instance_ids)
 
-def startstop_instances(module, ecs, instance_ids, stage, instance_tags):
+def startstop_instances(module, ecs, instance_ids, state, instance_tags):
     """
     Starts, stops or restarts a list of existing instances 
     module: Ansible module object
@@ -89,10 +87,10 @@ def startstop_instances(module, ecs, instance_ids, stage, instance_tags):
       [ "<inst-id>", ..]
     instance_tags: A dict of tag keys and values in the form of
       {key: value, ... }
-    stage: Intended stage ("running" or "stopped")
+    state: Intended state ("running" or "stopped")
     Returns a dictionary of instance information
     about the instances started/stopped.
-    If the instance was not able to change stage,
+    If the instance was not able to change state,
     "changed" will be set to False.
     Note that if instance_ids and instance_tags are both non-empty,
     this method will process the intersection of the two
@@ -115,23 +113,22 @@ def startstop_instances(module, ecs, instance_ids, stage, instance_tags):
             tag = {}
             tag["tag:" + inst_tag['tag_key']] = inst_tag['tag_value']
             filters.append(tag)
-    # Check (and eventually change) instances attributes and instances stage
+    # Check (and eventually change) instances attributes and instances state
     running_instances_array = []
     region, connect_args = get_acs_connection_info(module)
     connect_args['force'] = module.params.get('force', None)
-    # for inst in ecs.get_all_instances(instance_ids, filters=filters):
     for inst in ecs.get_all_instances(instance_ids=instance_ids, filters=filters):
-        if inst.status.lower() != stage:
+        if inst.state != state:
             instance_dict_array.append(get_instance_info(inst))
             try:
-                if stage == 'running':
+                if state == 'running':
                     inst.start()
-                elif stage == 'restarted':
+                elif state == 'restarted':
                     inst.reboot()
                 else: 
                     inst.stop()
             except ECSResponseError as e :
-                module.fail_json(msg='Unable to change stage for instance {0}, error: {1}'.format(inst.id, e))
+                module.fail_json(msg='Unable to change state for instance {0}, error: {1}'.format(inst.id, e))
             changed = True
 
     return (changed, instance_dict_array, instance_ids)
@@ -155,7 +152,7 @@ def main():
             instance_ids = dict(type='list'),
             force = dict(type='bool', default=False),
             instance_tags = dict(type='list'),
-            stage = dict(default='pending', choices=['pending', 'running', 'stopped', 'restarted', 'deleted']),
+            state = dict(default='pending', choices=['pending', 'running', 'stopped', 'restarted', 'deleted']),
         )
     )
 
@@ -175,24 +172,24 @@ def main():
 
     tagged_instances = []
 
-    stage = module.params['stage']
+    state = module.params['state']
 
-    if stage == 'deleted':
+    if state == 'deleted':
         instance_ids = module.params['instance_ids']
         if not instance_ids:
-            module.fail_json(msg='instance_ids list is required for absent stage')
+            module.fail_json(msg='instance_ids list is required for absent state')
 
         (changed, instance_dict_array, new_instance_ids) = terminate_instances(module, ecs, instance_ids)
 
-    elif stage in ('running', 'stopped', 'restarted'):
+    elif state in ('running', 'stopped', 'restarted'):
         instance_ids = module.params['instance_ids']
         instance_tags = module.params['instance_tags']
         if not (isinstance(instance_ids, list) or isinstance(instance_tags, list)):
             module.fail_json(msg='running list needs to be a list of instances or set of tags to run: %s' % instance_ids)
 
-        (changed, instance_dict_array, new_instance_ids) = startstop_instances(module, ecs, instance_ids, stage, instance_tags)
+        (changed, instance_dict_array, new_instance_ids) = startstop_instances(module, ecs, instance_ids, state, instance_tags)
 
-    elif stage == 'pending':
+    elif state == 'pending':
         # Changed is always set to true when provisioning new instances
         if not module.params.get('image'):
             module.fail_json(msg='image parameter is required for new instance')
