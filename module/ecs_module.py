@@ -13,8 +13,8 @@ common options:
     required: false
     default: null
     aliases: []
-  stage:
-    description: The stage of the instance after operating.
+  state:
+    description: The state of the instance after operating.
     required: true
     default: null
     aliases: []
@@ -137,12 +137,12 @@ function: start, stop, reboot, delete instance
   description: start, stop, reboot and delete instancesin ecs
   options:
     instance_ids:
-      description: A list of instance ids, currently used for stages: running, stopped, restarted, deleted
+      description: A list of instance ids, currently used for states: running, stopped, restarted, deleted
       required: true
       default: null
       aliases: []
     force:
-      description: Whether force to operation, currently used fo stages: stopped, restarted.
+      description: Whether force to operation, currently used fo states: stopped, restarted.
       required: false
       default: False
       aliases: []
@@ -219,7 +219,7 @@ EXAMPLES = '''
     instance_tags: 
     - tag_key: xz_test
       tag_value: '1.20'
-    stage: running
+    state: running
   tasks:
     - name: start instance
       ecs_model:
@@ -228,7 +228,7 @@ EXAMPLES = '''
         region: '{{ region }}'
         instance_ids: '{{ instance_ids }}'
         instance_tags: '{{ instance_tags }}'
-        stage: '{{ stage }}'
+        state: '{{ state }}'
 
 ## stop or restarted instance
 - name: start stop restart instance
@@ -242,7 +242,7 @@ EXAMPLES = '''
     - tag_key: xz_test
       tag_value: '1.20'
     force: False
-    stage: restarted
+    state: restarted
   tasks:
     - name: start instance
       ecs_model:
@@ -251,6 +251,6 @@ EXAMPLES = '''
         region: '{{ region }}'
         instance_ids: '{{ instance_ids }}'
         instance_tags: '{{ instance_tags }}'
-        stage: '{{ stage }}'
+        state: '{{ state }}'
 
 '''
