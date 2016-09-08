@@ -20,7 +20,9 @@ footmark can be intalled conveniently via pip:
 
 
 ## roles
-There are some playbook that can be used to operate ecs in the roles directory. In every playbook, you need to input some params, and you can view every param description in the module/ecs_module.py
+There are some playbook that can be used to operate ecs in the roles directory. In every playbook, you need to input some params, and you can view every param description in the module/ecs_module.py. 
+There is ecs module file in the directory library, and you must put library/ecs.py into roles before you execute playbook.
+
 
 ## How to use ECS Module
 ### Install ecs SDK, footmark and ecsutils
@@ -29,15 +31,20 @@ There are some playbook that can be used to operate ecs in the roles directory. 
 	$ sudo pip install aliyun-python-sdk-ecs --upgrade
 	$ sudo pip install footmark
 	$ sudo pip install ecsutils
-### Install module/ecs.py
-Download module/ecs.py and put ecs.py into library(if not, make it), and move the library to the playbook root directory. For example, my playbook root directory is ansible-roles, my playbook is start.yml, the final folder structure after install ecs module:
+### Update footmark and ecsutils
+If you want to update footmark and ecsutils, you can execute commands:
 
-	- ansible-roles
+	$ sudo pip install footmark --upgrade
+	$ sudo pip install ecsutils --upgrade
+### Install module/ecs.py
+Download roles directory in anywhere and make library/ecs.py in the roles. If not, you can put ecs.py into library(if not, make it), and move the library to the roles. The final folder structure after install ecs module:
+
+	- roles
 	  - library
 	    - ecs.py
 	  - start.yml
 ### Execute playbook
-Before you execute playbook, you should input your access-key pairs(`acs_access_key` and `acs_secret_access_key`) in the playbook or set environment variable:`ACS_ACCESS_KEY` and `ACS_SECRET_ACCESS_KEY`. Then input others ecs params in the playbook. Finally, move to ansible-playbook and execute follow command:
+Before you execute playbook, you should input your access-key pairs(`acs_access_key` and `acs_secret_access_key`) in the playbook or set environment variable:`ACS_ACCESS_KEY` and `ACS_SECRET_ACCESS_KEY`. Then input others ecs params in the playbook. Finally, move to roles and execute follow command:
 
 	$ ansible-playbook start.yml
 
