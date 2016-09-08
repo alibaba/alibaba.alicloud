@@ -67,11 +67,11 @@ def terminate_instances(module, ecs, instance_ids, instance_tags):
     terminated_instance_ids = []
     region, connect_args = get_acs_connection_info(module)
     for inst in ecs.get_all_instances(instance_ids=instance_ids, filters=filters):
-        if inst.state == 'deleted':
+        if inst.state == 'absent':
             terminated_instance_ids.append(inst.id)
             instance_dict_array.append(get_instance_info(inst))
             try:
-                inst.delete(**connect_args)
+                inst.terminate(**connect_args)
             except ECSResponseError as e:
                 module.fail_json(msg='Unable to terminate instance {0}, error: {1}'.format(inst.id, e))
             changed = True
@@ -152,7 +152,7 @@ def main():
             instance_ids = dict(type='list'),
             force = dict(type='bool', default=False),
             instance_tags = dict(type='list'),
-            state = dict(default='pending', choices=['pending', 'running', 'stopped', 'restarted', 'deleted']),
+            state = dict(default='present', choices=['present', 'running', 'stopped', 'restarted', 'absent']),
         )
     )
 
@@ -174,7 +174,7 @@ def main():
 
     state = module.params['state']
 
-    if state == 'deleted':
+    if state == 'absent':
         instance_ids = module.params['instance_ids']
         if not instance_ids:
             module.fail_json(msg='instance_ids list is required for absent state')
@@ -189,7 +189,7 @@ def main():
 
         (changed, instance_dict_array, new_instance_ids) = startstop_instances(module, ecs, instance_ids, state, instance_tags)
 
-    elif state == 'pending':
+    elif state == 'present':
         # Changed is always set to true when provisioning new instances
         if not module.params.get('image'):
             module.fail_json(msg='image parameter is required for new instance')

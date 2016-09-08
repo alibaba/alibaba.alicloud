@@ -1,7 +1,7 @@
 DOCUMENTATION = '''
 ---
 module: ecs
-short_description: create, start, stop, reboot or delete an instance in ecs
+short_description: create, start, stop, restart or terminate an instance in ecs
 common options:
   acs_access_key:
     description: The access key.
@@ -18,7 +18,7 @@ common options:
     required: true
     default: null
     aliases: []
-    choices: ['pending', 'running', 'stopped', 'restarted', 'deleted'] map operation ['create', 'start', 'stop', 'reboot', 'delete']
+    choices: ['pending', 'running', 'stopped', 'restarted', 'absent'] map operation ['create', 'start', 'stop', 'restart', 'terminate']
 
 function: create instance
   description: create an instance in ecs
@@ -133,11 +133,11 @@ function: create instance
       default: null
       aliases: []
 
-function: start, stop, reboot, delete instance
-  description: start, stop, reboot and delete instancesin ecs
+function: start, stop, restart, terminate instance
+  description: start, stop, restart and terminate instancesin ecs
   options:
     instance_ids:
-      description: A list of instance ids, currently used for states: running, stopped, restarted, deleted
+      description: A list of instance ids, currently used for states: running, stopped, restarted, absent
       required: true
       default: null
       aliases: []
@@ -208,8 +208,8 @@ function: modify instance security group attribute
 EXAMPLES = '''
 - action: modulename opt1=arg1 opt2=arg2
 
-## start or delete instance
-- name: start or delete instance
+## start or terminate instance
+- name: start or terminate instance
   hosts: localhost
   vars: 
     acs_access_key: XXXXXXXXXXXXXX
