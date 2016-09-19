@@ -204,7 +204,6 @@ function: modify instance security group attribute
       aliases: []
 '''
 
-
 EXAMPLES = '''
 - action: modulename opt1=arg1 opt2=arg2
 

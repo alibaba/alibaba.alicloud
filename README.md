@@ -48,4 +48,18 @@ Before you execute playbook, you should input your access-key pairs(`acs_access_
 
 	$ ansible-playbook start.yml
 
+### Package ecsutils
+When you modify utils/ecs.py, you need to package and distribute it. First, you need to edit utils/__init__.py and set a new version to '__version__ '. Second execute command as follows:
+
+    # build ecsutils package
+    $ python setup.py sdist
+
+    # make sure your enviroment has installed twine, if not, execute command:
+    $ sudo pip install twine
+
+    # distribute new ecsutils
+    # upload your project
+	$ twine upload dist/<your-ecsutils-package>
+Finally, use `--upgrade` to update ecstuils.
+
 	   
