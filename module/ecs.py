@@ -1,7 +1,5 @@
-import time
-from ast import literal_eval
-
 from footmark.exception import ECSResponseError
+
 
 def get_instance_info(inst):
     """
@@ -41,6 +39,7 @@ def get_instance_info(inst):
 
     return instance_info
 
+
 def terminate_instances(module, ecs, instance_ids, instance_tags):
     """
     Terminates a list of instances
@@ -77,6 +76,7 @@ def terminate_instances(module, ecs, instance_ids, instance_tags):
             changed = True
 
     return (changed, instance_dict_array, terminated_instance_ids)
+
 
 def startstop_instances(module, ecs, instance_ids, state, instance_tags):
     """
@@ -125,38 +125,39 @@ def startstop_instances(module, ecs, instance_ids, state, instance_tags):
                     inst.start()
                 elif state == 'restarted':
                     inst.reboot()
-                else: 
+                else:
                     inst.stop()
-            except ECSResponseError as e :
+            except ECSResponseError as e:
                 module.fail_json(msg='Unable to change state for instance {0}, error: {1}'.format(inst.id, e))
             changed = True
 
     return (changed, instance_dict_array, instance_ids)
 
+
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-            group_id = dict(type='list'),
-            zone_id = dict(aliases=['acs_zone', 'ecs_zone']),
-            instance_type = dict(aliases=['type']),
-            image_id = dict(),
-            count = dict(type='int', default='1'),
-            vswitch_id = dict(),
-            io_optimized = dict(type='bool', default=False),
-            instance_name = dict(),
-            internet_data = dict(type='dict'),
-            host_name = dict(),
-            password = dict(),
-            system_disk = dict(type='dict'),
-            volumes = dict(type='list'),
-            instance_ids = dict(type='list'),
-            force = dict(type='bool', default=False),
-            instance_tags = dict(type='list'),
-            state = dict(default='present', choices=['present', 'running', 'stopped', 'restarted', 'absent']),
-        )
+        group_id=dict(type='list'),
+        zone_id=dict(aliases=['acs_zone', 'ecs_zone']),
+        instance_type=dict(aliases=['type']),
+        image_id=dict(),
+        count=dict(type='int', default='1'),
+        vswitch_id=dict(),
+        io_optimized=dict(type='bool', default=False),
+        instance_name=dict(),
+        internet_data=dict(type='dict'),
+        host_name=dict(),
+        password=dict(),
+        system_disk=dict(type='dict'),
+        volumes=dict(type='list'),
+        instance_ids=dict(type='list'),
+        force=dict(type='bool', default=False),
+        instance_tags=dict(type='list'),
+        state=dict(default='present', choices=['present', 'running', 'stopped', 'restarted', 'absent']),
+    )
     )
 
-    module = AnsibleModule( argument_spec=argument_spec )
+    module = AnsibleModule(argument_spec=argument_spec)
 
     ecs = ecs_connect(module)
 
@@ -185,25 +186,30 @@ def main():
         instance_ids = module.params['instance_ids']
         instance_tags = module.params['instance_tags']
         if not (isinstance(instance_ids, list) or isinstance(instance_tags, list)):
-            module.fail_json(msg='running list needs to be a list of instances or set of tags to run: %s' % instance_ids)
+            module.fail_json(
+                msg='running list needs to be a list of instances or set of tags to run: %s' % instance_ids)
 
-        (changed, instance_dict_array, new_instance_ids) = startstop_instances(module, ecs, instance_ids, state, instance_tags)
+        (changed, instance_dict_array, new_instance_ids) = startstop_instances(module, ecs, instance_ids, state,
+                                                                               instance_tags)
 
     elif state == 'present':
         # Changed is always set to true when provisioning new instances
         if not module.params.get('image'):
             module.fail_json(msg='image parameter is required for new instance')
 
-        # if module.params.get('exact_count') is None:
-        #     (instance_dict_array, new_instance_ids, changed) = create_instances(module, ecs, vpc)
-        # else:
-        #     (tagged_instances, instance_dict_array, new_instance_ids, changed) = enforce_count(module, ecs, vpc)
+            # if module.params.get('exact_count') is None:
+            #     (instance_dict_array, new_instance_ids, changed) = create_instances(module, ecs, vpc)
+            # else:
+            #     (tagged_instances, instance_dict_array, new_instance_ids, changed) = enforce_count(module, ecs, vpc)
 
-    module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array, tagged_instances=tagged_instances)
+    module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array,
+                     tagged_instances=tagged_instances)
+
 
 # import module snippets
 from ansible.module_utils.basic import *
 # from ansible.module_utils.ecs import *
 from ecsutils.ecs import *
+
 # import ECSConnection
 main()
