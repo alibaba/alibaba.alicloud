@@ -4,7 +4,7 @@ from os import path
 
 from setuptools import setup, find_packages
 
-PACKAGE = "ecsutils"
+PACKAGE = "utils"
 NAME = "ecsutils"
 DESCRIPTION = "Ansible Alicloud ecs utils"
 AUTHOR = "xiaozhu"
@@ -59,10 +59,6 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
     ],
 
     # What does your project relate to?
@@ -70,7 +66,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages(where='utils', exclude=['*.pyc']),
+    packages=find_packages(exclude=['*.pyc']),
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
