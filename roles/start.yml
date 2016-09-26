@@ -1,17 +1,17 @@
 - name: start stop restart instance
   hosts: localhost
   connection: local
-  vars: 
+  vars:
     acs_access_key: XXXXXXX
     acs_secret_access_key: XXXXXXX
     region: cn-shenzhen
     instance_ids: XXXXXXX
-    instance_tags: 
+    instance_tags:
     - tag_key: xz_test
       tag_value: '1.20'
     force: False
     state: running
-  tasks: 
+  tasks:
     - name: start instance
       ecs:
         acs_access_key_id: '{{ acs_access_key }}'
