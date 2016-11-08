@@ -1,0 +1,60 @@
+- name: create instance
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: XXXXXXXXX
+    acs_secret_access_key: XXXXXXXXX
+    region: cn-beijing
+    zone_id: cn-beijing-b
+    image_id: ubuntu1404_64_40G_cloudinit_20160727.raw
+    instance_type: ecs.n1.small
+    group_id: sg-25y6ag32b
+    instance_name : MyInstance
+    description: description comes here
+    host_name: hostname
+    password: Admin123
+    internet_data:
+        charge_type: PayByBandwidth
+        max_bandwidth_in:  200
+        max_bandwidth_out: 0
+    system_disk:
+        disk_category: cloud_efficiency
+        disk_size: 50
+    volumes:
+       -  device_category: cloud_efficiency
+          device_size: 20
+          device_name: volume1
+          device_description: volume 1 description comes here
+       -  device_category: cloud_efficiency
+          device_size: 20
+          device_name: volume2
+          device_description: volume 2 description comes here
+
+    instance_tags:
+      - tag_key: create_test
+        tag_value: '0.01'
+      - tag_key: create_test
+        tag_value: '0.02'
+    state: present
+  tasks:
+    - name: create instance
+      ecs:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        zone_id: '{{ zone_id }}'
+        image_id: '{{ image_id }}'
+        instance_type: '{{ instance_type }}'
+        group_id: '{{ group_id }}'
+        instance_name: '{{ instance_name }}'
+        description: '{{ description }}'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+        system_disk: '{{ system_disk }}'
+        instance_tags: '{{ instance_tags }}'
+        state: '{{ state }}'
+        internet_data: '{{ internet_data }}'
+        volumes: '{{ volumes }}'
+      register: result
+
+    - debug: var=result
