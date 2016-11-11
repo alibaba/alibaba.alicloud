@@ -123,7 +123,7 @@ function: create instance
       default: true
       aliases: []
     bind_eip:
-      description: A list elastic public ips bind to the new instance.
+      description: ID of Elastic IP Address bind to the new instance.
       required:false
       default: null
       aliases: []
