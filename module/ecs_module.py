@@ -132,6 +132,33 @@ function: create instance
       required: false
       default: null
       aliases: []
+    ids:
+      description:
+        - A list of identifier for this instance or set of instances, so that the module will be idempotent with respect to ECS instances. This identifier should not be reused for another call later on. For details, see the description of client token at U(https://help.aliyun.com/document_detail/25693.html?spm=5176.doc25499.2.7.mrVgE2).
+        - The length of the ids is the same with count
+      required: false
+      default: null
+    instance_charge_type:
+      description: - The charge type of the instance.
+      required: false
+      choices:["PrePaid", "PostPaid"]
+      default: "PostPaid"
+    period:
+      description: - The charge duration of the instance, the value is vaild when instance_charge_type is "PrePaid".
+      required: false
+      choices:[1~9,12,24,36]
+      default: null
+    auto_renew:
+      description: - Whether automate renew the charge of the instance.
+      required: false
+      choices:[true, false]
+      default: false
+    auto_renew_period:
+      description: - The duration of the automatic renew the charge of the instance. It is vaild when auto_renew is true.
+      required: false
+      choices:[1, 2, 3, 6, 12]
+      default: false
+
 
 function: start, stop, restart, terminate instance
   description: start, stop, restart and terminate instancesin ecs
