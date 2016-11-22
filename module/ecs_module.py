@@ -28,12 +28,12 @@ function: create instance
       required: true
       default: null
       aliases: [ 'acs_region', 'ecs_region' ]
-    zone:
+    zone_id:
       description: Aliyun availability zone ID in which to launch the instance
       required: false
       default: null
       aliases: [ 'acs_zone', 'ecs_zone' ]
-    image:
+    image_id:
       description: Image ID to use for the instance.
       required: true
       default: null
@@ -42,9 +42,9 @@ function: create instance
       description: Instance type to use for the instance
       required: true
       default: null
-      aliases: []
+      aliases: [ 'type' ]
     group_id:
-      description: Security group id (or list of ids) to use with the instance
+      description: Security group id to use with the instance
       required: false
       default: null
       aliases: []
@@ -123,7 +123,7 @@ function: create instance
       default: true
       aliases: []
     bind_eip:
-      description: A list elastic public ips bind to the new instance.
+      description: ID of Elastic IP Address bind to the new instance.
       required:false
       default: null
       aliases: []

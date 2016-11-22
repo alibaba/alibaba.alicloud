@@ -2,36 +2,42 @@
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: XXXXXXXXXX
-    acs_secret_access_key: XXXXXXXXXX
-    region: cn-shenzhen
-    instance_ids: i-94dehop6n
+    acs_access_key: XXXXXXXXX
+    acs_secret_access_key: XXXXXXXXX
+    region: cn-beijing
+    zone_id: cn-beijing-b
+    image_id: ubuntu1404_64_40G_cloudinit_20160727.raw
+    instance_type: ecs.n1.small
+    group_id: sg-25y6ag32b
+    instance_name : MyInstance
+    description: description comes here
+    host_name: hostname
+    password: Admin123
+    system_disk:
+        disk_category: cloud_efficiency
+    allocate_public_ip: True
     instance_tags:
     - tag_key: create_test
       tag_value: '0.01'
-    force: False
-    stage: created
+    state: present
   tasks:
     - name: create instance
       ecs:
         acs_access_key_id: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
-        state: '{{ state }}'
         region: '{{ region }}'
-        zone: '{{ zone }}'
-        image: '{{ image }}'
+        zone_id: '{{ zone_id }}'
+        image_id: '{{ image_id }}'
         instance_type: '{{ instance_type }}'
         group_id: '{{ group_id }}'
-        io_optimized: '{{ io_optimized }}'
-        vswitch_id: '{{ vswitch_id }}'
         instance_name: '{{ instance_name }}'
         description: '{{ description }}'
-        internet_data: '{{ internet_data }}'
         host_name: '{{ host_name }}'
         password: '{{ password }}'
         system_disk: '{{ system_disk }}'
-        volumes: '{{ volumes }}'
-        count: '{{ count }}'
         allocate_public_ip: '{{ allocate_public_ip }}'
-        bind_eip: '{{ bind_eip }}'
         instance_tags: '{{ instance_tags }}'
+        state: '{{ state }}'
+      register: result
+
+    - debug: var=result
