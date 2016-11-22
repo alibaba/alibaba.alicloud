@@ -1,0 +1,25 @@
+- name: create instance
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: XXXXXXXXX
+    acs_secret_access_key: XXXXXXXXX
+    region: cn-beijing
+    image_id: ubuntu1404_64_40G_cloudinit_20160727.raw
+    instance_type: ecs.n1.small
+    group_id: sg-25y6ag32b
+    state: present
+
+  tasks:
+    - name: create instance
+      ecs:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        image_id: '{{ image_id }}'        
+        instance_type: '{{ instance_type }}'        
+        group_id: '{{ group_id }}'
+        state: '{{ state }}'
+      register: result
+
+    - debug: var=result
