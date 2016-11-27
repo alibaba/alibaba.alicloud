@@ -331,22 +331,23 @@ def main():
         bind_eip = module.params['bind_eip']
         instance_tags = module.params['instance_tags']
 
-        # Set network type based on subnet id paramter value passed
-        network_type = "classic"
-        if vswitch_id:
-            network_type = "vpc"
-
-        # Associating elastic ip binding is not supported for classic n/w type
-        if network_type == "classic":
-            if bind_eip:
+        # allow only upto four datadisks or volume 
+        if volumes:
+            if len(volumes) > 4:
                 module.fail_json(
-                    msg='associating elastic ip address is not allowed as specified instance is not configured in VPC.')
-
-        # Allocating public ip is not supported with vpc n/w type
-        if network_type == "vpc":
+                    msg='more than four volumes or datadisks are not allowed.') 
+        
+        if vswitch_id:
+            # Allocating public ip is not supported with vpc n/w type
             if allocate_public_ip:
                 module.fail_json(
                     msg='allocating public ip address is not allowed as specified instance is configured in VPC.')
+        else: 
+            # Associating elastic ip binding is not supported for classic n/w type
+            if bind_eip:
+                module.fail_json(
+                    msg='associating elastic ip address is not allowed as specified instance is not configured in VPC.')  
+        
 
         (changed, new_instance_id) = create_instance(module=module, ecs=ecs, region=region,
                                                      zone_id=zone_id, image_id=image_id,
