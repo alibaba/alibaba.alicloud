@@ -1,3 +1,27 @@
+#!/usr/bin/python
+#
+# Copyright 2017 Alibaba Group Holding Limited.
+#
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible. If not, see http://www.gnu.org/licenses/.
+
+
+ANSIBLE_METADATA = {'status': ['stableinterface'],
+                    'supported_by': 'core',
+                    'version': '1.0'}
+
 DOCUMENTATION = '''
 ---
 module: ecs
@@ -7,18 +31,19 @@ common options:
     description: The access key.
     required: false
     default: null
-    aliases: []
+    aliases: ['ecs_access_key','access_key']
   acs_secret_access_key:
     description: The access secret key.
     required: false
     default: null
-    aliases: []
-  state:
+    aliases: ['ecs_secret_key','secret_key']
+  status:
     description: The state of the instance after operating.
     required: true
     default: null
-    aliases: []
-    choices: ['pending', 'running', 'stopped', 'restarted', 'absent'] map operation ['create', 'start', 'stop', 'restart', 'terminate']
+    aliases: ['state']
+    choices: ['present', 'running', 'stopped', 'restarted', 'absent', 'getstatus']
+            map operation ['create', 'start', 'stop', 'restart', 'terminate', 'querying_instance']
 
 function: create instance
   description: create an instance in ecs
@@ -37,7 +62,7 @@ function: create instance
       description: Image ID to use for the instance.
       required: true
       default: null
-      aliases: []
+      aliases: ['image']
     instance_type:
       description: Instance type to use for the instance
       required: true
@@ -57,7 +82,7 @@ function: create instance
       description: The subnet ID in which to launch the instance (VPC).
       required: false
       default: null
-      aliases: []
+      aliases: ['vpc_subnet_id']
     instance_name:
       description: Name of the instance to use.
       required: false
@@ -93,13 +118,13 @@ function: create instance
         - A hash/dictionaries of system disk to the new instance;
         - '{"key":"value"}'; keys allowed:
           - disk_category (required:false; default: "cloud"; choices:["cloud", "cloud_efficiency", "cloud_ssd", "ephemeral_ssd"] )
-          - disk_size (required:false; default:max{40，ImageSize}; choices:[40~500])
-          - disk_name (required:false; default:null)
+          - disk_size (required: false, default: max[40, ImageSize], choice: [40-500])
+          - disk_name (required: false, default: Null)
           - disk_description (required:false; default:null)
       required: false
       default: null
       aliases: []
-    volumes:
+    disks:
       description:
         - A list of hash/dictionaries of volumes to add to the new instance;
         - '[{"key":"value", "key":"value"}]'; keys allowed:
@@ -111,7 +136,7 @@ function: create instance
           - snapshot (required:false; default:null), volume_type (str), iops (int) - device_type is deprecated use volume_type, iops must be set when volume_type='io1', ephemeral and snapshot are mutually exclusive.
       required: false
       default: null
-      aliases: []
+      aliases: ['volumes']
     count:
       description: The number of the new instance.
       required: false
@@ -121,17 +146,22 @@ function: create instance
       description: Whether allocate a public ip for the new instance.
       required: false
       default: true
-      aliases: []
+      aliases: ['assign_public_ip']
     bind_eip:
       description: ID of Elastic IP Address bind to the new instance.
       required:false
+      default: null
+      aliases: []
+    private_ip:
+      description: Private IP address for the new instance.
+      required: false
       default: null
       aliases: []
     instance_tags:
       description: - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
       required: false
       default: null
-      aliases: []
+      aliases: ['tags']
     ids:
       description:
         - A list of identifier for this instance or set of instances, so that the module will be idempotent with respect to ECS instances. This identifier should not be reused for another call later on. For details, see the description of client token at U(https://help.aliyun.com/document_detail/25693.html?spm=5176.doc25499.2.7.mrVgE2).
@@ -158,6 +188,16 @@ function: create instance
       required: false
       choices:[1, 2, 3, 6, 12]
       default: false
+    wait:
+      description: - Wait for the instance to be 'running' before returning.
+      required: false
+      choices: []
+      default: "false"
+    wait_timeout:
+      description: - how long before wait gives up, in seconds
+      required: false
+      choices: []
+      default: "300"
 
 
 function: start, stop, restart, terminate instance
@@ -179,8 +219,9 @@ function: start, stop, restart, terminate instance
       default: null
       aliases: []
 
+
 function: modify instance attribute
-  description: modufy instances attributes in ecs
+  description: modify instances attributes in ecs
   options:
     attributes:
       description:
@@ -191,13 +232,56 @@ function: modify instance attribute
           - description (required:false)
           - password (required:false)
           - host_name (required:false)
-          - vnc_password (required:false)
       required: false
       default: null
       aliases: []
 
+
+function: modify instance security group attribute
+  description: join or leave instances from security group.
+  options:
+    group_id:
+      description: Security group id (or list of ids) to use with the instance
+      required: true
+      default: null
+      aliases: []
+    instance_id:
+      description: A list of instance ids.
+      required: true
+      default: null
+      aliases: ['instance_ids']
+    sg_action:
+      description: The action of operating security group.
+      required: true
+      default: null
+      choices: ['join','remove']
+      aliases: []
+
+
+function: querying instance status
+  description: obtain the list of all the instances of the current user in batches with status information
+  options:
+    status:
+      description: For querying instance status provide state as getstatus
+      required: true
+      default: null
+      aliases: [ 'state' ]
+    zone_id:
+      description: Aliyun availability zone ID in which to launch the instance
+      required: false
+      default: null
+      aliases: [ 'acs_zone', 'ecs_zone' ]
+    pagenumber:
+      description: Page number of the instance status list
+      required:false
+      default: 1
+    pagesize:
+        description: Sets the number of lines per page for queries per page
+        required:false
+        default: 10
+
 function: modify instance vpc attribute
-  description: modufy instances attributes in ecs
+  description: modify instances attributes in ecs
   options:
     vpc_attributes:
       description:
@@ -210,27 +294,9 @@ function: modify instance vpc attribute
       default: null
       aliases: []
 
-function: modify instance security group attribute
-  description: join or leave instances from security group.
-  options:
-    group_id:
-      description: Security group id (or list of ids) to use with the instance
-      required: true
-      default: null
-      aliases: []
-    instance_ids:
-      description: A list of instance ids.
-      required: true
-      default: null
-      aliases: []
-    sg_action:
-      description: The action of operating security group.
-      required: true
-      default: null
-      choices: ['join','remove']
-      aliases: []
 '''
 
+# TODO: Add Examples here
 EXAMPLES = '''
 - action: modulename opt1=arg1 opt2=arg2
 
@@ -281,7 +347,6 @@ EXAMPLES = '''
 
 '''
 
-
 import time
 from ast import literal_eval
 
@@ -325,7 +390,7 @@ def get_instance_info(inst):
         instance_info['block_device_mapping'] = False
 
     return instance_info
-
+ 
 def get_instances(module, ecs, instance_ids):
     """
     get instance info
@@ -444,130 +509,284 @@ def startstop_instances(module, ecs, instance_ids, state, instance_tags):
             changed = True
 
     return (changed, instance_dict_array, instance_ids)
-
-
-def create_instance(module, ecs, region, zone_id, image_id, instance_type, group_id, io_optimized,
-                    vswitch_id, instance_name, description, internet_data, host_name, password,
-                    system_disk, volumes, count, allocate_public_ip, bind_eip, instance_tags):
+ 
+def create_instance(module, ecs, image_id, instance_type, group_id, zone_id, instance_name, description, internet_data,
+                    host_name, password, io_optimized, system_disk, disks, vswitch_id, private_ip, count,
+                    allocate_public_ip, bind_eip, instance_charge_type, period, auto_renew, auto_renew_period,
+                    instance_tags, ids, wait, wait_timeout):
     """
     create an instance in ecs
-    module: Ansible module object
-    ecs: authenticated ecs connection object
-    region: The instances Region ID
-    zone_id: ID of a zone to which an instance belongs. If it is
-        null, a zone is selected by the system
-    image_id: ID of an image file, indicating an image selected
-        when an instance is started
-    instance_type: Type of the instance
-    group_id: ID of the security group to which a newly created
+    :param module: Ansible module object
+    :param ecs: authenticated ecs connection object
+    :param zone_id: ID of a zone to which an instance belongs. If it is null, a zone is selected by the system
+    :param image_id: ID of an image file, indicating an image selected
+    when an instance is started
+    :param instance_type: Type of the instance
+    :param group_id: ID of the security group to which a newly created
         instance belongs
-    io_optimized: values are :- none: none I/O Optimized and 
-        optimized: I/O Optimized
-    vswitch_id: When launching an instance in VPC, the virtual
-        switch ID must be specified
-    instance_name: Display name of the instance, which is a string
+    :param instance_name: Display name of the instance, which is a string
         of 2 to 128 Chinese or English characters. It must begin
         with an uppercase/lowercase letter or a Chinese character
-        and can contain numerals, . _ or - 
-    description: Description of the instance, which is a string of
-        2 to 256 characters. 
-    internet_data: A hash/dictionaries of internet to the new 
+        and can contain numerals, . _ or -
+    :param description: Description of the instance, which is a string of
+        2 to 256 characters.
+    :param internet_data: A hash/dictionaries of internet to the new
         instance
-    host_name: Host name of the ECS, which is a string of at least
+    :param host_name: Host name of the ECS, which is a string of at least
         two characters. hostname cannot start or end with . or -
         In addition, two or more consecutive . or - symbols are
         not allowed.
-    password: Password to an instance is a string of 8 to 30 
+    :param password: Password to an instance is a string of 8 to 30
         characters
-    system_disk: SystemDisk details of an instance like 
+    :param io_optimized: values are :- none: none I/O Optimized and
+        optimized: I/O Optimized
+    :param system_disk: SystemDisk details of an instance like
         SystemDiskCategory, SystemDiskSize, SystemDiskDiskName
         and SystemDiskDescription
-    volumes: A list of hash/dictionaries of volumes to add to
-        the new instance;
-    count: The number of the new instance.
-    allocate_public_ip: Whether allocate a public ip for the
+    :param disks: A list of hash/dictionaries of volumes to add to
+        the new instance
+    :param vswitch_id: When launching an instance in VPC, the virtual     
+        switch ID must be specified
+    :param private_ip: Private IP address of the instance, which cannot be specified separately.
+    :param count: The number of the new instance.
+    :param allocate_public_ip: Whether allocate a public ip for the
         new instance
-    bind_eip: A list elastic public ips bind to the new instance
-    instance_tags: A list of hash/dictionaries of instance tags,
+    :param bind_eip: A list elastic public ips bind to the new instance
+    :param instance_charge_type: instance charge type
+    :param period: The time that you have bought the resource,in month. Only valid when InstanceChargeType is set as
+        PrePaid. Value range: 1 to 12
+    :param auto_renew: Whether automatic renewal is supported.
+    :param auto_renew_period: The period of each automatic renewal. Required when AutoRenew is True.
+        The value must be the same as the period of the created instance.
+    :param instance_tags: A list of hash/dictionaries of instance tags,
        '[{tag_key:"value", tag_value:"value"}]', tag_key must be
        not null when tag_value isn't null returns id of newly
        created instance
-    If instance is created successfully the changed will be set
-    to True else False
+    :param ids: A list of identifier for this instance or set of
+        instances, so that the module will be idempotent with
+        respect to ECS instances.
+    :param wait: after execution of method whether it has to wait for some time interval
+    :param wait_timeout: time interval of waiting
+    :return:
+        changed: If instance is created successfully the changed will be set
+            to True else False
+        instance_id: the newly created instance ids
     """
 
     changed = False
+    try:
+        # call to CreateInstance method in Footmark
+        changed, result = ecs.create_instance(image_id=image_id, instance_type=instance_type, group_id=group_id,
+                                              zone_id=zone_id, instance_name=instance_name, description=description,
+                                              internet_data=internet_data, host_name=host_name, password=password,
+                                              io_optimized=io_optimized, system_disk=system_disk, disks=disks,
+                                              vswitch_id=vswitch_id, private_ip=private_ip, count=count,
+                                              allocate_public_ip=allocate_public_ip, bind_eip=bind_eip,
+                                              instance_charge_type=instance_charge_type, period=period,
+                                              auto_renew=auto_renew, auto_renew_period=auto_renew_period,
+                                              instance_tags=instance_tags, ids=ids, wait=wait,
+                                              wait_timeout=wait_timeout)
 
-    # call to CreateInstance method in Footmark
-    instance_id = ecs.create_instance(region_id=region, zone_id=zone_id, image_id=image_id,
-                                      instance_type=instance_type, group_id=group_id,
-                                      io_optimized=io_optimized, vswitch_id=vswitch_id,
-                                      instance_name=instance_name, description=description,
-                                      internet_data=internet_data, host_name=host_name,
-                                      password=password, system_disk=system_disk, volumes=volumes,
-                                      count=count, allocate_public_ip=allocate_public_ip,
-                                      bind_eip=bind_eip, instance_tags=instance_tags)
-    if 'error:' in (''.join(instance_id)).lower():
-        module.fail_json(msg='Unable to create new instance in region {0}, {1}'.format(
-            region, instance_id))
+        if 'error' in (''.join(str(result))).lower():
+            module.fail_json(changed=changed, msg=result)
 
-    changed = True
-    return (changed, instance_id)
+    except ECSResponseError as e:
+        module.fail_json(msg='Unable to create instance, error: {0}'.format(e))
 
+    return changed, result
+
+def modify_instance(module, ecs, attributes):
+    """
+    modify the instance attributes such as name, description, password and host_name
+
+    :param: module: Ansible module object
+    :param: ecs: authenticated ecs connection object
+    :param: attributes: A list of dictionary of instance attributes which includes
+       id, name, description, password and host_name
+    :return:
+        changed: If instance is modified successfully the changed will be set to True else False
+        instance_ids: returns a list of the instance_ids modified
+        result: detailed server response
+    """
+
+    changed = False
+ 
+    try:
+        changed, result = ecs.modify_instance(attributes=attributes)
+
+        instance_ids = []
+        for attr in attributes:
+            if 'id' in attr:
+                instance_ids.append(str(attr['id']))
+
+        if 'error' in (''.join(str(result))).lower():
+            module.fail_json(changed=changed, msg=result)
+        changed = True
+
+    except ECSResponseError as e:
+        module.fail_json(msg='Unable to modify instance, error: {0}'.format(e))
+    return changed, instance_ids, result
+ 
+def get_instance_status(module, ecs, zone_id=None, pagenumber=None, pagesize=None):
+    """
+    Get status of an instance
+    :param module: Ansible module object
+    :param ecs: authenticated ecs connection object
+    :param zone_id: ID of a zone to which an instance belongs.
+    :param pagenumber: Page number of the instance status list. The start value is 1. The default value is 1
+    :param pagesize: Sets the number of lines per page for queries per page. The maximum value is 50. The default
+        value is 10
+    :return:
+        changed: Changed is always false as there is no change on Aliyun server
+        result: detailed server response
+    """
+    changed = False
+    try:
+        changed, result = ecs.get_instance_status(zone_id=zone_id, pagenumber=pagenumber, pagesize=pagesize)
+
+        if 'error' in (''.join(str(result))).lower():
+            module.fail_json(changed=changed, msg=result)
+
+    except ECSResponseError as e:
+        module.fail_json(msg='Unable to get status of instance(s), error: {0}'.format(e))          
+
+    return changed, result
+ 
+
+def join_security_group(module, ecs, instance_ids, security_group_id):
+    """
+    Instance joins security group id
+    :param module: Ansible module object
+    :param ecs: authenticated ecs connection object
+    :param instance_ids: The list of instance id's which are to be assigned to the security group
+    :param security_group_id: ID of the security group to which a instance is to be added
+    :return:
+        changed: If instance is added successfully in security group. the changed will be set to True else False
+        result: detailed server response
+    """
+    changed = False
+    try:
+        changed, result, success_instance_ids, failed_instance_ids  = ecs.join_security_group(instance_ids, security_group_id);
+
+        flag = 0
+        if len(result) > 0:
+            for item in result:
+                if 'error code' in str(item).lower():
+                    flag = 1
+        else:
+            flag = 1
+
+        if len(success_instance_ids)==0:
+                success_instance_ids = None
+        if len(failed_instance_ids)==0:
+                failed_instance_ids = None
+        
+        if flag == 1:
+            module.fail_json(msg=result, group_id=security_group_id, success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
+    except ECSResponseError as e:
+        module.fail_json(msg='Unable to add instance to security group, error: {0}'.format(e))
+    
+    return changed, result, success_instance_ids, failed_instance_ids, security_group_id
+
+
+def leave_security_group(module, ecs, instance_ids, security_group_id):
+    """
+    Instance leaves security group id
+    :param module: Ansible module object
+    :param ecs: authenticated ecs connection object
+    :param instance_ids: The list of instance id's which are to be assigned to the security group
+    :param security_group_id: ID of the security group to which a instance is to be added
+    :return:
+        changed: If instance is removed successfully in security group. the changed will be set to True else False
+        result: detailed server response
+    """
+    changed = False
+    try:
+        changed, result, success_instance_ids, failed_instance_ids = ecs.leave_security_group(instance_ids, security_group_id);
+
+        flag = 0
+        if len(result) > 0:
+            for item in result:
+                if 'error code' in str(item).lower():
+                    flag = 1
+        else:
+            flag = 1
+
+        if len(success_instance_ids)==0:
+                success_instance_ids = None
+        if len(failed_instance_ids)==0:
+                failed_instance_ids = None
+
+        if flag == 1:
+            module.fail_json(msg=result, group_id=security_group_id, success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
+    except ECSResponseError as e:
+        module.fail_json(msg='Unable to remove instance from security group, error: {0}'.format(e))
+    
+    return changed, result, success_instance_ids, failed_instance_ids, security_group_id
+ 
 
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         group_id=dict(),
-        zone_id=dict(aliases=['acs_zone', 'ecs_zone']),
+        zone_id=dict(aliases=['acs_zone', 'ecs_zone', 'zone']),
         instance_type=dict(aliases=['type']),
-        image_id=dict(),
+        image_id=dict(aliases=['image']),
         count=dict(type='int', default='1'),
-        vswitch_id=dict(),
-        io_optimized=dict(type='bool', default=False),
+        vswitch_id=dict(aliases=['vpc_subnet_id']),
+        io_optimized=dict(),
         instance_name=dict(),
         internet_data=dict(type='dict'),
         host_name=dict(),
         password=dict(),
         system_disk=dict(type='dict'),
-        volumes=dict(type='list'),
-        instance_ids=dict(type='list'),
+        disks=dict(type='list', aliases=['volumes']),
         force=dict(type='bool', default=False),
-        instance_tags=dict(type='list'),
-        state=dict(default='present', choices=[
-                   'present', 'running', 'stopped', 'restarted', 'absent', 'getinfo']),
+        instance_tags=dict(type='list', aliases=['tags']),
+        status=dict(default='present', aliases=['state'], choices=['present', 'running', 'stopped', 'restarted',
+                                                                   'absent', 'getinfo',  'getstatus']),
         description=dict(),
-        allocate_public_ip=dict(type='bool', default=True),
-        bind_eip=dict(type='list')
+        allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
+        bind_eip=dict(type='list'),
+        instance_charge_type=dict(default='PostPaid'),
+        period=dict(),
+        auto_renew=dict(type='bool', default=False),
+        ids=dict(type='list',  aliases=['id']),
+        attributes=dict(type='list'),
+        pagenumber=dict(type='int', default='1'),
+        pagesize=dict(type='int', default='10'),
+        vpc_id=dict(),
+        instance_id=dict(type='list', aliases=['instance_ids']),
+        sg_action=dict(),
+        private_ip=dict(),
+        auto_renew_period=dict(),
+        wait=dict(default='no'),
+        wait_timeout=dict(default='300'),
     )
-    )
-
+    )	
     module = AnsibleModule(argument_spec=argument_spec)
-    
+
+    if not HAS_ECS:
+        module.fail_json(msg='ecsutils and footmark required for this module')
+
     ecs = ecs_connect(module)
 
     region, acs_connect_kwargs = get_acs_connection_info(module)
 
-    # if region:
-    # try:
-    #         vpc = connect_to_aws(boto.vpc, region, **aws_connect_kwargs)
-    #     except boto.exception.NoAuthHandlerFound as e:
-    #         module.fail_json(msg = str(e))
-    # else:
-    #     vpc = None
-
     tagged_instances = []
 
-    state = module.params['state']
+    status = module.params['status']
 
-    if state == 'absent':
+    if status == 'absent':
         instance_ids = module.params['instance_ids']
         if not instance_ids:
-            module.fail_json(msg='instance_ids list is required for absent state')
+            module.fail_json(msg='instance_ids list is required for absent status')
 
         (changed, instance_dict_array, new_instance_ids) = terminate_instances(module, ecs, instance_ids)
+        module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array,
+                         tagged_instances=tagged_instances)
 
-    elif state in ('running', 'stopped', 'restarted'):
+    elif status in ('running', 'stopped', 'restarted'):
         instance_ids = module.params['instance_ids']
         instance_tags = module.params['instance_tags']
         if not (isinstance(instance_ids, list) or isinstance(instance_tags, list)):
@@ -576,91 +795,177 @@ def main():
 
         (changed, instance_dict_array, new_instance_ids) = startstop_instances(module, ecs, instance_ids, state,
                                                                                instance_tags)
+        module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array,
+                         tagged_instances=tagged_instances)
 
-    elif state == 'getinfo':
+    elif status == 'present':
+        # Join and leave security group is handled in state present
+        # region Security Group join/leave begin
+        sg_action = module.params['sg_action']
+        # if sg_action parameter is absent then create new instance will begin
+        if sg_action:
+            if sg_action.strip().lower() == 'join':
+                # code for join security group begins
+                instance_ids = module.params['instance_id']
+                
+                if not instance_ids:
+                    module.fail_json(msg='instance_id is required to join to new security group')
+
+                if not isinstance(instance_ids,list):
+                    module.fail_json(msg='instance_id must be a list')
+
+                security_group_id = module.params['group_id']
+                if not security_group_id:
+                    module.fail_json(msg='group_id is required to join to new security group')
+
+                instance_dict_array = []
+                (changed, result, success_instance_ids, failed_instance_ids, security_group_id) = join_security_group(module, ecs, instance_ids, security_group_id)
+
+                module.exit_json(changed=changed, result=result, group_id=security_group_id, success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
+                
+            elif sg_action.strip().lower() == 'leave':
+                # code for leave security group begins
+                instance_ids = module.params['instance_id']
+                
+                if not instance_ids:
+                    module.fail_json(msg='instance_ids is required to leave from security group')
+
+                if not isinstance(instance_ids,list):
+                    module.fail_json(msg='instance_id must be a list')
+
+                security_group_id = module.params['group_id']
+                if not security_group_id:
+                    module.fail_json(msg='group_id is required to leave from an existing security group')
+
+                instance_dict_array = []
+                (changed, result, success_instance_ids, failed_instance_ids, security_group_id) = leave_security_group(module, ecs, instance_ids, security_group_id)
+
+                module.exit_json(changed=changed, result=result,  group_id=security_group_id, success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
+            else:
+                module.fail_json(msg='To perform join_security_group or leave_security_group operation, sg_action must be either join or leave respectively')
+        # region Security Group join/leave ends here
+        else:
+            # create new instance begins
+            if module.params['region']: 
+                region = module.params['region']
+
+            if not region:
+                module.fail_json(msg='region is required for new instance')
+
+            zone_id = module.params['zone_id']
+
+            image_id = module.params['image_id']
+            if not image_id:
+                module.fail_json(msg='image_id is required for new instance')
+
+            instance_type = module.params['instance_type']
+            if not instance_type:
+                module.fail_json(msg='instance_type is required for new instance')
+
+            group_id = module.params['group_id']
+            io_optimized = module.params['io_optimized']
+            vswitch_id = module.params['vswitch_id']
+            instance_name = module.params['instance_name']
+            description = module.params['description']
+            internet_data = module.params['internet_data']
+            host_name = module.params['host_name']
+            password = module.params['password']
+            system_disk = module.params['system_disk']
+            disks = module.params['disks']
+            count = module.params['count']
+            allocate_public_ip = module.params['allocate_public_ip']
+            bind_eip = module.params['bind_eip']
+            instance_tags = module.params['instance_tags']
+            period = module.params['period']
+            auto_renew = module.params['auto_renew']
+            instance_charge_type = module.params['instance_charge_type']
+            ids = module.params['ids']
+            private_ip = module.params['private_ip']
+            auto_renew_period = module.params['auto_renew_period']
+            wait = module.params['wait']
+            wait_timeout = module.params['wait_timeout']
+
+            # allow only upto four data_disks or volume
+            if disks:
+                if len(disks) > 4:
+                    module.fail_json(
+                        msg='more than four volumes or disk are not allowed.')
+
+            if vswitch_id:
+                # Allocating public ip is not supported with vpc n/w type
+                if allocate_public_ip:
+                    module.fail_json(
+                        msg='allocating public ip address is not allowed as specified instance is configured in VPC.')
+            else:
+                # Associating elastic ip binding is not supported for classic n/w type
+                if bind_eip:
+                    module.fail_json(
+                        msg='associating elastic ip address is not allowed as specified instance is not configured in '
+                            'VPC.')
+
+            # Restrict Instance Count
+            if int(count) > 99:
+                module.fail_json(
+                    msg='count value for creating instance is not allowed.')
+
+            # Restrict when length of ids not equal to count
+            if ids:
+                if len(ids) != count:
+                    module.fail_json(
+                        msg='length of ids should be equal to count.')
+
+            (changed, result) = create_instance(module=module, ecs=ecs, image_id=image_id, instance_type=instance_type,
+                                                group_id=group_id, zone_id=zone_id, instance_name=instance_name,
+                                                description=description, internet_data=internet_data,
+                                                host_name=host_name, password=password, io_optimized=io_optimized,
+                                                system_disk=system_disk, disks=disks, vswitch_id=vswitch_id,
+                                                private_ip=private_ip, count=count,
+                                                allocate_public_ip=allocate_public_ip, bind_eip=bind_eip,
+                                                instance_charge_type=instance_charge_type, period=period,
+                                                auto_renew=auto_renew, auto_renew_period=auto_renew_period,
+                                                instance_tags=instance_tags, ids=ids, wait=wait,
+                                                wait_timeout=wait_timeout)
+
+            module.exit_json(changed=changed, result=result)
+
+    elif status == 'present':
+        attributes = module.params['attributes']
+        
+        if attributes:
+            if not id:
+                module.fail_json(msg='instance_id is required for modify instance')
+
+        changed, instance_ids, result = modify_instance(module, ecs, attributes)
+        module.exit_json(changed=changed, instance_ids=instance_ids, result=result)
+
+    elif status == 'getinfo':
         instance_ids = module.params['instance_ids']
+
         (changed, instance_dict_array, new_instance_ids) = get_instances(module, ecs, instance_ids)
 
-    elif state == 'present':
-        # C2C : Code added to create instance
-        region = module.params['region']
-        if not region:
-            module.fail_json(msg='region is required for new instance')
+        module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array,
+                         tagged_instances=tagged_instances)
 
+    elif status == 'getstatus':
+        pagenumber = module.params['pagenumber']
+        pagesize = module.params['pagesize']
         zone_id = module.params['zone_id']
 
-        image_id = module.params['image_id']
-        if not image_id:
-            module.fail_json(msg='image_id is required for new instance')
-
-        instance_type = module.params['instance_type']
-        if not instance_type:
-            module.fail_json(msg='instance_type is required for new instance')
-
-        group_id = module.params['group_id']
-        if not group_id:
-            module.fail_json(msg='group_id is required for new instance')
-
-        io_optimized = module.params['io_optimized']
-        vswitch_id = module.params['vswitch_id']
-        instance_name = module.params['instance_name']
-        description = module.params['description']
-        internet_data = module.params['internet_data']
-        host_name = module.params['host_name']
-        password = module.params['password']
-        system_disk = module.params['system_disk']
-        volumes = module.params['volumes']
-        count = module.params['count']
-        allocate_public_ip = module.params['allocate_public_ip']
-        bind_eip = module.params['bind_eip']
-        instance_tags = module.params['instance_tags']
-
-        # allow only upto four datadisks or volume 
-        if volumes:
-            if len(volumes) > 4:
-                module.fail_json(
-                    msg='more than four volumes or datadisks are not allowed.') 
+        (changed, result) = get_instance_status(module, ecs, zone_id, pagenumber, pagesize)
+        module.exit_json(changed=changed, result=result)
         
-        if vswitch_id:
-            # Allocating public ip is not supported with vpc n/w type
-            if allocate_public_ip:
-                module.fail_json(
-                    msg='allocating public ip address is not allowed as specified instance is configured in VPC.')
-        else: 
-            # Associating elastic ip binding is not supported for classic n/w type
-            if bind_eip:
-                module.fail_json(
-                    msg='associating elastic ip address is not allowed as specified instance is not configured in VPC.')  
-        
-
-        (changed, new_instance_id) = create_instance(module=module, ecs=ecs, region=region,
-                                                     zone_id=zone_id, image_id=image_id,
-                                                     instance_type=instance_type,
-                                                     group_id=group_id, io_optimized=io_optimized,
-                                                     vswitch_id=vswitch_id,
-                                                     instance_name=instance_name,
-                                                     description=description,
-                                                     internet_data=internet_data,
-                                                     host_name=host_name, password=password,
-                                                     system_disk=system_disk, volumes=volumes,
-                                                     count=count,
-                                                     allocate_public_ip=allocate_public_ip,
-                                                     bind_eip=bind_eip,
-                                                     instance_tags=instance_tags)
-        instance_ids = []
-        instance_ids.append(new_instance_id)
-        (changed, instance_dict_array, new_instance_id) = get_instances(
-            module, ecs, instance_ids)
-
-        module.exit_json(changed=changed, instance_id=new_instance_id,
-                         instances_info=instance_dict_array)
-
-    module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array,
-                     tagged_instances=tagged_instances)
 
 # import module snippets
 from ansible.module_utils.basic import *
 # from ansible.module_utils.ecs import *
-from ecsutils.ecs import *
+
+try:
+    from ecsutils.ecs import *
+    from footmark.exception import ECSResponseError
+
+    HAS_ECS = True
+except ImportError:
+    HAS_ECS = False
+
 # import ECSConnection
 main()
