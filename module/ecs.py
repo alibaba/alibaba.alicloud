@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#
+
 # Copyright 2017 Alibaba Group Holding Limited.
 #
 # This file is part of Ansible
@@ -31,19 +31,20 @@ common options:
     description: The access key.
     required: false
     default: null
-    aliases: ['ecs_access_key','access_key']
+    aliases: []
   acs_secret_access_key:
     description: The access secret key.
     required: false
     default: null
-    aliases: ['ecs_secret_key','secret_key']
-  status:
+    aliases: []
+  state:
     description: The state of the instance after operating.
     required: true
     default: null
-    aliases: ['state']
-    choices: ['present', 'running', 'stopped', 'restarted', 'absent', 'getstatus']
-            map operation ['create', 'start', 'stop', 'restart', 'terminate', 'querying_instance']
+    aliases: []
+    choices: ['present', 'running', 'stopped', 'restarted', 'absent', 'getstatus', 'modify', 'getinfo' ]
+            map operation ['create', 'start', 'stop', 'restart', 'terminate', 'querying_instance', 'modify_attribute',
+                           'describe_status']
 
 function: create instance
   description: create an instance in ecs
@@ -62,7 +63,7 @@ function: create instance
       description: Image ID to use for the instance.
       required: true
       default: null
-      aliases: ['image']
+      aliases: []
     instance_type:
       description: Instance type to use for the instance
       required: true
@@ -82,7 +83,7 @@ function: create instance
       description: The subnet ID in which to launch the instance (VPC).
       required: false
       default: null
-      aliases: ['vpc_subnet_id']
+      aliases: []
     instance_name:
       description: Name of the instance to use.
       required: false
@@ -124,7 +125,7 @@ function: create instance
       required: false
       default: null
       aliases: []
-    disks:
+    volumes:
       description:
         - A list of hash/dictionaries of volumes to add to the new instance;
         - '[{"key":"value", "key":"value"}]'; keys allowed:
@@ -136,7 +137,7 @@ function: create instance
           - snapshot (required:false; default:null), volume_type (str), iops (int) - device_type is deprecated use volume_type, iops must be set when volume_type='io1', ephemeral and snapshot are mutually exclusive.
       required: false
       default: null
-      aliases: ['volumes']
+      aliases: []
     count:
       description: The number of the new instance.
       required: false
@@ -146,22 +147,17 @@ function: create instance
       description: Whether allocate a public ip for the new instance.
       required: false
       default: true
-      aliases: ['assign_public_ip']
+      aliases: []
     bind_eip:
       description: ID of Elastic IP Address bind to the new instance.
       required:false
-      default: null
-      aliases: []
-    private_ip:
-      description: Private IP address for the new instance.
-      required: false
       default: null
       aliases: []
     instance_tags:
       description: - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
       required: false
       default: null
-      aliases: ['tags']
+      aliases: []
     ids:
       description:
         - A list of identifier for this instance or set of instances, so that the module will be idempotent with respect to ECS instances. This identifier should not be reused for another call later on. For details, see the description of client token at U(https://help.aliyun.com/document_detail/25693.html?spm=5176.doc25499.2.7.mrVgE2).
@@ -188,16 +184,6 @@ function: create instance
       required: false
       choices:[1, 2, 3, 6, 12]
       default: false
-    wait:
-      description: - Wait for the instance to be 'running' before returning.
-      required: false
-      choices: []
-      default: "false"
-    wait_timeout:
-      description: - how long before wait gives up, in seconds
-      required: false
-      choices: []
-      default: "300"
 
 
 function: start, stop, restart, terminate instance
@@ -232,6 +218,7 @@ function: modify instance attribute
           - description (required:false)
           - password (required:false)
           - host_name (required:false)
+          - vnc_password (required:false)
       required: false
       default: null
       aliases: []
@@ -245,12 +232,12 @@ function: modify instance security group attribute
       required: true
       default: null
       aliases: []
-    instance_id:
+    instance_ids:
       description: A list of instance ids.
       required: true
       default: null
-      aliases: ['instance_ids']
-    sg_action:
+      aliases: []
+    state:
       description: The action of operating security group.
       required: true
       default: null
@@ -261,21 +248,16 @@ function: modify instance security group attribute
 function: querying instance status
   description: obtain the list of all the instances of the current user in batches with status information
   options:
-    status:
-      description: For querying instance status provide state as getstatus
-      required: true
-      default: null
-      aliases: [ 'state' ]
     zone_id:
       description: Aliyun availability zone ID in which to launch the instance
       required: false
       default: null
       aliases: [ 'acs_zone', 'ecs_zone' ]
-    pagenumber:
+    page_number:
       description: Page number of the instance status list
       required:false
       default: 1
-    pagesize:
+    page_size:
         description: Sets the number of lines per page for queries per page
         required:false
         default: 10
@@ -749,7 +731,7 @@ def main():
         allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
         bind_eip=dict(type='list'),
         instance_charge_type=dict(default='PostPaid'),
-        period=dict(),
+        period=dict(type='int'),
         auto_renew=dict(type='bool', default=False),
         ids=dict(type='list',  aliases=['id']),
         attributes=dict(type='list'),
@@ -760,8 +742,8 @@ def main():
         sg_action=dict(),
         private_ip=dict(),
         auto_renew_period=dict(),
-        wait=dict(default='no'),
-        wait_timeout=dict(default='300'),
+        wait=dict(default='no', choices=['yes', 'Yes', 'no', 'No', "True", "False", "true", "false"]),
+        wait_timeout=dict(type='int', default='300')
     )
     )	
     module = AnsibleModule(argument_spec=argument_spec)
