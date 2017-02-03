@@ -17,14 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'status': ['stableinterface'],
-                    'supported_by': 'core',
-                    'version': '1.0'}
-
 DOCUMENTATION = '''
 ---
-module: ecs
-short_description: create, attach, detach or delete disk in ECS
+module: ecs_disk
+short_description: Create, Attach, Detach or Delete a disk in ECS
 common options:
   acs_access_key:
     description: The access key.
@@ -41,10 +37,10 @@ common options:
     required: true
     default: null
     aliases: []
-    choices: ['present', 'attached', 'detached', 'absent'] map operation ['create', 'attach', 'detach', 'delete']
+    choices: ['present', 'absent'] map operation ['create', 'attach', 'detach', 'delete']
 
-function: Create disk
-  description: Create a disk in ecs
+function: Create a disk in ECS
+  description: Create a disk in ECS
   options:
     region:
       description: The Aliyun region ID to use for the disk.
@@ -55,12 +51,12 @@ function: Create disk
       description: Aliyun availability zone ID in which to launch the disk
       required: true
       default: null
-      aliases: [ 'acs_zone', 'ecs_zone' ]
+      aliases: [ 'acs_zone', 'ecs_zone', 'availability_zone' ]
     disk_name:
       description: name of disk to create in ECS
       required: false
       default: null
-      aliases: []
+      aliases: [ 'name' ]
     description:
       description: Description of the disk to use.
       required: false
@@ -70,27 +66,22 @@ function: Create disk
       description: Category to use for the disk.
       required: false
       default: null
-      aliases: [ 'category' ]
+      aliases: [ 'volume_type', 'disk_type' ]
     size:
       description: Size of disk in GB
       required: false
       default: False
-      aliases: []
+      aliases: [ 'volume_size', 'disk_size' ]
     disk_tags:
       description: A list of hash/dictionaries of disk tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
       required: false
       default: null
-      aliases: []
-    ids:
-      description: A list of identifier for this disk, so that the module will be idempotent with respect to ECS disk. This identifier should not be reused for another call later on. For details, see the description of client token at U(https://help.aliyun.com/document_detail/25693.html?spm=5176.doc25499.2.7.mrVgE2).
-      required: false
-      default: null
-      aliases: []
-    snapshot:
+      aliases: [ 'tags' ]
+    snapshot_id:
       description: volume_type (str), iops (int) - device_type is deprecated use volume_type, iops must be set when volume_type='io1', ephemeral and snapshot are mutually exclusive.
       required: false
       default: null
-      aliases: []
+      aliases: [ 'snapshot' ]
 
 function: Attach disk
   description: Attach disk to instance in ECS
@@ -99,22 +90,22 @@ function: Attach disk
       description: The ID of the destination instance in ECS.
       required: true
       default: null
-      aliases: []
+      aliases: [ 'instance' ]
     disk_id:
       description: The disk ID. The disk and Instance must be in the same zone.
       required: true
       default: null
-      aliases: []
+      aliases: [ 'vol_id', 'id' ]
     device:
       description:
       required: false
       default: null
-      aliases: []
+      aliases: [ 'device_name' ]
     delete_with_instance:
       description: Whether or not the disk is released along with the instance
       required: false
       default: null
-      aliases: []
+      aliases: [ 'delete_on_termination' ]
     region:
       description: The Aliyun region ID to use for the disk.
       required: false
@@ -128,12 +119,12 @@ function: Detach disk
       description: The ID of the destination instance in ECS.
       required: true
       default: null
-      aliases: []
+      aliases: [ 'instance' ]
     disk_id:
       description: Id of disk to detach from instance in ECS.
       required: true
       default: null
-      aliases: []
+      aliases: [ 'vol_id', 'id' ]
     region:
       description: The Aliyun region ID to use for the disk.
       required: false
@@ -148,7 +139,7 @@ function: Delete disk
       description: The ID of the disk device that needs to be removed.
       required: true
       default: null
-      aliases: []
+      aliases: [ 'vol_id', 'id' ]
     region:
       description: The Aliyun region ID to use for the disk.
       required: false
@@ -157,8 +148,137 @@ function: Delete disk
 
 '''
 
-# TODO: Add Examples here
+EXAMPLES = '''
+#
+# Provisioning new disk
+#
 
+# Basic provisioning example create a disk
+- name: create disk
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: cn-beijing
+    zone_id: cn-beijing-b
+    size: 20
+    state: present
+  tasks:
+    - name: create disk
+      ecs_disk:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        zone_id: '{{ zone_id }}'
+        size: '{{ size }}'
+        state: '{{ state }}'
+      register: result
+    - debug: var=result
+
+# Advanced example with tagging and snapshot
+- name: create disk
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: cn-hongkong
+    zone_id: cn-hongkong-b
+    disk_name: disk_1
+    description: data disk_1
+    size: 20
+    snapshot_id: s-j6cjdk51ejf0mtdnb7bb
+    disk_category: CLOUD_SSD
+    state: present
+  tasks:
+    - name: create disk
+      ecs_disk:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        zone_id: '{{ zone_id }}'
+        disk_name: '{{ disk_name }}'
+        description: '{{ description }}'
+        size: '{{ size }}'
+        snapshot_id: '{{ snapshot_id }}'
+        disk_category: '{{ disk_category }}'
+        state: '{{ state }}'
+      register: result
+    - debug: var=result
+
+
+# Example to attach disk to an instance
+- name: attach disk to instance
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    state: present
+    region: us-west-1
+    instance_id: i-rj95iytyo4d16kxqj58a
+    vol_id: d-rj9j8a740966dhs3kbya
+    device: /dev/xvdb
+    delete_with_instance: false
+  tasks:
+    - name: Attach Disk to instance
+      ecs_disk:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        status: '{{ state }}'
+        region: '{{ region }}'
+        instance_id: '{{ instance_id }}'
+        vol_id: '{{ vol_id }}'
+        device: '{{ device }}'
+        delete_with_instance: '{{ delete_with_instance }}'
+      register: result
+    - debug: var=result
+
+
+# Example to detach disk from instance
+- name: detach disk
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: us-west-1
+    disk_id: d-rj9j8a740966dhs3kbya
+    state: present
+  tasks:
+    - name: detach disk
+      ecs_disk:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        id: '{{ disk_id }}'
+        state: '{{ state }}'
+      register: result
+    - debug: var=result
+
+
+# Example to delete disk
+- name: detach disk
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: us-west-1
+    disk_id: d-rj9j8a740966dhs3kbya
+    state: absent
+  tasks:
+    - name: detach disk
+      ecs_disk:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        disk_id: '{{ disk_id }}'
+        state: '{{ state }}'
+      register: result
+    - debug: var=result
+'''
 
 import time
 from ast import literal_eval   

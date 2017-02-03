@@ -26,9 +26,9 @@ ANSIBLE_METADATA = {'status': ['stableinterface'],
 DOCUMENTATION = '''
 ---
 module: ecs_group
-short_description: maintain an ecs VPC security group.
+short_description:  Create, Query or Delete Security Group
 description:
-    - maintains ecs security groups.
+    -  Create, Query or Delete Security Group
 
 common options:
   acs_access_key:
@@ -41,82 +41,89 @@ common options:
     required: false
     default: null
     aliases: []
-  state:
-    description: Create or delete a security group
+  status:
+    description: Create or delete or get information of a security group
     required: false
     default: present
-    choices: [ "present", "absent", "getinfo" ]
+    choices: ['present', 'absent', 'getinfo']
   region:
     description: The Alicloud region ID to use for the instance.
     required: true
     default: null
     aliases: [ 'acs_region', 'ecs_region' ]
 
-function create VPC group:
-  name:
+function create security group:  
+  security_group_name:
     description:
-      - Name of the security group.
-    required: true
-  description:
-    description:
-      - Description of the security group.
+      - The security group name
     required: false
+    default: null
+    aliases: [ 'name']
+  description:
+    description: 
+      - The description of the security group
+    required: false
+    default: null
+    aliases: []
   vpc_id:
-    description:
-      - ID of the VPC to create the group in.
+    description: 
+      - The ID of the VPC to which the security group belongs
     required: false
+    default: null
+    aliases: []
+  group_tags:
+    description: 
+      - A list of hash/dictionaries of security group tags
+    required: false
+    default: null
+    aliases: []
   group_id:
-  description:
-    - ID of the security group to authorize.
-  required: false
+    description: 
+      - A list of hash/dictionaries of security group tags
+    required: false
+    default: null
+    aliases: [ 'security_group_id' ]
   rules:
     description:
-      - List of firewall inbound rules to enforce in this group. If none are supplied, a default all-out rule is assumed.
-      If an empty list is supplied, no inbound rules will be enabled.
-        Each rule contains four attribute as follows:
-        - proto
-            description: IP protocal
-            choices: ["tcp", "udp", "icmp", "gre", "all"]
-            required: true
-        - from_port
-            description: start port
-            choices: depends on proto
-            required: true
-        - to_port
-            description: end port
-            choices: depends on proto
-            required: true
-        - cidr_ip
-            description: The IP address range based on CIDR.
-            required: false
-            default: 0.0.0.0/0
-    required: false
+      - List of firewall inbound rules to enforce in this group
+          - '[{"key":"value", "key":"value"}]'; keys allowed:
+            - ip_protocol (required:true; default:null, aliases:['proto']) - IP protocol, with a values: tcp | udp | icmp | gre | all
+            - port_range (required:true; default:null) - The range of port numbers relevant to the IP protocol
+            - source_group_id (required: false; default:null, aliases:['group_id']) - The security group ID. Either the source_group_id or cidr_ip parameter must be set
+            - source_group_owner_id (required: false; default:null, aliases:['group_owner_id']) - When the cross-user security group authorization, the source security group belongs to the user's Ali cloud account Id
+            - source_cidr_ip (required:false, default:null, aliases:['cidr_ip']) - The source IP address range (CIDR format is used to specify the IP address range). 
+            - policy (required:false; default:'accept') - Authorization policy, with parameter values: 'accept' and 'drop'
+            - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
+            - nic_type (required: false; default:null) - Network type, with a value internet or intranet
+          
   rules_egress:
     description:
-      - List of firewall outbound rules to enforce in this group. If none are supplied, a default all-out rule is assumed. If an empty list is supplied, no outbound rules will be enabled.
-        Each rule attributes (see rules)
-    required: false
-  group_tags:
-      description: - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
-      required: false
-      default: null
-      aliases: []
+      - List of firewall outbound rules to enforce in this group
+          - '[{"key":"value", "key":"value"}]'; keys allowed:
+            - ip_protocol (required:true; default:null, aliases:['proto']) - IP protocol, with a values: tcp | udp | icmp | gre | all
+            - port_range (required:true; default:null) - The range of port numbers relevant to the IP protocol
+            - dest_group_id (required: false; default:null, aliases:['group_id']) - The target security group ID within the same region. Either the dest_group_id or dest_cidr_ip must be set
+            - dest_group_owner_id (required: false; default:null, aliases:['group_owner_id']) - The Alibaba Cloud user account Id of the target security group when security groups are authorized across accounts
+            - dest_cidr_ip (required:false, default:null, aliases:['cidr_ip']) - The target IP address range (CIDR format is used to specify the IP address range).
+            - policy (required:false; default:'accept') - Authorization policy, with parameter values: 'accept' and 'drop'
+            - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
+            - nic_type (required: false; default:null) - Network type, with a value internet or intranet
 
 function delete a security group:
-  group_ids:
+  group_id:
     description:
-      - List of the security groups to delete.
+      - A list of security groups ids.
     required: true
     default: false
-    aliases: [security_group_ids]
+    aliases: [ 'security_group_id', 'group_ids', 'security_group_ids' ]
 
 function get security groups:
   group_id:
     description:
-      - Name of the security group.
+      - List of the security group ids
     required: true
-    default: false
-    aliases: [security_group_ids]
+    default: null
+    aliases: [ 'security_group_id', 'group_ids', 'security_group_ids' ]
   vpc_id:
     description:
       - The ID of the VPC to which the security group belongs.
@@ -124,56 +131,133 @@ function get security groups:
     default: false
 '''
 
-# TODO: Add Examples here
 EXAMPLES = '''
-- name: example ecs group
-  ecs_group:
-    name: example
-    description: an example EC2 group
-    vpc_id: 12345
-    region: eu-west-1a
-    acs_secret_access_key: SECRET
-    acs_access_key: ACCESS
-    rules:
-      - proto: tcp
-        from_port: 80
-        to_port: 80
-        cidr_ip: 0.0.0.0/0
-      - proto: tcp
-        from_port: 22
-        to_port: 22
-        cidr_ip: 10.0.0.0/8
-      - proto: tcp
-        from_port: 443
-        to_port: 443
-        group_id: amazon-elb/sg-87654321/amazon-elb-sg
-      - proto: tcp
-        from_port: 3306
-        to_port: 3306
-        group_id: 123412341234/sg-87654321/exact-name-of-sg
-      - proto: udp
-        from_port: 10050
-        to_port: 10050
-        cidr_ip: 10.0.0.0/8
-      - proto: udp
-        from_port: 10051
-        to_port: 10051
-        group_id: sg-12345678
-      - proto: icmp
-        from_port: 8 # icmp type, -1 = any type
-        to_port:  -1 # icmp subtype, -1 = any subtype
-        cidr_ip: 10.0.0.0/8
-      - proto: all
-        # the containing group name may be specified here
-        group_name: example
-    rules_egress:
-      - proto: tcp
-        from_port: 80
-        to_port: 80
-        cidr_ip: 0.0.0.0/0
-        group_name: example-other
-        # description to use if example-other needs to be created
-        group_desc: other example EC2 group
+#
+# Provisioning new Security Group
+#
+
+Basic provisioning example to create security group
+- name: create security group
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: cn-shenzhen
+  tasks:
+    - name: create security grp
+      ecs_group:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        security_group_name: 'AliyunSG'
+      register: result_details
+    - debug: var=result_details.group_id
+
+
+Basic provisioning example authorize security group
+- name: authorize security grp
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: cn-shenzhen
+  tasks:
+    - name: authorize security group
+      ecs_group:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        security_group_id: 'sg-wz98gmai3qwhpmlmw42'
+        region: '{{ region }}'
+        rules:
+          - ip_protocol: tcp
+            port_range: 1/122
+            source_cidr_ip: '10.159.6.18/12'
+        rules_egress:
+          - proto: all
+            port_range: -1/-1
+            dest_group_id: 'sg-wz98gmai3qwhpmlmw42c'
+            nic_type: intranet
+      register: result_details
+    - debug: var=result_details
+
+
+Provisioning example create and authorize security group
+- name: create and authorize security group
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: cn-shenzhen
+  tasks:
+    - name: create and authorize security grp
+      ecs_group:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        security_group_name: 'AliyunSG'
+        description: 'an example EC2 group'
+        region: '{{ region }}'
+        rules:
+          - ip_protocol: tcp
+            port_range: 1/122
+            source_cidr_ip: '10.159.6.18/12'
+            priority: 10
+            policy: drop
+            nic_type: intranet
+        rules_egress:
+          - proto: all
+            port_range: -1/-1
+            dest_group_id: 'sg-wz98gmai3qwhpmlmw42c'
+            group_owner_id: 'contact@click2cloud.net'
+            priority: 10
+            policy: accept
+            nic_type: intranet
+      register: result_details
+    - debug: var=result_details
+
+
+# Provisioning example to delete security group
+- name: delete security grp
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: us-west-1
+    security_group_ids:
+     - sg-rj9akooukwik6xil4n53
+    state: absent
+  tasks:
+    - name: delete security grp
+      ecs_group:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        security_group_ids: '{{ security_group_ids }}'
+        state: '{{ state }}'
+      register: result
+    - debug: var=result
+
+
+# Provisioning example to querying security group list
+- name: querying security group list
+  hosts: localhost
+  connection: local
+  vars:
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
+    region: cn-beijing
+    state: getinfo
+  tasks:
+    - name: Querying Security group list
+      ecs_group:
+        acs_access_key_id: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        state: '{{ state }}'
+      register: result
 '''
 
 # import module snippets
@@ -196,22 +280,20 @@ except ImportError:
     HAS_ECS = False
 
 
+
+
 def create_security_group(module, ecs, group_name, group_description, vpc_id, group_tags):
     """
-    create and authorize security group in ecs
-
+    create security group in ecs
     :param module: Ansible module object
     :param ecs: authenticated ecs connection object
-    :param group_name: Name of the security group
+    :param group_name: Name of the security group create
     :param group_description: Description of the security group
-    :param vpc_id: ID of a vpc to which an security group belongs.
+    :param vpc_id: ID of a vpc to which the security group belongs.
     :param group_tags:  A list of hash/dictionaries of group
             tags, '[{tag_key:"value", tag_value:"value"}]', tag_key
             must be not null when tag_value isn't null
-
-    :return: Returns a dictionary of group information about
-            the the group created/authorized. If the group was not
-            created and authorized, "changed" will be set to False.
+    :return: Returns changed state, newly created security group id and custom message.
     """
 
     try:
@@ -233,14 +315,14 @@ def create_security_group(module, ecs, group_name, group_description, vpc_id, gr
 def authorize_security_group(module, ecs, security_group_id=None, inbound_rules=None, outbound_rules=None,
                              add_to_fail_result=""):
     """
-
+    authorize security group in ecs
     :param module: Ansible module object
     :param ecs: authenticated ecs connection object
     :param security_group_id: Security Group Id for authorization
     :param inbound_rules: Inbound rules for authorization
     :param outbound_rules: Outbound rules for authorization
-    :param add_to_fail_result: Outbound rules for authorization
-    :return: returns the list of failures if any else returns the successful message
+    :param add_to_fail_result: message to add to failed message at the beginning, if two tasks are performed
+    :return: Returns changed state, security group id and custom message.
     """
     inbound_failed_rules = None
     outbound_failed_rules = None
@@ -262,12 +344,12 @@ def authorize_security_group(module, ecs, security_group_id=None, inbound_rules=
     return changed, security_group_id, result
 
 
-def validate_sg_rules(module, inbound_rules=None, outbound_rules=None):
+def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
     """
-
-    :param module:
-    :param inbound_rules:
-    :param outbound_rules:
+    Validate and format security group for inbound and outbound rules
+    :param module: Ansible module object
+    :param inbound_rules: Inbound rules for authorization to validate and format
+    :param outbound_rules: Outbound rules for authorization to validate and format
     :return:
     """
     # aliases for rule
@@ -350,19 +432,18 @@ def validate_sg_rules(module, inbound_rules=None, outbound_rules=None):
                                                  "you must specify the nic_type as intranet")
 
 
-def get_alias_value(dictionay, aliases):
+def get_alias_value(dictionary, aliases):
+    """
+    Get alias or key value from a dictionary
+    :param dictionary: a dictionary to check in for keys/aliases
+    :param aliases: list of aliases to find in dictionary to retrieve value
+    :return: returns value of found alias else None
     """
 
-    :param dictionay: a dictionary to check in for keys
-    :param param:
-    :param aliases:
-    :return:
-    """
-
-    if (dictionay and aliases) is not None:
+    if (dictionary and aliases) is not None:
         for alias in aliases:
-            if alias in dictionay:
-                return dictionay[alias]
+            if alias in dictionary:
+                return dictionary[alias]
         return None
     else:
         return None
@@ -371,7 +452,6 @@ def get_alias_value(dictionay, aliases):
 def get_security_status(module, ecs, vpc_id=None, group_ids=None):
     """
     Querying Security Group List returns the basic information about all user-defined security groups.
-
     :param module: Ansible module object
     :param ecs: authenticated ecs connection object
     :param vpc_id: ID of a vpc to which an security group belongs. If it is
@@ -396,11 +476,9 @@ def get_security_status(module, ecs, vpc_id=None, group_ids=None):
 def del_security_group(module, ecs, security_group_ids):
     """
     Delete Security Group , delete security group inside particular region.
-
     :param module: Ansible module object
     :param ecs: authenticated ecs connection object
     :param security_group_ids: The Security Group ID
-
     :return: result of after successfully deletion of security group
     """
     changed = False
