@@ -152,7 +152,7 @@ Basic provisioning example to create security group
         region: '{{ region }}'
         security_group_name: 'AliyunSG'
       register: result_details
-    - debug: var=result_details.group_id
+    - debug: var=result_details
 
 
 Basic provisioning example authorize security group
@@ -168,7 +168,7 @@ Basic provisioning example authorize security group
       ecs_group:
         acs_access_key_id: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
-        security_group_id: 'sg-wz98gmai3qwhpmlmw42'
+        security_group_id: xxxxxxxxxx
         region: '{{ region }}'
         rules:
           - ip_protocol: tcp
@@ -177,7 +177,7 @@ Basic provisioning example authorize security group
         rules_egress:
           - proto: all
             port_range: -1/-1
-            dest_group_id: 'sg-wz98gmai3qwhpmlmw42c'
+            dest_group_id: xxxxxxxxxx
             nic_type: intranet
       register: result_details
     - debug: var=result_details
@@ -197,7 +197,7 @@ Provisioning example create and authorize security group
         acs_access_key_id: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         security_group_name: 'AliyunSG'
-        description: 'an example EC2 group'
+        description: 'an example ECS group'
         region: '{{ region }}'
         rules:
           - ip_protocol: tcp
@@ -209,8 +209,8 @@ Provisioning example create and authorize security group
         rules_egress:
           - proto: all
             port_range: -1/-1
-            dest_group_id: 'sg-wz98gmai3qwhpmlmw42c'
-            group_owner_id: 'contact@click2cloud.net'
+            dest_group_id: xxxxxxxxxx
+            group_owner_id: xxxxxxxxxx
             priority: 10
             policy: accept
             nic_type: intranet
@@ -227,8 +227,8 @@ Provisioning example create and authorize security group
     acs_secret_access_key: xxxxxxxxxx
     region: us-west-1
     security_group_ids:
-     - sg-rj9akooukwik6xil4n53
-    state: absent
+     - xxxxxxxxxx
+    status: absent
   tasks:
     - name: delete security grp
       ecs_group:
@@ -236,7 +236,7 @@ Provisioning example create and authorize security group
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         security_group_ids: '{{ security_group_ids }}'
-        state: '{{ state }}'
+        status: '{{ status }}'
       register: result
     - debug: var=result
 
@@ -249,14 +249,14 @@ Provisioning example create and authorize security group
     acs_access_key: xxxxxxxxxx
     acs_secret_access_key: xxxxxxxxxx
     region: cn-beijing
-    state: getinfo
+    status: getinfo
   tasks:
     - name: Querying Security group list
       ecs_group:
         acs_access_key_id: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
-        state: '{{ state }}'
+        status: '{{ status }}'
       register: result
 '''
 
