@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+#
 # Copyright 2017 Alibaba Group Holding Limited.
 #
 # This file is part of Ansible
@@ -16,6 +16,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
+
+ANSIBLE_METADATA = {'status': ['stableinterface'],
+                    'supported_by': 'core',
+                    'version': '1.0'}
 
 DOCUMENTATION = '''
 ---
@@ -73,12 +77,14 @@ function: Create a disk in ECS
       default: False
       aliases: [ 'volume_size', 'disk_size' ]
     disk_tags:
-      description: A list of hash/dictionaries of disk tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
+      description: A list of hash/dictionaries of disk tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be
+                   not null when tag_value isn't null
       required: false
       default: null
       aliases: [ 'tags' ]
     snapshot_id:
-      description: volume_type (str), iops (int) - device_type is deprecated use volume_type, iops must be set when volume_type='io1', ephemeral and snapshot are mutually exclusive.
+      description: volume_type (str), iops (int) - device_type is deprecated use volume_type, iops must be set when
+                   volume_type='io1', ephemeral and snapshot are mutually exclusive.
       required: false
       default: null
       aliases: [ 'snapshot' ]
@@ -325,9 +331,13 @@ def create_disk(module, ecs, zone_id, disk_name, description,
     """
 
     changed = False
+    if not zone_id:
+        module.fail_json(msg='zone_id is required for new disk')
+
     try:
-        changed, disk_id, result = ecs.create_disk(zone_id=zone_id, disk_name=disk_name, description=description, disk_category=disk_category,
-                                 size=size, disk_tags=disk_tags, snapshot_id=snapshot_id, count=count)
+        changed, disk_id, result = ecs.create_disk(zone_id=zone_id, disk_name=disk_name,
+                                                   description=description, disk_category=disk_category, size=size,
+                                                   disk_tags=disk_tags, snapshot_id=snapshot_id, count=count)
        
         if 'error' in (''.join(str(result))).lower():
             module.fail_json(changed=changed, disk_id=disk_id, msg=result)
@@ -353,9 +363,44 @@ def attach_disk(module, ecs, disk_id, instance_id, device, delete_with_instance)
     :return: return status of operation
     """
     changed = False
+    if not instance_id:
+        module.fail_json(msg='instance_id is required to attach disk')
+        
+    if not disk_id:
+        module.fail_json(msg='disk id is required to attach disk')
+
+    if delete_with_instance:
+        if delete_with_instance.strip().lower() == "true":
+            delete_with_instance = delete_with_instance.strip().lower()
+        elif delete_with_instance.strip().lower() == "false":
+            delete_with_instance = delete_with_instance.strip().lower()
+        elif delete_with_instance.strip().lower() == "yes":
+            delete_with_instance = "true"
+        elif delete_with_instance.strip().lower() == "no":
+            delete_with_instance = "false"
+        else:
+            delete_with_instance = None
+            
+    if delete_with_instance:
+        delete_with_instance = delete_with_instance.strip().lower()
+
+    if device:
+        device = str(device).lower().strip()
+        if len(device) == 9:
+            first = device[0:8]
+            last = device[8:9]
+    
+            if first != '/dev/xvd':
+                module.fail_json(msg='device should be in proper format', operation='attach_disk')
+            if "bcdefghijklmnopqrstuvwxyz".find(last) == -1:
+                module.fail_json(msg='device should be in proper format, /dev/xvdb .. /dev/xvdz',
+                                 operation='attach_disk')
+        else:
+            module.fail_json(msg='device should be in proper format, /dev/xvdb .. /dev/xvdz', operation='attach_disk')
+
     try:
         changed, result = ecs.attach_disk(disk_id=disk_id, instance_id=instance_id, device=device,
-                                        delete_with_instance=delete_with_instance)
+                                          delete_with_instance=delete_with_instance)
 
         if 'error code' in str(result).lower():
             module.fail_json(msg=result)
@@ -371,10 +416,12 @@ def detach_disk(module, ecs, disk_id):
     :param module: Ansible module object
     :param ecs: authenticated ecs connection object
     :param disk_id:  ID of Disk to Detach
-    :param instance_id:  ID of an instance from disk detach
     :return: return status of operation
     """
-    changed = False
+    changed = False            
+    if not disk_id:
+        module.fail_json(msg='disk id is required to detach disk')
+
     try:
         changed, result, instance_id = ecs.detach_disk(disk_id=disk_id)
         if 'error code' in (''.join(str(result))).lower():
@@ -396,6 +443,8 @@ def delete_disk(module, ecs, disk_id):
     :return: return status of operation
     """
     changed = False
+    if not disk_id:
+        module.fail_json(msg='disk id is required to delete disk')
     try:
         changed, result = ecs.delete_disk(disk_id=disk_id)
         if 'error code' in (''.join(str(result))).lower():
@@ -412,7 +461,7 @@ def main():
         print("ecsutils required for this module")
         sys.exit(1) 
     elif HAS_FOOTMARK is False:
-        print("Footmark required for this module")
+        print("footmark required for this module")
         sys.exit(1)  
     else:    
         argument_spec = ecs_argument_spec()
@@ -446,7 +495,6 @@ def main():
             len_instance = 0
             len_disk = 0
             operation_flag = ''
-        
 
             if instance_id:
                 len_instance = len(instance_id.strip())
@@ -455,19 +503,19 @@ def main():
                 len_disk = len(disk_id.strip())
 
             if not instance_id:
-                if (disk_id is None or len_disk == 0): 
+                if disk_id is None or len_disk == 0:
                     operation_flag = 'present'
-                elif (disk_id is not None or len_disk > 0):
+                elif disk_id is not None or len_disk > 0:
                     operation_flag = 'detach'
-            elif (instance_id is not None or len_instance > 0): 
-                if(disk_id is not None or len_disk > 0):
+            elif instance_id is not None or len_instance > 0:
+                if disk_id is not None or len_disk > 0:
                     operation_flag = 'attach'
 
             if operation_flag == '':
                 module.fail_json(msg='To attach disk: instance_id and disk_id both parameters are required.'
                                      ' To detach disk: only disk_id is to be sent.'
                                      ' To create disk: disk_id and instance_id both are not to be sent.',
-                                 instance_id=instance_id,disk_id=disk_id)
+                                 instance_id=instance_id, disk_id=disk_id)
 
             if operation_flag == 'present':
                 # create disk parameter values
@@ -482,8 +530,6 @@ def main():
                 # create disk parameter values end
 
                 # performing operation create disk
-                if not zone_id:
-                    module.fail_json(msg='zone_id is required for new disk')
             
                 new_instance_ids = []
                 changed, disk_id, instance_dict_array = create_disk(module, ecs, zone_id, disk_name,
@@ -497,60 +543,24 @@ def main():
                 device = module.params['device']
 
                 # performing operation attach disk to instance
-                if not instance_id:
-                    module.fail_json(msg='instance_id is required to attach disk')
-        
-                if not disk_id:
-                    module.fail_json(msg='disk id is required to attach disk')
-
-                if delete_with_instance:
-                    if  delete_with_instance.strip().lower() == "true":
-                        delete_with_instance = delete_with_instance.strip().lower()
-                    elif  delete_with_instance.strip().lower() == "false":
-                        delete_with_instance = delete_with_instance.strip().lower()
-                    elif delete_with_instance.strip().lower() == "yes":
-                        delete_with_instance = "true"
-                    elif delete_with_instance.strip().lower() == "no":
-                        delete_with_instance = "false"
-                    else:
-                        delete_with_instance = None
-            
-                if delete_with_instance:
-                    delete_with_instance = delete_with_instance.strip().lower()
-
-                if device:
-                    device = str(device).lower().strip()
-                    if len(device)==9:
-                        first = device[0:8]
-                        last = device[8:9]
-    
-                        if first != '/dev/xvd':
-                            module.fail_json(msg='device should be in proper format', operation='attach_disk')
-                        if "bcdefghijklmnopqrstuvwxyz".find(last) == -1:
-                            module.fail_json(msg='device should be in proper format, /dev/xvdb .. /dev/xvdz', operation='attach_disk')
-                    else:
-                        module.fail_json(msg='device should be in proper format, /dev/xvdb .. /dev/xvdz', operation='attach_disk')
 
                 instance_dict_array = []
                 new_instance_ids = []
             
-                (changed, result, disk_id, instance_id) = attach_disk(module, ecs, disk_id, instance_id, device, delete_with_instance)
-                module.exit_json(changed=changed, result=result, disk_id=disk_id, instance_id=instance_id, operation='attach_disk')
+                (changed, result, disk_id, instance_id) = attach_disk(module, ecs, disk_id, instance_id, device,
+                                                                      delete_with_instance)
+                module.exit_json(changed=changed, result=result, disk_id=disk_id, instance_id=instance_id,
+                                 operation='attach_disk')
                
             elif operation_flag == 'detach':
                 # performing operation detach disk from instance
                 # instance_id is to be retreived in call
-            
-                if not disk_id:
-                    module.fail_json(msg='disk id is required to detach disk')
 
                 (changed, result, instance_id) = detach_disk(module=module, ecs=ecs, disk_id=disk_id)
                 module.exit_json(changed=changed, result=result, instance_id=instance_id, disk_id=disk_id)
 
         elif status == 'absent':
             # performing operation delete disk
-            if not disk_id:
-                module.fail_json(msg='disk id is required to delete disk')
 
             (changed, result) = delete_disk(module=module, ecs=ecs, disk_id=disk_id)
             module.exit_json(changed=changed, result=result, disk_id=disk_id)

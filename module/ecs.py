@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+#
 # Copyright 2017 Alibaba Group Holding Limited.
 #
 # This file is part of Ansible
@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
-
 
 ANSIBLE_METADATA = {'status': ['stableinterface'],
                     'supported_by': 'core',
@@ -95,7 +94,7 @@ function: create instance
       default: null
       aliases: []
     description:
-      description: Descripton of the instance to use.
+      description: Description of the instance to use.
       required: false
       default: null
       aliases: []
@@ -204,7 +203,7 @@ function: create instance
 
 
 function: start, stop, restart, terminate instance
-  description: start, stop, restart and terminate instancesin ecs
+  description: start, stop, restart and terminate instances in ecs
   options:
     instance_ids:
       description: A list of instance ids, currently used for states: running, stopped, restarted, absent
@@ -217,7 +216,8 @@ function: start, stop, restart, terminate instance
       default: False
       aliases: []
     instance_tags:
-      description: - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
+      description: - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]',
+                    tag_key must be not null when tag_value isn't null
       required: false
       default: null
       aliases: []
@@ -358,7 +358,7 @@ EXAMPLES = '''
     instance_type: ecs.n1.small
     group_id: xxxxxxxxxx
     host_name: myhost
-    password: Admin123
+    password:
   tasks:
     - name: tagging and host name password
       ecs:
@@ -626,21 +626,21 @@ EXAMPLES = '''
 '''
 
 import time
-from ast import literal_eval   
-
+from ast import literal_eval
 import sys
+
 HAS_ECS = False
 HAS_FOOTMARK = False
 
 try:
-    from footmark.exception import ECSResponseError 
-    HAS_FOOTMARK = True    
+    from footmark.exception import ECSResponseError
+    HAS_FOOTMARK = True
 except ImportError:
-    HAS_FOOTMARK = False    
+    HAS_FOOTMARK = False
 
 try:
-    from ecsutils.ecs import * 
-    HAS_ECS = True 
+    from ecsutils.ecs import *
+    HAS_ECS = True
 except ImportError:
     HAS_ECS = False
 
@@ -660,14 +660,12 @@ def get_instance_info(inst):
                      'instance_type': inst.instance_type,
                      'state': inst.state,
                      'tags': inst.tags,
-                     # 'groups': dict((group.id, group.name) for group in inst.groups),
-                     # 'groups': dict((group, group) for group in inst.groups),
                      'vpc_id': inst.vpc_id,
                      'subnet_id': inst.subnet_id,
                      'vpc_private_ip': inst.vpc_private_ip,
                      'eip': inst.eip,
                      'io_optimized': inst.io_optimized
-    }
+                     }
     try:
         bdm_dict = {}
         bdm = getattr(inst, 'block_device_mapping')
@@ -682,7 +680,7 @@ def get_instance_info(inst):
         instance_info['block_device_mapping'] = False
 
     return instance_info
- 
+
 
 def get_instances(module, ecs, instance_ids):
     """
@@ -708,7 +706,7 @@ def get_instances(module, ecs, instance_ids):
         changed = True
 
     # C2C : Commented printing on to console as it causing error from ansible
-    #print(instance_dict_array)
+    # print(instance_dict_array)
     return (changed, instance_dict_array, instance_ids)
 
 
@@ -804,7 +802,7 @@ def startstop_instances(module, ecs, instance_ids, state, instance_tags):
             changed = True
 
     return (changed, instance_dict_array, instance_ids)
- 
+
 
 def create_instance(module, ecs, image_id, instance_type, group_id, zone_id, instance_name, description, internet_data,
                     host_name, password, io_optimized, system_disk, disks, vswitch_id, private_ip, count,
@@ -841,13 +839,13 @@ def create_instance(module, ecs, image_id, instance_type, group_id, zone_id, ins
         and SystemDiskDescription
     :param disks: A list of hash/dictionaries of volumes to add to
         the new instance
-    :param vswitch_id: When launching an instance in VPC, the virtual     
+    :param vswitch_id: When launching an instance in VPC, the virtual
         switch ID must be specified
     :param private_ip: Private IP address of the instance, which cannot be specified separately.
     :param count: The number of the new instance.
     :param allocate_public_ip: Whether allocate a public ip for the
         new instance
-    :param bind_eip: A list elastic public ips bind to the new instance
+    :param bind_eip: An elastic public ip bind to the new instance
     :param instance_charge_type: instance charge type
     :param period: The time that you have bought the resource,in month. Only valid when InstanceChargeType is set as
         PrePaid. Value range: 1 to 12
@@ -870,8 +868,41 @@ def create_instance(module, ecs, image_id, instance_type, group_id, zone_id, ins
     """
 
     changed = False
+    # check whether the required parameter passed or not
+    if not image_id:
+        module.fail_json(msg='image_id is required for new instance')
+    if not instance_type:
+        module.fail_json(msg='instance_type is required for new instance')
+
+    # allow only upto four data_disks or volume
+    if disks:
+        if len(disks) > 4:
+            module.fail_json(msg='more than four volumes or disk are not allowed.')
+
+    if vswitch_id:
+        # Allocating public ip is not supported with vpc n/w type
+        if allocate_public_ip:
+            module.fail_json(
+                msg='allocating public ip address is not allowed as specified instance is configured in VPC.')
+    else:
+        # Associating elastic ip binding is not supported for classic n/w type
+        if bind_eip:
+            module.fail_json(
+                msg='associating elastic ip address is not allowed as specified instance is not configured in VPC.')
+
+    # Restrict Instance Count
+    if int(count) > 99:
+        module.fail_json(
+            msg='count value for creating instance is not allowed.')
+
+    # Restrict when length of ids not equal to count
+    if ids:
+        if len(ids) != count:
+            module.fail_json(
+                msg='length of ids should be equal to count.')
+
     try:
-        # call to CreateInstance method in Footmark
+        # call to create_instance method from footmark
         changed, result = ecs.create_instance(image_id=image_id, instance_type=instance_type, group_id=group_id,
                                               zone_id=zone_id, instance_name=instance_name, description=description,
                                               internet_data=internet_data, host_name=host_name, password=password,
@@ -905,9 +936,17 @@ def modify_instance(module, ecs, attributes):
         instance_ids: returns a list of the instance_ids modified
         result: detailed server response
     """
-
     changed = False
- 
+    # check whether the required parameter passed or not
+    if attributes:
+        for attr in attributes:
+            if attr:
+                if 'id' not in attr:
+                    module.fail_json(msg='instance_id is required for modify instance')
+    else:
+        module.fail_json(msg='attributes is required for modify instance')
+
+    # call modify_instance method from footmark
     try:
         changed, result = ecs.modify_instance(attributes=attributes)
 
@@ -923,11 +962,11 @@ def modify_instance(module, ecs, attributes):
     except ECSResponseError as e:
         module.fail_json(msg='Unable to modify instance, error: {0}'.format(e))
     return changed, instance_ids, result
- 
+
 
 def get_instance_status(module, ecs, zone_id=None, pagenumber=None, pagesize=None):
     """
-    Get status of an instance
+    Get list of instance with their status from zone
     :param module: Ansible module object
     :param ecs: authenticated ecs connection object
     :param zone_id: ID of a zone to which an instance belongs.
@@ -946,10 +985,10 @@ def get_instance_status(module, ecs, zone_id=None, pagenumber=None, pagesize=Non
             module.fail_json(changed=changed, msg=result)
 
     except ECSResponseError as e:
-        module.fail_json(msg='Unable to get status of instance(s), error: {0}'.format(e))          
+        module.fail_json(msg='Unable to get status of instance(s), error: {0}'.format(e))
 
     return changed, result
- 
+
 
 def join_security_group(module, ecs, instance_ids, security_group_id):
     """
@@ -963,8 +1002,20 @@ def join_security_group(module, ecs, instance_ids, security_group_id):
         result: detailed server response
     """
     changed = False
+    # check whether the required parameter passed or not
+    if not instance_ids:
+        module.fail_json(msg='instance_id is required to join to new security group')
+
+    if not isinstance(instance_ids, list):
+        module.fail_json(msg='instance_id must be a list')
+
+    if not security_group_id:
+        module.fail_json(msg='group_id is required to join to new security group')
+
+    # call join_security_group method from footmark
     try:
-        changed, result, success_instance_ids, failed_instance_ids  = ecs.join_security_group(instance_ids, security_group_id);
+        changed, result, success_instance_ids, failed_instance_ids = ecs.join_security_group(instance_ids,
+                                                                                             security_group_id)
 
         flag = 0
         if len(result) > 0:
@@ -974,16 +1025,17 @@ def join_security_group(module, ecs, instance_ids, security_group_id):
         else:
             flag = 1
 
-        if len(success_instance_ids)==0:
-                success_instance_ids = None
-        if len(failed_instance_ids)==0:
-                failed_instance_ids = None
-        
+        if len(success_instance_ids) == 0:
+            success_instance_ids = None
+        if len(failed_instance_ids) == 0:
+            failed_instance_ids = None
+
         if flag == 1:
-            module.fail_json(msg=result, group_id=security_group_id, success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
+            module.fail_json(msg=result, group_id=security_group_id, success_instance_ids=success_instance_ids,
+                             failed_instance_ids=failed_instance_ids)
     except ECSResponseError as e:
         module.fail_json(msg='Unable to add instance to security group, error: {0}'.format(e))
-    
+
     return changed, result, success_instance_ids, failed_instance_ids, security_group_id
 
 
@@ -999,9 +1051,18 @@ def leave_security_group(module, ecs, instance_ids, security_group_id):
         result: detailed server response
     """
     changed = False
-    try:
-        changed, result, success_instance_ids, failed_instance_ids = ecs.leave_security_group(instance_ids, security_group_id);
+    # check whether the required parameter passed or not
+    if not instance_ids:
+        module.fail_json(msg='instance_ids is required to leave from security group')
+    if not isinstance(instance_ids, list):
+        module.fail_json(msg='instance_id must be a list')
+    if not security_group_id:
+        module.fail_json(msg='group_id is required to leave from an existing security group')
 
+    # call leave_security_group method from footmark
+    try:
+        changed, result, success_instance_ids, failed_instance_ids = ecs.leave_security_group(instance_ids,
+                                                                                              security_group_id)
         flag = 0
         if len(result) > 0:
             for item in result:
@@ -1010,27 +1071,28 @@ def leave_security_group(module, ecs, instance_ids, security_group_id):
         else:
             flag = 1
 
-        if len(success_instance_ids)==0:
-                success_instance_ids = None
-        if len(failed_instance_ids)==0:
-                failed_instance_ids = None
+        if len(success_instance_ids) == 0:
+            success_instance_ids = None
+        if len(failed_instance_ids) == 0:
+            failed_instance_ids = None
 
         if flag == 1:
-            module.fail_json(msg=result, group_id=security_group_id, success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
+            module.fail_json(msg=result, group_id=security_group_id, success_instance_ids=success_instance_ids,
+                             failed_instance_ids=failed_instance_ids)
     except ECSResponseError as e:
         module.fail_json(msg='Unable to remove instance from security group, error: {0}'.format(e))
-    
+
     return changed, result, success_instance_ids, failed_instance_ids, security_group_id
- 
+
 
 def main():
     if HAS_ECS is False:
         print("ecsutils required for this module")
-        sys.exit(1) 
+        sys.exit(1)
     elif HAS_FOOTMARK is False:
-        print("Footmark required for this module")
-        sys.exit(1)  
-    else: 
+        print("footmark required for this module")
+        sys.exit(1)
+    else:
         argument_spec = ecs_argument_spec()
         argument_spec.update(dict(
             group_id=dict(),
@@ -1049,14 +1111,14 @@ def main():
             force=dict(type='bool', default=False),
             instance_tags=dict(type='list', aliases=['tags']),
             status=dict(default='present', aliases=['state'], choices=['present', 'running', 'stopped', 'restarted',
-                                                                       'absent', 'getinfo',  'getstatus']),
+                                                                       'absent', 'getinfo', 'getstatus']),
             description=dict(),
             allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
-            bind_eip=dict(type='list'),
+            bind_eip=dict(),
             instance_charge_type=dict(default='PostPaid'),
             period=dict(type='int'),
             auto_renew=dict(type='bool', default=False),
-            ids=dict(type='list',  aliases=['id']),
+            ids=dict(type='list', aliases=['id']),
             attributes=dict(type='list'),
             pagenumber=dict(type='int', default='1'),
             pagesize=dict(type='int', default='10'),
@@ -1068,12 +1130,11 @@ def main():
             wait=dict(default='no', choices=['yes', 'Yes', 'no', 'No', "True", "False", "true", "false"]),
             wait_timeout=dict(type='int', default='300')
         )
-        )	
+        )
         module = AnsibleModule(argument_spec=argument_spec)
 
-        ecs = ecs_connect(module)      
-        region, acs_connect_kwargs = get_acs_connection_info(module)  
-        tagged_instances = []                     
+        ecs = ecs_connect(module)
+        tagged_instances = []
         status = module.params['status']
 
         if status == 'absent':
@@ -1092,75 +1153,50 @@ def main():
                 module.fail_json(
                     msg='running list needs to be a list of instances or set of tags to run: %s' % instance_ids)
 
-            (changed, instance_dict_array, new_instance_ids) = startstop_instances(module, ecs, instance_ids, state,
+            (changed, instance_dict_array, new_instance_ids) = startstop_instances(module, ecs, instance_ids, status,
                                                                                    instance_tags)
             module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array,
                              tagged_instances=tagged_instances)
 
         elif status == 'present':
             # Join and leave security group is handled in state present
+            # if sg_action parameter is absent then create new instance will begin
             # region Security Group join/leave begin
             sg_action = module.params['sg_action']
-            # if sg_action parameter is absent then create new instance will begin
+            attributes = module.params['attributes']
+
             if sg_action:
+                instance_ids = module.params['instance_id']
+                security_group_id = module.params['group_id']
+
                 if sg_action.strip().lower() == 'join':
-                    # code for join security group begins
-                    instance_ids = module.params['instance_id']
-                
-                    if not instance_ids:
-                        module.fail_json(msg='instance_id is required to join to new security group')
+                    # Adding an Instance to a Security Group
+                    (changed, result, success_instance_ids, failed_instance_ids, security_group_id) = \
+                        join_security_group(module, ecs, instance_ids, security_group_id)
 
-                    if not isinstance(instance_ids,list):
-                        module.fail_json(msg='instance_id must be a list')
+                    module.exit_json(changed=changed, result=result, group_id=security_group_id,
+                                     success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
 
-                    security_group_id = module.params['group_id']
-                    if not security_group_id:
-                        module.fail_json(msg='group_id is required to join to new security group')
-
-                    instance_dict_array = []
-                    (changed, result, success_instance_ids, failed_instance_ids, security_group_id) = join_security_group(module, ecs, instance_ids, security_group_id)
-
-                    module.exit_json(changed=changed, result=result, group_id=security_group_id, success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
-                
                 elif sg_action.strip().lower() == 'leave':
-                    # code for leave security group begins
-                    instance_ids = module.params['instance_id']
-                
-                    if not instance_ids:
-                        module.fail_json(msg='instance_ids is required to leave from security group')
+                    # Removing an Instance from a Security Group
+                    (changed, result, success_instance_ids, failed_instance_ids, security_group_id) = \
+                        leave_security_group(module, ecs, instance_ids, security_group_id)
 
-                    if not isinstance(instance_ids,list):
-                        module.fail_json(msg='instance_id must be a list')
-
-                    security_group_id = module.params['group_id']
-                    if not security_group_id:
-                        module.fail_json(msg='group_id is required to leave from an existing security group')
-
-                    instance_dict_array = []
-                    (changed, result, success_instance_ids, failed_instance_ids, security_group_id) = leave_security_group(module, ecs, instance_ids, security_group_id)
-
-                    module.exit_json(changed=changed, result=result,  group_id=security_group_id, success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
+                    module.exit_json(changed=changed, result=result, group_id=security_group_id,
+                                     success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
                 else:
-                    module.fail_json(msg='To perform join_security_group or leave_security_group operation, sg_action must be either join or leave respectively')
+                    module.fail_json(msg='To perform join_security_group or leave_security_group operation, '
+                                         'sg_action must be either join or leave respectively')
             # region Security Group join/leave ends here
+            elif attributes:
+                # Modifying Instance Attributes
+                changed, instance_ids, result = modify_instance(module, ecs, attributes)
+                module.exit_json(changed=changed, instance_ids=instance_ids, result=result)
             else:
-                # create new instance begins
-                if module.params['region']: 
-                    region = module.params['region']
-
-                if not region:
-                    module.fail_json(msg='region is required for new instance')
-
+                # Create New Instance
                 zone_id = module.params['zone_id']
-
                 image_id = module.params['image_id']
-                if not image_id:
-                    module.fail_json(msg='image_id is required for new instance')
-
                 instance_type = module.params['instance_type']
-                if not instance_type:
-                    module.fail_json(msg='instance_type is required for new instance')
-
                 group_id = module.params['group_id']
                 io_optimized = module.params['io_optimized']
                 vswitch_id = module.params['vswitch_id']
@@ -1184,39 +1220,11 @@ def main():
                 wait = module.params['wait']
                 wait_timeout = module.params['wait_timeout']
 
-                # allow only upto four data_disks or volume
-                if disks:
-                    if len(disks) > 4:
-                        module.fail_json(
-                            msg='more than four volumes or disk are not allowed.')
-
-                if vswitch_id:
-                    # Allocating public ip is not supported with vpc n/w type
-                    if allocate_public_ip:
-                        module.fail_json(
-                            msg='allocating public ip address is not allowed as specified instance is configured in VPC.')
-                else:
-                    # Associating elastic ip binding is not supported for classic n/w type
-                    if bind_eip:
-                        module.fail_json(
-                            msg='associating elastic ip address is not allowed as specified instance is not configured in '
-                                'VPC.')
-
-                # Restrict Instance Count
-                if int(count) > 99:
-                    module.fail_json(
-                        msg='count value for creating instance is not allowed.')
-
-                # Restrict when length of ids not equal to count
-                if ids:
-                    if len(ids) != count:
-                        module.fail_json(
-                            msg='length of ids should be equal to count.')
-
-                (changed, result) = create_instance(module=module, ecs=ecs, image_id=image_id, instance_type=instance_type,
-                                                    group_id=group_id, zone_id=zone_id, instance_name=instance_name,
-                                                    description=description, internet_data=internet_data,
-                                                    host_name=host_name, password=password, io_optimized=io_optimized,
+                (changed, result) = create_instance(module=module, ecs=ecs, image_id=image_id,
+                                                    instance_type=instance_type, group_id=group_id, zone_id=zone_id,
+                                                    instance_name=instance_name, description=description,
+                                                    internet_data=internet_data, host_name=host_name,
+                                                    password=password, io_optimized=io_optimized,
                                                     system_disk=system_disk, disks=disks, vswitch_id=vswitch_id,
                                                     private_ip=private_ip, count=count,
                                                     allocate_public_ip=allocate_public_ip, bind_eip=bind_eip,
@@ -1224,24 +1232,12 @@ def main():
                                                     auto_renew=auto_renew, auto_renew_period=auto_renew_period,
                                                     instance_tags=instance_tags, ids=ids, wait=wait,
                                                     wait_timeout=wait_timeout)
-
                 module.exit_json(changed=changed, result=result)
-
-        elif status == 'present':
-            attributes = module.params['attributes']
-        
-            if attributes:
-                if not id:
-                    module.fail_json(msg='instance_id is required for modify instance')
-
-            changed, instance_ids, result = modify_instance(module, ecs, attributes)
-            module.exit_json(changed=changed, instance_ids=instance_ids, result=result)
 
         elif status == 'getinfo':
             instance_ids = module.params['instance_ids']
 
             (changed, instance_dict_array, new_instance_ids) = get_instances(module, ecs, instance_ids)
-
             module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array,
                              tagged_instances=tagged_instances)
 
@@ -1252,10 +1248,11 @@ def main():
 
             (changed, result) = get_instance_status(module, ecs, zone_id, pagenumber, pagesize)
             module.exit_json(changed=changed, result=result)
-        
+
 
 # import module snippets
 from ansible.module_utils.basic import *
+
 # from ansible.module_utils.ecs import *
 
 # import ECSConnection

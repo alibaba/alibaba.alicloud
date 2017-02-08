@@ -6,19 +6,21 @@
 # All rights reserved.
 
 import os
-from time import sleep
-
+import sys
 import footmark.ecs
+
 
 class AnsibleACSError(Exception):
     pass
 
+
 def acs_common_argument_spec():
     return dict(
         acs_secret_access_key=dict(aliases=['ecs_secret_key', 'secret_key']),
-        acs_access_key_id=dict(aliases=['ecs_access_key', 'access_key']),
+        acs_access_key=dict(aliases=['ecs_access_key', 'access_key']),
         security_token=dict(aliases=['access_token'], no_log=True),
     )
+
 
 def ecs_argument_spec():
     spec = acs_common_argument_spec()
@@ -29,11 +31,15 @@ def ecs_argument_spec():
     )
     return spec
 
+
 def get_acs_connection_info(module):
-    '''
+    """
     Check module args for credentials, then check environment vars access_key
-    '''
-    access_key = module.params.get('acs_access_key_id')
+    :param module: Ansible module
+    :return:
+    """
+
+    access_key = module.params.get('acs_access_key')
     secret_key = module.params.get('acs_secret_access_key')
     security_token = module.params.get('security_token')
     region = module.params.get('region')
@@ -47,7 +53,7 @@ def get_acs_connection_info(module):
             access_key = os.environ['ECS_ACCESS_KEY']
         else:
             # in case access_key came in as empty string
-            access_key = None
+            module.fail_json(msg="access key is required")
 
     if not secret_key:
         if 'ACS_SECRET_ACCESS_KEY' in os.environ:
@@ -58,7 +64,7 @@ def get_acs_connection_info(module):
             secret_key = os.environ['ECS_SECRET_KEY']
         else:
             # in case secret_key came in as empty string
-            secret_key = None
+            module.fail_json(msg="access secret key is required")
 
     if not region:
         if 'ACS_REGION' in os.environ:
@@ -68,7 +74,7 @@ def get_acs_connection_info(module):
         elif 'ECS_REGION' in os.environ:
             region = os.environ['ECS_REGION']
         else:
-            region = None
+            module.fail_json(msg="region is required")
 
     if not security_token:
         if 'ACS_SECURITY_TOKEN' in os.environ:
@@ -83,14 +89,18 @@ def get_acs_connection_info(module):
 
     return region, ecs_params
 
+
 def connect_to_acs(acs_module, region, **params):
-    conn = acs_module.connect_to_region(region, **params)
+    conn = acs_module.connect_to_region(region, **params)     
     if not conn:
         if region not in [acs_module_region.id for acs_module_region in acs_module.regions()]:
-            raise AnsibleACSError("Region %s does not seem to be available for acs module %s." % (region, acs_module.__name__))
+            raise AnsibleACSError(
+                "Region %s does not seem to be available for acs module %s." % (region, acs_module.__name__))
         else:
-            raise AnsibleACSError("Unknown problem connecting to region %s for acs module %s." % (region, acs_module.__name__))
+            raise AnsibleACSError(
+                "Unknown problem connecting to region %s for acs module %s." % (region, acs_module.__name__))
     return conn
+
 
 def ecs_connect(module):
     """ Return an ecs connection"""

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+#
 # Copyright 2017 Alibaba Group Holding Limited.
 #
 # This file is part of Ansible
@@ -77,12 +77,6 @@ function create security group:
     required: false
     default: null
     aliases: []
-  group_id:
-    description: 
-      - A list of hash/dictionaries of security group tags
-    required: false
-    default: null
-    aliases: [ 'security_group_id' ]
   rules:
     description:
       - List of firewall inbound rules to enforce in this group
@@ -96,6 +90,39 @@ function create security group:
             - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
             - nic_type (required: false; default:null) - Network type, with a value internet or intranet
           
+  rules_egress:
+    description:
+      - List of firewall outbound rules to enforce in this group
+          - '[{"key":"value", "key":"value"}]'; keys allowed:
+            - ip_protocol (required:true; default:null, aliases:['proto']) - IP protocol, with a values: tcp | udp | icmp | gre | all
+            - port_range (required:true; default:null) - The range of port numbers relevant to the IP protocol
+            - dest_group_id (required: false; default:null, aliases:['group_id']) - The target security group ID within the same region. Either the dest_group_id or dest_cidr_ip must be set
+            - dest_group_owner_id (required: false; default:null, aliases:['group_owner_id']) - The Alibaba Cloud user account Id of the target security group when security groups are authorized across accounts
+            - dest_cidr_ip (required:false, default:null, aliases:['cidr_ip']) - The target IP address range (CIDR format is used to specify the IP address range).
+            - policy (required:false; default:'accept') - Authorization policy, with parameter values: 'accept' and 'drop'
+            - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
+            - nic_type (required: false; default:null) - Network type, with a value internet or intranet
+
+function authorize a security group:
+  group_id:
+    description:
+      - A list of hash/dictionaries of security group tags
+    required: false
+    default: null
+    aliases: [ 'security_group_id' ]
+  rules:
+    description:
+      - List of firewall inbound rules to enforce in this group
+          - '[{"key":"value", "key":"value"}]'; keys allowed:
+            - ip_protocol (required:true; default:null, aliases:['proto']) - IP protocol, with a values: tcp | udp | icmp | gre | all
+            - port_range (required:true; default:null) - The range of port numbers relevant to the IP protocol
+            - source_group_id (required: false; default:null, aliases:['group_id']) - The security group ID. Either the source_group_id or cidr_ip parameter must be set
+            - source_group_owner_id (required: false; default:null, aliases:['group_owner_id']) - When the cross-user security group authorization, the source security group belongs to the user's Ali cloud account Id
+            - source_cidr_ip (required:false, default:null, aliases:['cidr_ip']) - The source IP address range (CIDR format is used to specify the IP address range).
+            - policy (required:false; default:'accept') - Authorization policy, with parameter values: 'accept' and 'drop'
+            - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
+            - nic_type (required: false; default:null) - Network type, with a value internet or intranet
+
   rules_egress:
     description:
       - List of firewall outbound rules to enforce in this group
@@ -150,7 +177,7 @@ Basic provisioning example to create security group
         acs_access_key_id: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
-        security_group_name: 'AliyunSG'
+        security_group_name: 'xxxxxxxxxx'
       register: result_details
     - debug: var=result_details
 
@@ -280,8 +307,6 @@ except ImportError:
     HAS_ECS = False
 
 
-
-
 def create_security_group(module, ecs, group_name, group_description, vpc_id, group_tags):
     """
     create security group in ecs
@@ -353,11 +378,13 @@ def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
     :return:
     """
     # aliases for rule
-    ip_protocol_aliases = ('proto', 'ip_protocol')
+    ip_protocol_aliases = ('ip_protocol', 'proto')
     inbound_cidr_ip_aliases = ('source_cidr_ip', 'cidr_ip')
     outbound_cidr_ip_aliases = ('dest_cidr_ip', 'cidr_ip')
     inbound_group_id_aliases = ('source_group_id', 'group_id')
     outbound_group_id_aliases = ('dest_group_id', 'group_id')
+    inbound_group_owner_aliases = ('source_group_owner_id', 'group_owner_id')
+    outbound_group_owner_aliases = ('dest_group_owner_id', 'group_owner_id')
 
     cidr_ip_aliases = {
         "inbound": inbound_cidr_ip_aliases,
@@ -367,6 +394,11 @@ def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
     group_id_aliases = {
         "inbound": inbound_group_id_aliases,
         "outbound": outbound_group_id_aliases,
+    }
+
+    group_owner_aliases = {
+        "inbound": inbound_group_owner_aliases,
+        "outbound": outbound_group_owner_aliases,
     }
 
     COMMON_VALID_PARAMS = ('proto', 'ip_protocol', 'cidr_ip', 'group_id', 'group_owner_id',
@@ -412,14 +444,17 @@ def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
                     if k not in COMMON_VALID_PARAMS and k not in valid_params.get(rule_type):
                         module.fail_json(msg='Invalid rule parameter \'{}\''.format(k))
 
-                if get_alias_value(rule, ip_protocol_aliases) is None:
+                ip_protocol = get_alias_value(rule, ip_protocol_aliases)
+                if ip_protocol is None:
                     module.fail_json(msg="Ip Protocol required for rule authorization")
 
-                if get_alias_value(rule, ['port_range']) is None:
+                port_range = get_alias_value(rule, ['port_range'])
+                if port_range is None:
                     module.fail_json(msg="Port range is required for rule authorization")
 
                 # verifying whether group_id is provided and cidr_ip is not, so nic_type should be set to intranet
-                if get_alias_value(rule, cidr_ip_aliases.get(rule_type)) is None:
+                cidr_ip = get_alias_value(rule, cidr_ip_aliases.get(rule_type))
+                if cidr_ip is None:
                     if get_alias_value(rule, group_id_aliases.get(rule_type)) is not None:
                         if 'nic_type' in rule:
                             if not rule['nic_type'] == "intranet":
@@ -430,6 +465,38 @@ def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
                             module.fail_json(msg="In mutual security group authorization (namely, "
                                                  "GroupId is specified, while CidrIp is not specified), "
                                                  "you must specify the nic_type as intranet")
+
+                #format rules to return for authorization
+                formatted_rule = {}
+
+                formatted_rule['ip_protocol'] = ip_protocol
+                formatted_rule['port_range'] = port_range
+
+                if cidr_ip:
+                    formatted_rule['cidr_ip'] = cidr_ip
+
+                group_id  = get_alias_value(rule, group_id_aliases.get(rule_type))
+                if group_id:
+                    formatted_rule['group_id'] = group_id
+
+                group_owner_id = get_alias_value(rule, group_owner_aliases.get(rule_type))
+                if group_owner_id:
+                    formatted_rule['group_owner_id'] = group_owner_id
+
+                if 'nic_type' in rule:
+                    if rule['nic_type']:
+                        formatted_rule['nic_type'] = rule['nic_type']
+
+                if 'policy' in rule:
+                    if rule['policy']:
+                        formatted_rule['policy'] = rule['policy']
+
+                if 'priority' in rule:
+                    if rule['priority']:
+                        formatted_rule['priority'] = rule['priority']
+
+                rule.clear()
+                rule.update(formatted_rule)
 
 
 def get_alias_value(dictionary, aliases):
@@ -482,6 +549,14 @@ def del_security_group(module, ecs, security_group_ids):
     :return: result of after successfully deletion of security group
     """
     changed = False
+    
+    if not security_group_ids:
+            module.fail_json(msg='Security Group Id  is required to Delete from security group')
+    else:
+        for id in security_group_ids:
+            if not id:
+                module.fail_json(msg='Security Group Id  is required to Delete from security group')
+
     try:
         changed, result = ecs.delete_security_group(group_ids=security_group_ids)
         if 'error' in (''.join(str(result))).lower():
@@ -549,7 +624,7 @@ def main():
         if outbound_rules:
             total_rules_count += len(outbound_rules)
 
-        validate_sg_rules(module, inbound_rules, outbound_rules)
+        validate_format_sg_rules(module, inbound_rules, outbound_rules)
 
         if total_rules_count > 100:
             module.fail_json(msg='more than 100 rules for authorization are not allowed')
@@ -588,14 +663,7 @@ def main():
 
     elif state == 'absent':
 
-        security_group_ids = module.params['group_ids']
-
-        if not security_group_ids:
-            module.fail_json(msg='Security Group Id  is required to Delete from security group')
-        else:
-            for id in security_group_ids:
-                if not id:
-                    module.fail_json(msg='Security Group Id  is required to Delete from security group')
+        security_group_ids = module.params['group_ids']        
 
         (changed, result) = del_security_group(module, ecs, security_group_ids)
         module.exit_json(changed=changed, result=result)

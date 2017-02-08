@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+#
 # Copyright 2017 Alibaba Group Holding Limited.
 #
 # This file is part of Ansible
@@ -15,7 +15,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Ansible. If not, see http://www.gnu.org/licenses/.
+# along with Ansible. If not, see http://www.gnu.org/licenses/. 
 
 DOCUMENTATION = '''
 ---
@@ -52,7 +52,7 @@ function: create image
     snapshot_id:
       description:
         - snapshot id of the image to create, image from system of instance
-      required: false
+      required: true
       default: null
       aliases: [ "snapshot" ]
     image_name:
@@ -73,9 +73,9 @@ function: create image
       default: null
       aliases: [ "version" ]
     disk_mapping:
-      version_added: "2.0"
       description:
-        - An optional list of device hashes/dictionaries with custom configurations (same block-device-mapping parameters)
+        - An optional list of device hashes/dictionaries with custom configurations (same block-device-mapping
+          parameters)
         - "Valid properties include: device, snapshot_id, disk_size (in GB)".'device' choices [/dev/xvda - /dev/xvdz ] 
       required: false
       default: null
@@ -98,7 +98,8 @@ function: create image
       aliases: [ "tags" ]
     launch_permission:
     description:
-      - Users that should be able to launch the ami. Expects dictionary with a key of user_ids. user_ids should be a list of account ids and the number no more than 10.
+      - Users that should be able to launch the ami. Expects dictionary with a key of user_ids. user_ids should be a
+        list of account ids and the number no more than 10.
     required: false
     default: null
 
@@ -287,6 +288,59 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
     :return: id of image
     """
     changed = False
+    if image_name:
+        if len(image_name) < 2 or len(image_name) > 128:
+            module.fail_json(msg='image_name must be 2 - 128 characters long')
+
+        if image_name.startswith('http://') or image_name.startswith('https://'):
+            module.fail_json(msg='image_name can not start with http:// or https://')
+
+    if image_version.isdigit():
+        if int(image_version) < 1 or int(image_version) > 40:
+                module.fail_json(msg='The permitted range of image_version is between 1 - 40')
+    else:
+        module.fail_json(msg='The permitted range of image_version is between 1 - 40, entered value is {0}'
+                            .format(image_version))    
+
+    if disk_mapping:        
+        for mapping in disk_mapping:
+            if mapping:
+                if 'snapshot_id' not in mapping:
+                    module.fail_json(msg='The snapshot_id of system disk is needed for disk mapping.')
+
+                if not('disk_size' in mapping or 'device' in mapping or 'snapshot_id' in mapping):
+                    module.fail_json(msg='The disk_size, device and snapshot_id parameters '
+                                         'are valid for disk mapping.')
+
+                if 'disk_size' in mapping:
+                    map_disk = mapping['disk_size']
+                    if map_disk:
+                        if str(map_disk).isdigit():
+                            if int(map_disk) < 5 or int(map_disk) > 2000:
+                                module.fail_json(msg='The permitted range of disk-size is 5 GB - 2000 GB ')
+                        else:
+                            module.fail_json(msg='The disk_size must be an integer value, entered value is {0}'.format(
+                                map_disk))
+
+    if images_tags:
+        key = ''
+        key_val = ''
+        for tags in images_tags:
+            if tags:
+                if 'tag_key' in tags:
+                    key = tags['tag_key']
+                if 'tag_value' in tags:
+                    key_val = tags['tag_value']
+                if not key and key_val:
+                    module.fail_json(msg='tag_key must be present when tag_value is present')          
+
+    if not snapshot_id and not instance_id and not disk_mapping:
+        module.fail_json(msg='Either of SnapshotId or InstanceId or disk_mapping, must be present for '
+                             'create image operation to get performed')
+
+    if (snapshot_id and instance_id) or (snapshot_id and disk_mapping) or (instance_id and disk_mapping):
+        module.fail_json(msg='Only 1 of SnapshotId or InstanceId or disk_mapping, must be present for '
+                             'create image operation to get performed')
 
     # call to create_image method in footmark
     try:
@@ -311,11 +365,12 @@ def delete_image(module, ecs, image_id):
 
     :param module: Ansible module object
     :param ecs: authenticated ecs connection object
-    :param snapshot_id: A user-defined image is created from the specified snapshot.
     :param image_id: Unique image id which is to be deleted
     :return: Result of an operation
     """
     changed = False
+    if not image_id:
+        module.fail_json(msg='image id is required to delete image')
     try:
         changed, result = ecs.delete_image(image_id=image_id)
         if 'error' in (''.join(str(result))).lower():
@@ -355,11 +410,6 @@ def main():
         module = AnsibleModule(argument_spec=argument_spec)
 
         ecs = ecs_connect(module)
-
-        region, acs_connect_kwargs = get_acs_connection_info(module)
-
-        tagged_instances = []
-
         status = module.params['status']
 
         if status == 'present':
@@ -374,102 +424,18 @@ def main():
             wait_timeout = module.params['wait_timeout']
             launch_permission = module.params['launch_permission']
 
-            flag = 0
-            flag_snapshot = 0
-            flag_mapping = 0
-            flag_instance = 0
-
-            if snapshot_id:
-                flag += 1
-                flag_snapshot = 1
-
-            if instance_id:
-                flag += 1
-                flag_instance = 1
-
-            if image_name:
-                if len(image_name) < 2 or len(image_name) > 128:
-                    module.fail_json(msg='image_name must be 2 - 128 characters long')
-
-                if image_name.startswith('http://') or image_name.startswith('https://'):
-                    module.fail_json(msg='image_name can not start with http:// or https://')
-
-            if image_version:
-                try:
-                    if not image_version.isdigit():
-                        module.fail_json(msg='The permitted range of image_version is between 1 - 40')
-                    else:
-                        version = int(image_version)
-
-                        if version < 1 or version > 40:
-                            module.fail_json(msg='The permitted range of image_version is between 1 - 40')
-                except ECSResponseError as e:
-                    module.fail_json(msg='The permitted range of image_version is between 1 - 40, entered value is {0}'
-                                     .format(image_version))
-
-            if wait:
-                if wait.lower() == 'true' or wait.lower() == 'yes':
-                    wait = 'true'
-                if wait.lower() == 'false' or wait.lower() == 'no':
-                    wait = 'false'
-
-            if disk_mapping:
-                flag += 1
-                flag_mapping = 1
-                for mapping in disk_mapping:
-                    if mapping:
-                        if 'snapshot_id' not in mapping:
-                            module.fail_json(msg='The snapshot_id of system disk is needed for disk mapping.')
-
-                        if not('disk_size' in mapping or 'device' in mapping or 'snapshot_id' in mapping):
-                            module.fail_json(msg='The disk_size, device and snapshot_id parameters are valid for disk mapping.')
-
-                        if 'disk_size' in mapping:
-                            map_disk = mapping['disk_size']
-                            if map_disk:
-                                if '.' in str(map_disk):
-                                    module.fail_json(msg='The disk_size must be an integer value.')
-                                if int(map_disk) < 5 or int(map_disk) > 2000:
-                                    module.fail_json(msg='The permitted range of disk-size is 5 GB - 2000 GB ')
-
-                        if 'device' in mapping:
-                            dev = mapping['device']
-                            if '/dev/xvda' != str(dev):
-                                module.fail_json(msg='in disk_mapping, device should be /dev/xvda')
-
-
-
-            if images_tags:
-                key = ''
-                key_val = ''
-                for tags in images_tags:
-                    if tags:
-                        if 'tag_key' in tags:
-                            key = tags['tag_key']
-                        if 'tag_value' in tags:
-                            key_val = tags['tag_value']
-                        if not key and key_val:
-                            module.fail_json(msg='tag_key must be present when tag_value is present')
-
-            if flag == 0:
-                module.fail_json(msg='Either of SnapshotId or InstanceId or disk_mapping, must be present for create image operation to get performed')
-
-            if flag > 1:
-                module.fail_json(msg='Only 1 of SnapshotId or InstanceId or disk_mapping, must be present for create image operation to get performed')
-
             # Calling create_image method
-            changed, image_id, result, request_id = create_image(module=module, ecs=ecs, snapshot_id=snapshot_id, image_name=image_name,
-                                             image_version=image_version, description=description,
-                                             images_tags=images_tags, instance_id=instance_id,
-                                             disk_mapping=disk_mapping, wait=wait, wait_timeout=wait_timeout,
-                                             launch_permission=launch_permission)
+            changed, image_id, result, request_id = create_image(module=module, ecs=ecs, snapshot_id=snapshot_id,
+                                                                 image_name=image_name, image_version=image_version,
+                                                                 description=description, images_tags=images_tags,
+                                                                 instance_id=instance_id, disk_mapping=disk_mapping,
+                                                                 wait=wait, wait_timeout=wait_timeout,
+                                                                 launch_permission=launch_permission)
 
             module.exit_json(changed=changed, result=result, image_id=image_id, RequestId=request_id)
 
         elif status == 'absent':
             image_id = module.params['image_id']
-            if not image_id:
-                module.fail_json(msg='image id is required to delete image')
 
             (changed, result) = delete_image(module=module, ecs=ecs, image_id=image_id)
             module.exit_json(changed=changed, result=result)
