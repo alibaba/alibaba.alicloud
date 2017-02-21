@@ -30,4 +30,4 @@ install:
 
 
 script:
-- ansible-playbook -i roles/hosts -M ../module roles/test-ecs.yml
+- ansible-playbook -i roles/hosts -M ../module roles/test_ecs.yml
