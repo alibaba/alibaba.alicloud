@@ -2,8 +2,8 @@
   hosts: localhost
   connection: local
   vars: 
-    acs_access_key: LTAIV7yukr6Csf14
-    acs_secret_access_key: it9TEJcJvnDyL5uB830fx1BQwzdNdd
+    acs_access_key: xxxxxxxxxx
+    acs_secret_access_key: xxxxxxxxxx
     region: cn-hongkong
     instance_ids:
       - i-j6c8gga5dfytbp7apxh3

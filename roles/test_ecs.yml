@@ -6,8 +6,8 @@
   hosts: localhost
   connection: local
   vars:
-    #acs_access_key: LTAIV7yukr6Csf14
-    #acs_secret_access_key: it9TEJcJvnDyL5uB830fx1BQwzdNdd
+    #acs_access_key: xxxxxxxxxx
+    #acs_secret_access_key: xxxxxxxxxx
     region: cn-hongkong
     zone: cn-hongkong-b
     image: ubuntu_140405_64_40G_cloudinit_20161115.vhd
