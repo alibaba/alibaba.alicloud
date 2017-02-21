@@ -26,123 +26,149 @@ ANSIBLE_METADATA = {'status': ['stableinterface'],
 DOCUMENTATION = '''
 ---
 module: ecs_group
-short_description:  Create, Query or Delete Security Group
+version_added: "1.0"
+short_description: Create, Query or Delete Security Group
 description:
-    -  Create, Query or Delete Security Group
+    - Create, Query or Delete Security Group
 
 common options:
   acs_access_key:
-    description: The access key.
+    description:
+      - Aliyun Cloud access key. If not set then the value of the `ACS_ACCESS_KEY_ID`, `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
     required: false
     default: null
-    aliases: []
+    aliases: ['ecs_access_key','access_key']
   acs_secret_access_key:
-    description: The access secret key.
+    description:
+      - Aliyun Cloud secret key. If not set then the value of the `ACS_SECRET_ACCESS_KEY`, `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
-    aliases: []
-  status:
-    description: Create or delete or get information of a security group
-    required: false
-    default: present
-    choices: ['present', 'absent', 'getinfo']
+    aliases: ['ecs_secret_key','secret_key']
   region:
-    description: The Alicloud region ID to use for the instance.
-    required: true
+    description:
+      - The Aliyun Cloud region to use. If not specified then the value of the `ACS_REGION`, `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
+    required: false
     default: null
-    aliases: [ 'acs_region', 'ecs_region' ]
+    aliases: [ 'acs_region', 'ecs_region']
+  status:
+    description:
+      - For creating new security group and/or authorizing.
+    required: false
+    default: 'present'
+    aliases: ['state']
+    choices: ['present', 'absent', 'getinfo']
 
-function create security group:  
+function create security group:
   security_group_name:
     description:
-      - The security group name
+      - The security group name.
     required: false
     default: null
-    aliases: [ 'name']
+    aliases: ['name']
+    choices: []
   description:
-    description: 
-      - The description of the security group
+    description:
+      - The description of the security group.
     required: false
     default: null
     aliases: []
+    choices: []
   vpc_id:
-    description: 
-      - The ID of the VPC to which the security group belongs
+    description:
+      - The ID of the VPC to which the security group belongs. If this parameter is not passed, the security group will be created using classic network type.
     required: false
     default: null
     aliases: []
+    choices: []
   group_tags:
-    description: 
-      - A list of hash/dictionaries of security group tags
+    description:
+      - A list of hash/dictionaries of group tags, ['{"tag_key":"value", "tag_value":"value"}'], tag_key must be not null when tag_value isn't null
     required: false
     default: null
     aliases: []
+    choices: []
   rules:
     description:
-      - List of firewall inbound rules to enforce in this group
-          - '[{"key":"value", "key":"value"}]'; keys allowed:
-            - ip_protocol (required:true; default:null, aliases:['proto']) - IP protocol, with a values: tcp | udp | icmp | gre | all
-            - port_range (required:true; default:null) - The range of port numbers relevant to the IP protocol
-            - source_group_id (required: false; default:null, aliases:['group_id']) - The security group ID. Either the source_group_id or cidr_ip parameter must be set
-            - source_group_owner_id (required: false; default:null, aliases:['group_owner_id']) - When the cross-user security group authorization, the source security group belongs to the user's Ali cloud account Id
-            - source_cidr_ip (required:false, default:null, aliases:['cidr_ip']) - The source IP address range (CIDR format is used to specify the IP address range). 
-            - policy (required:false; default:'accept') - Authorization policy, with parameter values: 'accept' and 'drop'
-            - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
-            - nic_type (required: false; default:null) - Network type, with a value internet or intranet
-          
+      - List of firewall inbound rules to enforce in this group.
+      - keys allowed are
+            - ip_protocol (required=true; choices=["tcp", "udp", "icmp", "gre", "all"]; aliases=['proto']; description=IP protocol)
+            - port_range(required=true; description=The range of port numbers)
+            - source_group_id(required=false; aliases=['group_id']; description=The source security group id)
+            - source_group_owner_id(required=false; aliases=['group_owner_id']; description=The source security group owner id)
+            - source_cidr_ip(required=false; aliases=['cidr_ip']; description=The source IP address range)
+            - policy(required=false; choices=["accept", "drop"]; description=Authorizatio policy)
+            - priority(required=false; choices=["1-100"]; default=1; description=Authorization policy priority)
+            - nic_type(required=false; choices=["internet", "intranet"]; default=internet; description=Network type)
+    required: false
+    default: null
+    aliases: []
+    choices: []
   rules_egress:
     description:
-      - List of firewall outbound rules to enforce in this group
-          - '[{"key":"value", "key":"value"}]'; keys allowed:
-            - ip_protocol (required:true; default:null, aliases:['proto']) - IP protocol, with a values: tcp | udp | icmp | gre | all
-            - port_range (required:true; default:null) - The range of port numbers relevant to the IP protocol
-            - dest_group_id (required: false; default:null, aliases:['group_id']) - The target security group ID within the same region. Either the dest_group_id or dest_cidr_ip must be set
-            - dest_group_owner_id (required: false; default:null, aliases:['group_owner_id']) - The Alibaba Cloud user account Id of the target security group when security groups are authorized across accounts
-            - dest_cidr_ip (required:false, default:null, aliases:['cidr_ip']) - The target IP address range (CIDR format is used to specify the IP address range).
-            - policy (required:false; default:'accept') - Authorization policy, with parameter values: 'accept' and 'drop'
-            - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
-            - nic_type (required: false; default:null) - Network type, with a value internet or intranet
+      - List of firewall outbound rules to enforce in this group.
+      - keys allowed are
+            - ip_protocol (required=true; choices=["tcp", "udp", "icmp", "gre", "all"]; aliases=['proto']; description=IP protocol)
+            - port_range(required=true; description=The range of port numbers)
+            - dest_group_id(required=false; aliases=['group_id']; description=The destination security group id)
+            - dest_group_owner_id(required=false; aliases=['group_owner_id']; description=The destination security group owner id)
+            - dest_cidr_ip(required=false; aliases=['cidr_ip']; description=The destination IP address range)
+            - policy(required=false; choices=["accept", "drop"]; description=Authorizatio policy)
+            - priority(required=false; choices=["1-100"]; default=1; description=Authorization policy priority)
+            - nic_type(required=false; choices=["internet", "intranet"]; default=internet; description=Network type)
+    required: false
+    default: null
+    aliases: []
+    choices: []
 
 function authorize a security group:
   group_id:
     description:
-      - A list of hash/dictionaries of security group tags
+      - Provide the security group id to perform rules authorization. This parameter is not required for creating new security group.
     required: false
     default: null
-    aliases: [ 'security_group_id' ]
+    aliases: ['security_group_id', 'group_ids', 'security_group_ids']
+    choices: []
   rules:
     description:
-      - List of firewall inbound rules to enforce in this group
-          - '[{"key":"value", "key":"value"}]'; keys allowed:
-            - ip_protocol (required:true; default:null, aliases:['proto']) - IP protocol, with a values: tcp | udp | icmp | gre | all
-            - port_range (required:true; default:null) - The range of port numbers relevant to the IP protocol
-            - source_group_id (required: false; default:null, aliases:['group_id']) - The security group ID. Either the source_group_id or cidr_ip parameter must be set
-            - source_group_owner_id (required: false; default:null, aliases:['group_owner_id']) - When the cross-user security group authorization, the source security group belongs to the user's Ali cloud account Id
-            - source_cidr_ip (required:false, default:null, aliases:['cidr_ip']) - The source IP address range (CIDR format is used to specify the IP address range).
-            - policy (required:false; default:'accept') - Authorization policy, with parameter values: 'accept' and 'drop'
-            - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
-            - nic_type (required: false; default:null) - Network type, with a value internet or intranet
-
+      - List of firewall inbound rules to enforce in this group.
+      - keys allowed are
+            - ip_protocol (required=true; choices=["tcp", "udp", "icmp", "gre", "all"]; aliases=['proto']; description=IP protocol)
+            - port_range(required=true; description=The range of port numbers)
+            - source_group_id(required=false; aliases=['group_id']; description=The source security group id)
+            - source_group_owner_id(required=false; aliases=['group_owner_id']; description=The source security group owner id)
+            - source_cidr_ip(required=false; aliases=['cidr_ip']; description=The source IP address range)
+            - policy(required=false; choices=["accept", "drop"]; description=Authorizatio policy)
+            - priority(required=false; choices=["1-100"]; default=1; description=Authorization policy priority)
+            - nic_type(required=false; choices=["internet", "intranet"]; default=internet; description=Network type)
+    required: false
+    default: null
+    aliases: []
+    choices: []
   rules_egress:
     description:
-      - List of firewall outbound rules to enforce in this group
-          - '[{"key":"value", "key":"value"}]'; keys allowed:
-            - ip_protocol (required:true; default:null, aliases:['proto']) - IP protocol, with a values: tcp | udp | icmp | gre | all
-            - port_range (required:true; default:null) - The range of port numbers relevant to the IP protocol
-            - dest_group_id (required: false; default:null, aliases:['group_id']) - The target security group ID within the same region. Either the dest_group_id or dest_cidr_ip must be set
-            - dest_group_owner_id (required: false; default:null, aliases:['group_owner_id']) - The Alibaba Cloud user account Id of the target security group when security groups are authorized across accounts
-            - dest_cidr_ip (required:false, default:null, aliases:['cidr_ip']) - The target IP address range (CIDR format is used to specify the IP address range).
-            - policy (required:false; default:'accept') - Authorization policy, with parameter values: 'accept' and 'drop'
-            - priority (required: false; default:1) - Authorization policy priority, with parameter values: 1-100
-            - nic_type (required: false; default:null) - Network type, with a value internet or intranet
+      - List of firewall outbound rules to enforce in this group.
+      - keys allowed are
+            - ip_protocol (required=true; choices=["tcp", "udp", "icmp", "gre", "all"]; aliases=['proto']; description=IP protocol)
+            - port_range(required=true; description=The range of port numbers)
+            - dest_group_id(required=false; aliases=['group_id']; description=The destination security group id)
+            - dest_group_owner_id(required=false; aliases=['group_owner_id']; description=The destination security group owner id)
+            - dest_cidr_ip(required=false; aliases=['cidr_ip']; description=The destination IP address range)
+            - policy(required=false; choices=["accept", "drop"]; description=Authorizatio policy)
+            - priority(required=false; choices=["1-100"]; default=1; description=Authorization policy priority)
+            - nic_type(required=false; choices=["internet", "intranet"]; default=internet; description=Network type)
+    required: false
+    default: null
+    aliases: []
+    choices: []
 
 function delete a security group:
   group_id:
     description:
       - A list of security groups ids.
     required: true
-    default: false
-    aliases: [ 'security_group_id', 'group_ids', 'security_group_ids' ]
+    default: null
+    aliases: ['security_group_id', 'group_ids', 'security_group_ids']
+    choices: []
 
 function get security groups:
   group_id:
@@ -150,12 +176,15 @@ function get security groups:
       - List of the security group ids
     required: true
     default: null
-    aliases: [ 'security_group_id', 'group_ids', 'security_group_ids' ]
+    aliases: ['security_group_id', 'group_ids', 'security_group_ids']
+    choices: []
   vpc_id:
     description:
       - The ID of the VPC to which the security group belongs.
     required: false
-    default: false
+    default: null
+    aliases: []
+    choices: []
 '''
 
 EXAMPLES = '''
@@ -174,10 +203,10 @@ Basic provisioning example to create security group
   tasks:
     - name: create security grp
       ecs_group:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
-        security_group_name: 'xxxxxxxxxx'
+        security_group_name: 'AliyunSG'
       register: result_details
     - debug: var=result_details
 
@@ -193,7 +222,7 @@ Basic provisioning example authorize security group
   tasks:
     - name: authorize security group
       ecs_group:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         security_group_id: xxxxxxxxxx
         region: '{{ region }}'
@@ -221,7 +250,7 @@ Provisioning example create and authorize security group
   tasks:
     - name: create and authorize security grp
       ecs_group:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         security_group_name: 'AliyunSG'
         description: 'an example ECS group'
@@ -259,7 +288,7 @@ Provisioning example create and authorize security group
   tasks:
     - name: delete security grp
       ecs_group:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         security_group_ids: '{{ security_group_ids }}'
@@ -280,7 +309,7 @@ Provisioning example create and authorize security group
   tasks:
     - name: Querying Security group list
       ecs_group:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         status: '{{ status }}'

@@ -27,130 +27,132 @@ module: ecs_disk
 short_description: Create, Attach, Detach or Delete a disk in ECS
 common options:
   acs_access_key:
-    description: The access key.
+    description:
+      - Aliyun Cloud access key. If not set then the value of the `ACS_ACCESS_KEY_ID`, `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
     required: false
     default: null
-    aliases: []
+    aliases: ['ecs_access_key','access_key']
   acs_secret_access_key:
-    description: The access secret key.
+    description:
+      - Aliyun Cloud secret key. If not set then the value of the `ACS_SECRET_ACCESS_KEY`, `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
-    aliases: []
-  state:
-    description: The state of the disk after operation.
-    required: true
+    aliases: ['ecs_secret_key','secret_key']
+  region:
+    description:
+      - The Aliyun Cloud region to use. If not specified then the value of the `ACS_REGION`, `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
+    required: false
     default: null
-    aliases: []
+    aliases: [ 'acs_region', 'ecs_region']
+  status:
+    description: The state of the disk after operation.
+    required: false
+    default: 'present'
+    aliases: [ 'state' ]
     choices: ['present', 'absent'] map operation ['create', 'attach', 'detach', 'delete']
 
 function: Create a disk in ECS
   description: Create a disk in ECS
   options:
-    region:
-      description: The Aliyun region ID to use for the disk.
-      required: true
-      default: null
-      aliases: [ 'acs_region', 'ecs_region' ]
-    zone_id:
-      description: Aliyun availability zone ID in which to launch the disk
-      required: true
-      default: null
-      aliases: [ 'acs_zone', 'ecs_zone', 'availability_zone', 'zone' ]
-    disk_name:
-      description: name of disk to create in ECS
-      required: false
-      default: null
-      aliases: [ 'name' ]
-    description:
-      description: Description of the disk to use.
-      required: false
-      default: null
-      aliases: [ 'disk_description']
-    disk_category:
-      description: Category to use for the disk.
-      required: false
-      default: null
-      aliases: [ 'volume_type', 'disk_type' ]
-    size:
-      description: Size of disk in GB
-      required: false
-      default: False
-      aliases: [ 'volume_size', 'disk_size' ]
-    disk_tags:
-      description: A list of hash/dictionaries of disk tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be
-                   not null when tag_value isn't null
-      required: false
-      default: null
-      aliases: [ 'tags' ]
-    snapshot_id:
-      description: volume_type (str), iops (int) - device_type is deprecated use volume_type, iops must be set when
-                   volume_type='io1', ephemeral and snapshot are mutually exclusive.
-      required: false
-      default: null
-      aliases: [ 'snapshot' ]
+      zone_id:
+        description:
+          - Aliyun availability zone ID in which to launch the instance. Parameter is B(required) while creating disk.
+        required: false
+        default: null
+        aliases: ['zone', 'availability_zone', 'acs_zone', 'ecs_zone' , 'zone']
+      disk_name:
+        description:
+          - The value of disk name is blank by default. [2, 128] English or Chinese characters, must begin with an uppercase/lowercase letter or Chinese character. Can contain numbers, '.', '_' and '-'. The disk name will appear on the console. It cannot begin with http:// or https://.
+        required: false
+        default: null
+        aliases: ['name']
+      description:
+        description:
+          - The value of disk description is blank by default. [2, 256] characters. The disk description will appear on the console. It cannot begin with http:// or https://.
+        required: false
+        default: null
+        aliases: [ 'disk_description' ]
+      disk_category:
+        description:
+          - Category of the data disk
+        required: false
+        default: cloud
+        aliases: ['volume_type', 'disk_type']
+        choices: ['cloud', 'cloud_efficiency', 'cloud_ssd']
+      size:
+        description:
+          - Size of the system disk, in GB.The value should be equal to or greater than the size of the specific SnapshotId.
+        required: false
+        default: null
+        aliases: ['volume_size', 'disk_size']
+      snapshot_id:
+        description:
+          - Snapshots are used to create the data disk After this parameter is specified, Size is ignored. The actual size of the created disk is the size of the specified snapshot Snapshots from on or before July 15, 2013 cannot be used to create a disk
+        required: false
+        default: null
+        aliases: ['snapshot']
+      disk_tags:
+        description:
+          - A list of hash/dictionaries of instance tags, ['{"tag_key":"value", "tag_value":"value"}'], tag_key must be not null when tag_value isn't null
+        required: false
+        default: null
+        aliases: ['tags']
 
 function: Attach disk
   description: Attach disk to instance in ECS
   options:
-    instance_id:
-      description: The ID of the destination instance in ECS.
-      required: true
-      default: null
-      aliases: [ 'instance' ]
-    disk_id:
-      description: The disk ID. The disk and Instance must be in the same zone.
-      required: true
-      default: null
-      aliases: [ 'vol_id', 'id' ]
-    device:
-      description:
-      required: false
-      default: null
-      aliases: [ 'device_name' ]
-    delete_with_instance:
-      description: Whether or not the disk is released along with the instance
-      required: false
-      default: null
-      aliases: [ 'delete_on_termination' ]
-    region:
-      description: The Aliyun region ID to use for the disk.
-      required: false
-      default: null
-      aliases: [ 'acs_region', 'ecs_region' ]
+      instance_id:
+        description:
+          - The specified instance ID. Parameter is B(required) while attaching disk.
+        required: false
+        default: null
+        aliases: ['instance']
+      disk_id:
+        description:
+          - The disk ID. The disk and Instance must be in the same zone. Parameter is B(required) while attaching disk.
+        required: false
+        default: null
+        aliases: ['vol_id', 'id']
+      device:
+        description:
+          - The value null indicates that the value is allocated by default, starting from /dev/xvdb to /dev/xvdz.
+        required: false
+        default: null
+        aliases: ['device_name']
+      delete_with_instance:
+        description:
+          - Whether or not the disk is released along with the instance. True/Yes indicates that when the instance is released, this disk will be released with it.False/No indicates that when the instance is released, this disk will be retained.
+        required: false
+        default: none
+        aliases: ['delete_on_termination']
+        choices: ["yes", "no"]
 
 function: Detach disk
   description: Detach disk from instance in ECS
   options:
     instance_id:
-      description: The ID of the destination instance in ECS.
-      required: true
-      default: null
-      aliases: [ 'instance' ]
+        description:
+          - The specified instance ID. Parameter is B(required) while attaching disk.
+        required: false
+        default: null
+        aliases: ['instance']
     disk_id:
-      description: Id of disk to detach from instance in ECS.
-      required: true
-      default: null
-      aliases: [ 'vol_id', 'id' ]
-    region:
-      description: The Aliyun region ID to use for the disk.
-      required: false
-      default: null
-      aliases: [ 'acs_region', 'ecs_region' ]
+        description:
+          - The disk ID. The disk and Instance must be in the same zone. Parameter is B(required) while attaching disk.
+        required: false
+        default: null
+        aliases: ['vol_id', 'id']
 
 
 function: Delete disk
   description: Delete disk which is not in use
   options:
     disk_id:
-      description: The ID of the disk device that needs to be removed.
-      required: true
-      default: null
-      aliases: [ 'vol_id', 'id' ]
-    region:
-      description: The Aliyun region ID to use for the disk.
-      required: false
-      default: null
-      aliases: [ 'acs_region', 'ecs_region' ]     
+        description:
+          - The disk ID. The disk and Instance must be in the same zone. Parameter is B(required) while attaching disk.
+        required: false
+        default: null
+        aliases: ['vol_id', 'id']
 
 '''
 
@@ -173,7 +175,7 @@ EXAMPLES = '''
   tasks:
     - name: create disk
       ecs_disk:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         zone: '{{ zone }}'
@@ -200,7 +202,7 @@ EXAMPLES = '''
   tasks:
     - name: create disk
       ecs_disk:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         zone: '{{ zone }}'
@@ -230,7 +232,7 @@ EXAMPLES = '''
   tasks:
     - name: Attach Disk to instance
       ecs_disk:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         status: '{{ status }}'
         region: '{{ region }}'
@@ -255,7 +257,7 @@ EXAMPLES = '''
   tasks:
     - name: detach disk
       ecs_disk:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         id: '{{ disk_id }}'
@@ -277,7 +279,7 @@ EXAMPLES = '''
   tasks:
     - name: detach disk
       ecs_disk:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         disk_id: '{{ disk_id }}'
@@ -307,7 +309,7 @@ except ImportError:
 
 
 def create_disk(module, ecs, zone_id, disk_name, description, 
-                disk_category, size, disk_tags, snapshot_id, count):
+                disk_category, size, disk_tags, snapshot_id):
     """
     create an disk in ecs
     :param module: Ansible module object
@@ -326,7 +328,6 @@ def create_disk(module, ecs, zone_id, disk_name, description,
         must be not null when tag_value isn't null   
     :param snapshot_id: Snapshots are used to create the data disk
         After this parameter is specified, Size is ignored.
-    :param count: Create No. of Instances
     :return: Returns a dictionary of disk information
     """
 
@@ -337,7 +338,7 @@ def create_disk(module, ecs, zone_id, disk_name, description,
     try:
         changed, disk_id, result = ecs.create_disk(zone_id=zone_id, disk_name=disk_name,
                                                    description=description, disk_category=disk_category, size=size,
-                                                   disk_tags=disk_tags, snapshot_id=snapshot_id, count=count)
+                                                   disk_tags=disk_tags, snapshot_id=snapshot_id)
        
         if 'error' in (''.join(str(result))).lower():
             module.fail_json(changed=changed, disk_id=disk_id, msg=result)
@@ -477,7 +478,6 @@ def main():
             snapshot_id=dict(aliases=['snapshot']),
             device=dict(aliases=['device_name']),        
             description=dict(aliases=['disk_description']),  
-            count=dict(type='int', default='1'),
             instance_id=dict(aliases=['instance']),
             delete_with_instance = dict(aliases=['delete_on_termination'])
         )
@@ -526,15 +526,15 @@ def main():
                 size = module.params['size']
                 disk_tags = module.params['disk_tags']            
                 snapshot_id = module.params['snapshot_id']
-                count = module.params['count']
                 # create disk parameter values end
 
                 # performing operation create disk
             
                 new_instance_ids = []
-                changed, disk_id, instance_dict_array = create_disk(module, ecs, zone_id, disk_name,
-                                                             description, disk_category, size,
-                                                             disk_tags, snapshot_id, count)
+                changed, disk_id, instance_dict_array = create_disk(module=module, ecs=ecs, zone_id=zone_id,
+                                                                    disk_name=disk_name, description=description,
+                                                                    disk_category=disk_category, size=size,
+                                                                    disk_tags=disk_tags, snapshot_id=snapshot_id)
                 module.exit_json(changed=changed,disk_id=disk_id, result=instance_dict_array)
         
             elif operation_flag == 'attach':

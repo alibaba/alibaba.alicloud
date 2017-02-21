@@ -24,203 +24,219 @@ ANSIBLE_METADATA = {'status': ['stableinterface'],
 DOCUMENTATION = '''
 ---
 module: ecs
-short_description: Create, Start, Stop, Restart or Terminate an Instance in ECS
+version_added: "1.0"
+short_description: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
+description:
+    - Creates, starts, stops, restarts or terminates ecs instances.
+    - Adds or removes ecs instances to/from security group.
 common options:
   acs_access_key:
-    description: The access key.
+    description:
+      - Aliyun Cloud access key. If not set then the value of the `ACS_ACCESS_KEY_ID`, `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
     required: false
     default: null
-    aliases: []
+    aliases: ['ecs_access_key','access_key']
   acs_secret_access_key:
-    description: The access secret key.
+    description:
+      - Aliyun Cloud secret key. If not set then the value of the `ACS_SECRET_ACCESS_KEY`, `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
-    aliases: []
-  state:
-    description: The state of the instance after operating.
-    required: true
+    aliases: ['ecs_secret_key','secret_key']
+  region:
+    description:
+      - The Aliyun Cloud region to use. If not specified then the value of the `ACS_REGION`, `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
+    required: false
     default: null
-    aliases: []
-    choices: [ 'present', 'pending', 'running', 'stopped', 'restarted', 'absent', 'getstatus' ]
-            map operation ['create', 'start', 'stop', 'restart', 'terminate', 'querying_instance', 'modify_attribute',
-                           'describe_status']
+    aliases: [ 'acs_region', 'ecs_region']
+  status:
+    description:
+      - The state of the instance after operating.
+    required: false
+    default: 'present'
+    aliases: ['state']
+    choices: ['present', 'pending', 'running', 'stopped', 'restarted', 'absent', 'getinfo', 'getstatus']
 
 function: create instance
   description: create an instance in ecs
   options:
-    region:
-      description: The Aliyun region ID to use for the instance.
-      required: true
-      default: null
-      aliases: [ 'acs_region', 'ecs_region' ]
-    zone_id:
-      description: Aliyun availability zone ID in which to launch the instance
-      required: false
-      default: null
-      aliases: [ 'acs_zone', 'ecs_zone', 'zone' ]
-    image_id:
-      description: Image ID to use for the instance.
-      required: true
-      default: null
-      aliases: [ 'image' ]
-    instance_type:
-      description: Instance type to use for the instance
-      required: true
-      default: null
-      aliases: [ 'type' ]
-    group_id:
-      description: Security group id to use with the instance
-      required: false
-      default: null
-      aliases: []
-    io_optimized:
-      description: Whether instance is using optimized volumes.
-      required: false
-      default: False
-      aliases: []
-    vswitch_id:
-      description: The subnet ID in which to launch the instance (VPC).
-      required: false
-      default: null
-      aliases: ['vpc_subnet_id']
-    private_ip:
-      description: Private IP address of the instance, which cannot be specified separately.
-      required: false
-      default: null
-      aliases: []
-    instance_name:
-      description: Name of the instance to use.
-      required: false
-      default: null
-      aliases: []
+  zone_id:
+    description: Aliyun availability zone ID in which to launch the instance
+    required: false
+    default: null
+    aliases: [ 'acs_zone', 'ecs_zone', 'zone']
+  image_id:
+    description: Image ID to use for the instance. Parameter is B(required) when provisioning new ecs instance
+    required: false
+    default: null
+    aliases: ['image']
+  instance_type:
+    description: Instance type to use for the instance. Parameter is B(required) when provisioning new ecs instance
+    required: false
+    default: null
+    aliases: [ 'type' ]
+  group_id:
+    description: Security group id to use with the instance. Parameter is B(required) while joining or leaving security group
+    required: false
+    default: null
+    aliases: []
+  io_optimized:
+    description: Whether instance is using optimized volumes.
+    required: false
+    default: "no"
+    aliases: []
+    choices: ["yes", "no"]
+  vswitch_id:
+    description: The subnet ID in which to launch the instance (VPC).
+    required: false
+    default: null
+    aliases: ['vpc_subnet_id']
+  instance_name:
+    description: Name of the instance to use.
+    required: false
+    default: null
+    aliases: []
+  description:
+    description: Description of the instance to use.
+    required: false
+    default: null
+    aliases: []
+  internet_data:
     description:
-      description: Description of the instance to use.
-      required: false
-      default: null
-      aliases: []
-    internet_data:
+       - A hash/dictionaries of internet to the new instance; '{"key":"value"}';
+       - keys allowed are
+            - charge_type (required=false; default="PayByBandwidth", choices=["PayByBandwidth", "PayByTraffic"])
+            - max_bandwidth_in(required=false, default=200)
+            - max_bandwidth_out(required=false, default=0)
+    required: false
+    default: null
+    aliases: []
+  host_name:
+    description: Instance host name.
+    required: false
+    default: null
+    aliases: []
+  password:
+    description: The password to login instance.
+    required: false
+    default: null
+    aliases: []
+  system_disk:
+    description:
+        - A hash/dictionaries of system disk to the new instance; '{"key":"value"}';
+        - keys allowed are
+            - disk_category (required=false; default="cloud"; choices=["cloud", "cloud_efficiency", "cloud_ssd", "ephemeral_ssd"] )
+            - disk_size (required=false; default=max[40, ImageSize]; choices=[40-500] )
+            - disk_name (required=false; default=null)
+            - disk_description (required=false; default=null)
+    required: false
+    default: null
+    aliases: []
+  disks:
       description:
-        - A hash/dictionaries of internet to the new instance;
-        - '{"key":"value"}'; keys allowed:
-          - charge_type (required:false; default: "PayByBandwidth", choices:["PayByBandwidth", "PayByTraffic"] )
-          - max_bandwidth_in(required:false, default:200)
-          - max_bandwidth_out(required:false, default:0).
+        - A list of hash/dictionaries of volumes to add to the new instance; '[{"key":"value", "key":"value"}]';
+        - keys allowed are
+            - disk_category (required=false; default="cloud"; choices=["cloud", "cloud_efficiency", "cloud_ssd", "ephemeral_ssd"] )
+            - disk_size (required=false; default=null; choices=depends on disk_category)
+            - disk_name (required=false; default=null)
+            - disk_description (required=false; default=null)
+            - delete_on_termination (required=false, default="true")
+            - snapshot_id (required=false; default=null), volume_type (str), iops (int) - device_type is deprecated use volume_type, iops must be set when volume_type='io1', ephemeral and snapshot are mutually exclusive.
       required: false
       default: null
-      aliases: []
-    host_name:
-      description: Instance host name.
-      required: false
-      default: null
-      aliases: []
-    password:
-      description: The password to login instance.
-      required: false
-      default: null
-      aliases: []
-    system_disk:
-      description:
-        - A hash/dictionaries of system disk to the new instance;
-        - '{"key":"value"}'; keys allowed:
-          - disk_category (required:false; default: "cloud"; choices:["cloud", "cloud_efficiency", "cloud_ssd", "ephemeral_ssd"] )
-          - disk_size (required: false, default: max[40, ImageSize], choice: [40-500])
-          - disk_name (required: false, default: Null)
-          - disk_description (required:false; default:null)
-      required: false
-      default: null
-      aliases: []
-    disks:
-      description:
-        - A list of hash/dictionaries of volumes to add to the new instance;
-        - '[{"key":"value", "key":"value"}]'; keys allowed:
-          - device_category (required:false; default: "cloud"; choices:["cloud", "cloud_efficiency", "cloud_ssd", "ephemeral_ssd"] )
-          - device_size (required:false; default:null; choices:depends on disk_category)
-          - device_name (required: false; default:null)
-          - device_description (required: false; default:null)
-          - delete_on_termination (required:false, default:"true")
-          - snapshot (required:false; default:null), volume_type (str), iops (int) - device_type is deprecated use volume_type, iops must be set when volume_type='io1', ephemeral and snapshot are mutually exclusive.
-      required: false
-      default: null
-      aliases: [ 'volumes' ]
-    count:
+      aliases: ['volumes']
+  count:
       description: The number of the new instance.
       required: false
       default: 1
       aliases: []
-    allocate_public_ip
+  allocate_public_ip:
       description: Whether allocate a public ip for the new instance.
       required: false
-      default: true
-      aliases: [ 'assign_public_ip' ]
-    bind_eip:
+      default: "yes"
+      aliases: ['assign_public_ip']
+      choices: ["yes", "no"]
+  bind_eip:
       description: ID of Elastic IP Address bind to the new instance.
-      required:false
-      default: null
-      aliases: []
-    instance_tags:
-      description: - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
       required: false
       default: null
-      aliases: [ 'tags' ]
-    ids:
+      aliases: []
+  private_ip:
+      description:
+        - Private IP address of the instance, which cannot be specified separately.
+      required: false
+      default: null
+      aliases: []
+  instance_tags:
+      description:
+        - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
+      required: false
+      default: null
+      aliases: ['tags']
+  instance_charge_type:
+      description:
+        - The charge type of the instance.
+      required: false
+      choices: ["PrePaid", "PostPaid"]
+      default: "PostPaid"
+  period:
+      description:
+        - The charge duration of the instance, the value is vaild when instance_charge_type is "PrePaid".
+      required: false
+      choices: [1~9,12,24,36]
+      default: null
+  auto_renew:
+      description:
+        - Whether automate renew the charge of the instance.
+      required: false
+      choices: ["yes", "no"]
+      default: "no"
+  auto_renew_period:
+      description:
+        - The duration of the automatic renew the charge of the instance. It is vaild when auto_renew is yes.
+      required: false
+      choices: [1, 2, 3, 6, 12]
+      default: "no"
+  ids:
       description:
         - A list of identifier for this instance or set of instances, so that the module will be idempotent with respect to ECS instances. This identifier should not be reused for another call later on. For details, see the description of client token at U(https://help.aliyun.com/document_detail/25693.html?spm=5176.doc25499.2.7.mrVgE2).
         - The length of the ids is the same with count
       required: false
       default: null
-      aliases: [ 'id' ]
-    instance_charge_type:
-      description: - The charge type of the instance.
-      required: false
-      choices:["PrePaid", "PostPaid"]
-      default: "PostPaid"
-    period:
-      description: - The charge duration of the instance, the value is vaild when instance_charge_type is "PrePaid".
-      required: false
-      choices:[1~9,12,24,36]
-      default: null
-    auto_renew:
-      description: - Whether automate renew the charge of the instance.
-      required: false
-      choices:[true, false]
-      default: false
-    auto_renew_period:
-      description: - The duration of the automatic renew the charge of the instance. It is vaild when auto_renew is true.
-      required: false
-      choices:[1, 2, 3, 6, 12]
-      default: false
-    wait:
+      aliases: ["id"]
+  wait:
       description:
-        - wait for the AMI to be in state 'available' before returning.
+        - Wait for the instance to be 'running' before returning.
       required: false
+      choices: ["yes", "no"]
       default: "no"
-      choices: [ "yes", "no" ]
-    wait_timeout:
+  wait_timeout:
       description:
         - how long before wait gives up, in seconds
       required: false
-      default: 300
+      choices: []
+      default: "300"
 
 
 function: start, stop, restart, terminate instance
   description: start, stop, restart and terminate instances in ecs
   options:
-    instance_ids:
-      description: A list of instance ids, currently used for states: running, stopped, restarted, absent
-      required: true
+    instance_id:
+      description:
+        - A list of instance ids. Parameter is B(required) while starting, stopping, restarting, terminating, joining or leaving security group
+      required: false
       default: null
-      aliases: []
+      aliases: ["instance_ids"]
     force:
       description: Whether force to operation, currently used fo states: stopped, restarted.
       required: false
       default: False
       aliases: []
     instance_tags:
-      description: - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]',
-                    tag_key must be not null when tag_value isn't null
+      description:
+        - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
       required: false
       default: null
-      aliases: []
+      aliases: ['tags']
 
 
 function: modify instance attribute
@@ -228,38 +244,38 @@ function: modify instance attribute
   options:
     attributes:
       description:
-        - A list of hash/dictionaries of instance attributes
-        - '[{"key":"value", "key":"value"}]', keys allowed:
-          - id (required:true; default: null )
-          - name (required:false)
-          - description (required:false)
-          - password (required:false)
-          - host_name (required:false)
-          - vnc_password (required:false)
+        - A list of hash/dictionaries of instance attributes; '[{"key":"value", "key":"value"}]';. Parameter is B(required) when modifying an ecs instance
+        - keys allowed are
+            - id (required=true; default=null; description=ID of an ECS instance )
+            - name (required=false; default=null; description=Name of the instance to modify)
+            - description (required=false; default=null; description=Description of the instance to use)
+            - password (required=false; default=null; description=The password to login instance)
+            - host_name (required=false; default=null; description=Instance host name)
       required: false
+      choices: []
       default: null
-      aliases: []
 
 
 function: modify instance security group attribute
   description: join or leave instances from security group.
   options:
     group_id:
-      description: Security group id (or list of ids) to use with the instance
-      required: true
+      description: Security group id to use with the instance. Parameter is B(required) while joining or leaving security group
+      required: false
       default: null
       aliases: []
     instance_id:
-      description: A list of instance ids.
-      required: true
+      description:
+        - A list of instance ids. Parameter is B(required) while starting, stopping, restarting, terminating, joining or leaving security group
+      required: false
       default: null
-      aliases: [ 'instance_ids' ]
+      aliases: ["instance_ids"]
     sg_action:
-      description: The action of operating security group.
-      required: true
+      description:
+        - The action of operating security group. Parameter is B(required) while joining or leaving security group
+      required: false
+      choices: ["join", "leave"]
       default: null
-      choices: ['join', 'leave']
-      aliases: []
 
 
 function: querying instance status
@@ -269,7 +285,7 @@ function: querying instance status
       description: Aliyun availability zone ID in which to launch the instance
       required: false
       default: null
-      aliases: [ 'acs_zone', 'ecs_zone', 'zone' ]
+      aliases: [ 'acs_zone', 'ecs_zone', 'zone']
     page_number:
       description: Page number of the instance status list
       required:false
@@ -284,16 +300,16 @@ function: modify instance attribute
   options:
     attributes:
       description:
-        - A list of hash/dictionaries of instance vpc attributes
-        - '[{"key":"value", "key":"value"}]', keys allowed:
-          - id (required:true; default: null ) - The specified instance ID
-          - name (required:false; default: null ) - Name of the instance
-          - description (required:false; default: null ) - Description of the instance
-          - password (required:false; default: null ) - Password is to be reset as one specified by the user
-          - host_name (required:false; default: null ) - Name of the host
+        - A list of hash/dictionaries of instance attributes; '[{"key":"value", "key":"value"}]';. Parameter is B(required) when modifying an ecs instance
+        - keys allowed are
+            - id (required=true; default=null; description=ID of an ECS instance )
+            - name (required=false; default=null; description=Name of the instance to modify)
+            - description (required=false; default=null; description=Description of the instance to use)
+            - password (required=false; default=null; description=The password to login instance)
+            - host_name (required=false; default=null; description=Instance host name)
       required: false
+      choices: []
       default: null
-      aliases: []
 '''
 
 EXAMPLES = '''
@@ -358,7 +374,7 @@ EXAMPLES = '''
     instance_type: ecs.n1.small
     group_id: xxxxxxxxxx
     host_name: myhost
-    password:
+    password: mypassword
   tasks:
     - name: tagging and host name password
       ecs:
@@ -426,7 +442,7 @@ EXAMPLES = '''
         assign_public_ip: yes
         volumes:
           - disk_name: /dev/sdb
-            snapshot_id: snap-abcdef12
+            snapshot_id: xxxxxxxxxx
             disk_category: cloud_efficiency
             disk_size: 100
             delete_on_termination: true
@@ -499,12 +515,12 @@ EXAMPLES = '''
             - id:  xxxxxxxxxx
               name: InstanceName
               description: volume attributes
-              password: Admin123
+              password: mypassword
               host_name: hostName
             - id:  xxxxxxxxxx
               name: InstanceName
               description: volume attributes
-              password: Admin123
+              password: mypassword
               host_name: hostcomes
 
 #
@@ -1085,7 +1101,7 @@ def leave_security_group(module, ecs, instance_ids, security_group_id):
     return changed, result, success_instance_ids, failed_instance_ids, security_group_id
 
 
-def main():
+def main():   
     if HAS_ECS is False:
         print("ecsutils required for this module")
         sys.exit(1)
@@ -1101,7 +1117,7 @@ def main():
             image_id=dict(aliases=['image']),
             count=dict(type='int', default='1'),
             vswitch_id=dict(aliases=['vpc_subnet_id']),
-            io_optimized=dict(),
+            io_optimized=dict(type='bool', default=False),
             instance_name=dict(),
             internet_data=dict(type='dict'),
             host_name=dict(),
@@ -1111,7 +1127,7 @@ def main():
             force=dict(type='bool', default=False),
             instance_tags=dict(type='list', aliases=['tags']),
             status=dict(default='present', aliases=['state'], choices=['present', 'running', 'stopped', 'restarted',
-                                                                       'absent', 'getinfo', 'getstatus']),
+                                                                        'absent', 'getinfo', 'getstatus']),
             description=dict(),
             allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
             bind_eip=dict(),
@@ -1185,7 +1201,7 @@ def main():
                     module.exit_json(changed=changed, result=result, group_id=security_group_id,
                                      success_instance_ids=success_instance_ids, failed_instance_ids=failed_instance_ids)
                 else:
-                    module.fail_json(msg='To perform join_security_group or leave_security_group operation, '
+                    module.fail_json(msg='To perform join_security_group or leave_security_group operation,'
                                          'sg_action must be either join or leave respectively')
             # region Security Group join/leave ends here
             elif attributes:
@@ -1253,7 +1269,4 @@ def main():
 # import module snippets
 from ansible.module_utils.basic import *
 
-# from ansible.module_utils.ecs import *
-
-# import ECSConnection
 main()

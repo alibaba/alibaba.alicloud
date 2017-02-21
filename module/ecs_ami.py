@@ -17,100 +17,121 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/. 
 
+ANSIBLE_METADATA = {'status': ['stableinterface'],
+                    'supported_by': 'core',
+                    'version': '1.0'}
+
 DOCUMENTATION = '''
 ---
 module: ecs_ami
-short_description: Create or Delete User-defined Image in ECS
+version_added: "1.0"
+short_description: Create or Delete User-defined Image
 description:
-     - Create or Delete User-defined Image in ECS
-common options:
+    - Creates or deletes User-defined Images
+options:
   acs_access_key:
-    description: The access key.
+    description:
+      - Aliyun Cloud access key. If not set then the value of the `ACS_ACCESS_KEY_ID`, `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
     required: false
     default: null
-    aliases: []
+    aliases: ['ecs_access_key','access_key']
   acs_secret_access_key:
-    description: The access secret key.
+    description:
+      - Aliyun Cloud secret key. If not set then the value of the `ACS_SECRET_ACCESS_KEY`, `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
-    aliases: []
-  state:
-    description: create or deregister/delete image
+    aliases: ['ecs_secret_key','secret_key']
+  region:
+    description:
+      - The Aliyun Cloud region to use. If not specified then the value of the `ACS_REGION`, `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
     required: false
-    choices: [ "present", "absent" ]
+    default: null
+    aliases: ['acs_region', 'ecs_region']
+  status:
+    description:
+      - The state of the image for operating.
+    required: false
     default: 'present'
+    aliases: ['state']
+    choices: ['present', 'absent']
 
 function: create image
   description: Creates or delete User-defined Images in ecs
   options:
     instance_id:
-      description:
-        - instance id of the image to create
-      required: false
-      default: null
-      aliases: [ "instance" ]
+        description:
+            - instance id of the image to create.
+        required: false
+        default: null
+        aliases: ['instance']
     snapshot_id:
-      description:
-        - snapshot id of the image to create, image from system of instance
-      required: true
-      default: null
-      aliases: [ "snapshot" ]
+        description:
+            - The snapshot ID. A user-defined image is created from the specified snapshot.
+        required: false
+        default: null
+        aliases: ['snapshot']
     image_name:
-      description:
-        - The name of the new image to create
-      required: false
-      default: null
-      aliases: [ "name" ]
-    description:
-      description:
-        - An optional human-readable string describing the contents and purpose of the AMI.
-      required: false
-      default: null
+        description:
+            - The name of the image, [2, 128] English or Chinese characters.
+        required: false
+        default: null
+        aliases: ['name']
     image_version:
-      description:
-        - The version of the new image to create.
-      required: false
-      default: null
-      aliases: [ "version" ]
-    disk_mapping:
-      description:
-        - An optional list of device hashes/dictionaries with custom configurations (same block-device-mapping
-          parameters)
-        - "Valid properties include: device, snapshot_id, disk_size (in GB)".'device' choices [/dev/xvda - /dev/xvdz ] 
-      required: false
-      default: null
-    wait:
-      description:
-        - wait for the AMI to be in state 'available' before returning.
-      required: false
-      default: "no"
-      choices: [ "yes", "no" ]
-    wait_timeout:
-      description:
-        - how long before wait gives up, in seconds
-      required: false
-      default: 300
-    images_tags:
-      description:
-        - a dictionary of tags to add to the new image; '{"key":"value"}' and '{"key":"value","key":"value"}'
-      required: false
-      default: null
-      aliases: [ "tags" ]
-    launch_permission:
+        description:
+            - The version number of the image, with a length limit of 1 to 40 English characters.
+        required: false
+        default: null
+        aliases: ['version']
     description:
-      - Users that should be able to launch the ami. Expects dictionary with a key of user_ids. user_ids should be a
-        list of account ids and the number no more than 10.
-    required: false
-    default: null
+        description:
+            - The description of the image, with a length limit of 0 to 256 characters.
+        required: false
+        default: null
+        aliases: []
+    disk_mapping:
+        description:
+            - An optional list of device hashes/dictionaries with custom configurations.
+        - keys allowed are
+            - device (required=false;) - Disk Device Name value /dev/xvda start to /dev/xvdz, /dev/xvda default system disk is a snapshot of /dev/xvdb-z is only a snapshot of the data disk
+            - snapshot_id (required=false;) - Snapshot Id
+            - disk_size (required=false;) - Size of the disk, in the range [5-2000GB]
+        required: false
+        default: null
+        aliases: []
+    wait:
+        description:
+            - Wait for the image creation.
+        required: false
+        default: "no"
+        choices: ["yes", "no"]
+    wait_timeout:
+        description:
+            - how long before wait gives up, in seconds
+        required: false
+        default: "300"
+        choices: []
+    images_tags:
+        description:
+            - A list of hash/dictionaries of image tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
+        required: false
+        default: null
+        aliases: ['tags']
+    launch_permission:
+        description:
+            - Users that should be able to launch the ami
+        required: false
+        default: null
+        aliases: []
 
 function: delete user-defined image
   description: delete user-defined image
   options:
     image_id:
       description:
-        - Image ID to be deregistered.
-      required: true
+        - ID of an image. Parameter is B(required) while deleting user defined image.
+      required: false
       default: null
+      aliases: []
 '''
 
 EXAMPLES = '''
@@ -207,7 +228,7 @@ EXAMPLES = '''
   tasks:
     - name: create image
       ecs_ami:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         image_name: '{{ image_name }}'
@@ -239,7 +260,7 @@ EXAMPLES = '''
   tasks:
     - name: delete image
       ecs_ami:
-        acs_access_key_id: '{{ acs_access_key }}'
+        acs_access_key: '{{ acs_access_key }}'
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         image_id: '{{ image_id }}'
