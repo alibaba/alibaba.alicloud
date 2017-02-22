@@ -1,0 +1,14 @@
+# Ansible Module Name - ECS
+# This Playbook contains test scenario for ecs.py module.
+# Playbook created by : Shrutika M
+
+# SMP: The Playbook will be available once VPC module will be released.
+# As vswitch id is required for creating machine in VPC. To complete flow it is required to create VPC with vswitch
+# and pass it to Create instance command.
+- name: Testing create, start, stop, restart or terminate an Instance in ECS - VPC
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: TBD
+      debug:
+        msg: "The Playbook will be available once VPC module is released."

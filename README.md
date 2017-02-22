@@ -1,4 +1,7 @@
 # Ansible ECS Module
+
+[![Build Status](https://travis-ci.com/Click2Cloud/ansible-provider.svg?token=Wx2iAN1iXkuz3TJx88Mk&branch=0.1)](https://travis-ci.com/Click2Cloud/ansible-provider)
+
 Ansible ECS Module is a new ansible module, and you can manage Alicloud ECS more flexibly and conveniently via it. Next to introduce simply this module.
 ## module/
 There are several files in the module directory, and these files describe some function that can operate alicloud products.
