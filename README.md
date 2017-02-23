@@ -10,6 +10,9 @@ There are several files in the module directory, and these files describe some f
 - `ecs_ami.py`: Create or Delete User-defined Image
 - `ecs_disk.py`: Create, Attach, Detach or Delete a disk in ECS
 - `ecs_group.py`: Create, Query or Delete Security Group
+- `ecs_slb.py`: Add, Remove, Set and Describe Backend Servers Health
+- `ecs_slb_lb.py`: Create, Delete SLB and Listener and Add Backend Server
+- `ecs_slb_vsg.py`: Create, Remove, Set VServer Group - Add, Remove and Modify VServer Group Backend Sever
 
 ## utils/
 In the utils directory, the file ecs.py identifies and gains playbook params, and provides this params to module/*.py. In addition, this file implements connection between ansible and Alicloud ecs api via footmark.
