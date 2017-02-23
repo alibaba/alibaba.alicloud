@@ -55,17 +55,15 @@ function: Create a disk in ECS
   description: Create a disk in ECS
   options:
       zone_id:
-        description:
-          - Aliyun availability zone ID in which to launch the instance. Parameter is B(required) while creating disk.
-        required: false
+        description: Aliyun availability zone ID in which to launch the disk
+        required: true
         default: null
-        aliases: ['zone', 'availability_zone', 'acs_zone', 'ecs_zone' , 'zone']
+        aliases: [ 'acs_zone', 'ecs_zone', 'availability_zone', 'zone' ]
       disk_name:
-        description:
-          - The value of disk name is blank by default. [2, 128] English or Chinese characters, must begin with an uppercase/lowercase letter or Chinese character. Can contain numbers, '.', '_' and '-'. The disk name will appear on the console. It cannot begin with http:// or https://.
+        description: name of disk to create in ECS
         required: false
         default: null
-        aliases: ['name']
+        aliases: [ 'name' ]
       description:
         description:
           - The value of disk description is blank by default. [2, 256] characters. The disk description will appear on the console. It cannot begin with http:// or https://.
@@ -73,15 +71,13 @@ function: Create a disk in ECS
         default: null
         aliases: [ 'disk_description' ]
       disk_category:
-        description:
-          - Category of the data disk
+        description: Category to use for the disk.
         required: false
         default: cloud
         aliases: ['volume_type', 'disk_type']
         choices: ['cloud', 'cloud_efficiency', 'cloud_ssd']
       size:
-        description:
-          - Size of the system disk, in GB.The value should be equal to or greater than the size of the specific SnapshotId.
+        description: Size of disk in GB
         required: false
         default: null
         aliases: ['volume_size', 'disk_size']
@@ -102,15 +98,13 @@ function: Attach disk
   description: Attach disk to instance in ECS
   options:
       instance_id:
-        description:
-          - The specified instance ID. Parameter is B(required) while attaching disk.
-        required: false
+        description: The ID of the destination instance in ECS.
+        required: true
         default: null
         aliases: ['instance']
       disk_id:
-        description:
-          - The disk ID. The disk and Instance must be in the same zone. Parameter is B(required) while attaching disk.
-        required: false
+        description: The disk ID. The disk and Instance must be in the same zone.
+        required: true
         default: null
         aliases: ['vol_id', 'id']
       device:
@@ -131,15 +125,13 @@ function: Detach disk
   description: Detach disk from instance in ECS
   options:
     instance_id:
-        description:
-          - The specified instance ID. Parameter is B(required) while attaching disk.
+        description: The ID of the destination instance in ECS.
         required: false
         default: null
         aliases: ['instance']
     disk_id:
-        description:
-          - The disk ID. The disk and Instance must be in the same zone. Parameter is B(required) while attaching disk.
-        required: false
+        description: Id of disk to detach from instance in ECS.
+        required: true
         default: null
         aliases: ['vol_id', 'id']
 
@@ -148,9 +140,8 @@ function: Delete disk
   description: Delete disk which is not in use
   options:
     disk_id:
-        description:
-          - The disk ID. The disk and Instance must be in the same zone. Parameter is B(required) while attaching disk.
-        required: false
+        description: The ID of the disk device that needs to be removed.
+        required: true
         default: null
         aliases: ['vol_id', 'id']
 

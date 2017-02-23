@@ -8,6 +8,7 @@
 import os
 import sys
 import footmark.ecs
+import footmark.slb
 
 
 class AnsibleACSError(Exception):
@@ -114,3 +115,18 @@ def ecs_connect(module):
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return ecs
+
+
+def slb_connect(module):
+    """ Return an slb connection"""
+
+    region, slb_params = get_acs_connection_info(module)
+    # If we have a region specified, connect to its endpoint.
+    if region:
+        try:
+            slb = connect_to_acs(footmark.slb, region, **slb_params)
+        except AnsibleACSError, e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return slb
+

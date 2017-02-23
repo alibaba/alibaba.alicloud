@@ -51,8 +51,7 @@ common options:
     default: null
     aliases: [ 'acs_region', 'ecs_region']
   status:
-    description:
-      - For creating new security group and/or authorizing.
+    description: Create or delete or get information of a security group
     required: false
     default: 'present'
     aliases: ['state']
@@ -62,7 +61,7 @@ function create security group:
   security_group_name:
     description:
       - The security group name.
-    required: false
+    required: true
     default: null
     aliases: ['name']
     choices: []
@@ -124,7 +123,7 @@ function authorize a security group:
   group_id:
     description:
       - Provide the security group id to perform rules authorization. This parameter is not required for creating new security group.
-    required: false
+    required: true
     default: null
     aliases: ['security_group_id', 'group_ids', 'security_group_ids']
     choices: []
@@ -207,8 +206,6 @@ Basic provisioning example to create security group
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         security_group_name: 'AliyunSG'
-      register: result_details
-    - debug: var=result_details
 
 
 Basic provisioning example authorize security group
@@ -235,8 +232,6 @@ Basic provisioning example authorize security group
             port_range: -1/-1
             dest_group_id: xxxxxxxxxx
             nic_type: intranet
-      register: result_details
-    - debug: var=result_details
 
 
 Provisioning example create and authorize security group
@@ -270,8 +265,6 @@ Provisioning example create and authorize security group
             priority: 10
             policy: accept
             nic_type: intranet
-      register: result_details
-    - debug: var=result_details
 
 
 # Provisioning example to delete security group
@@ -293,8 +286,6 @@ Provisioning example create and authorize security group
         region: '{{ region }}'
         security_group_ids: '{{ security_group_ids }}'
         status: '{{ status }}'
-      register: result
-    - debug: var=result
 
 
 # Provisioning example to querying security group list
@@ -313,7 +304,6 @@ Provisioning example create and authorize security group
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         status: '{{ status }}'
-      register: result
 '''
 
 # import module snippets

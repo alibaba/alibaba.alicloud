@@ -48,90 +48,86 @@ options:
     default: null
     aliases: ['acs_region', 'ecs_region']
   status:
-    description:
-      - The state of the image for operating.
+    description: create or deregister/delete image
     required: false
+    choices: [ "present", "absent" ]
     default: 'present'
-    aliases: ['state']
-    choices: ['present', 'absent']
+    aliases: [ 'state' ]
 
 function: create image
   description: Creates or delete User-defined Images in ecs
   options:
     instance_id:
-        description:
-            - instance id of the image to create.
-        required: false
-        default: null
-        aliases: ['instance']
+      description:
+        - instance id of the image to create
+      required: false
+      default: null
+      aliases: [ "instance" ]
     snapshot_id:
-        description:
-            - The snapshot ID. A user-defined image is created from the specified snapshot.
-        required: false
-        default: null
-        aliases: ['snapshot']
+      description:
+        - snapshot id of the image to create, image from system of instance
+      required: true
+      default: null
+      aliases: [ "snapshot" ]
     image_name:
-        description:
-            - The name of the image, [2, 128] English or Chinese characters.
-        required: false
-        default: null
-        aliases: ['name']
-    image_version:
-        description:
-            - The version number of the image, with a length limit of 1 to 40 English characters.
-        required: false
-        default: null
-        aliases: ['version']
+      description:
+        - The name of the new image to create
+      required: false
+      default: null
+      aliases: [ "name" ]
     description:
-        description:
-            - The description of the image, with a length limit of 0 to 256 characters.
-        required: false
-        default: null
-        aliases: []
+      description:
+        - An optional human-readable string describing the contents and purpose of the AMI.
+      required: false
+      default: null
+    image_version:
+      description:
+        - The version of the new image to create.
+      required: false
+      default: null
+      aliases: [ "version" ]
     disk_mapping:
-        description:
-            - An optional list of device hashes/dictionaries with custom configurations.
+      description:
+        - An optional list of device hashes/dictionaries with custom configurations (same block-device-mapping
+          parameters)
         - keys allowed are
             - device (required=false;) - Disk Device Name value /dev/xvda start to /dev/xvdz, /dev/xvda default system disk is a snapshot of /dev/xvdb-z is only a snapshot of the data disk
             - snapshot_id (required=false;) - Snapshot Id
             - disk_size (required=false;) - Size of the disk, in the range [5-2000GB]
-        required: false
-        default: null
-        aliases: []
+      required: false
+      default: null
     wait:
-        description:
-            - Wait for the image creation.
-        required: false
-        default: "no"
-        choices: ["yes", "no"]
+      description:
+        - wait for the AMI to be in state 'available' before returning.
+      required: false
+      default: "no"
+      choices: [ "yes", "no" ]
     wait_timeout:
-        description:
-            - how long before wait gives up, in seconds
-        required: false
-        default: "300"
-        choices: []
+      description:
+        - how long before wait gives up, in seconds
+      required: false
+      default: 300
     images_tags:
-        description:
-            - A list of hash/dictionaries of image tags, '[{tag_key:"value", tag_value:"value"}]', tag_key must be not null when tag_value isn't null
-        required: false
-        default: null
-        aliases: ['tags']
+      description:
+        - a dictionary of tags to add to the new image; '{"key":"value"}' and '{"key":"value","key":"value"}'
+      required: false
+      default: null
+      aliases: [ "tags" ]
     launch_permission:
-        description:
-            - Users that should be able to launch the ami
-        required: false
-        default: null
-        aliases: []
+      description:
+        - Users that should be able to launch the ami. Expects dictionary with a key of user_ids. user_ids should be a
+          list of account ids and the number no more than 10.
+      required: false
+      default: null
 
 function: delete user-defined image
   description: delete user-defined image
   options:
     image_id:
       description:
-        - ID of an image. Parameter is B(required) while deleting user defined image.
-      required: false
+        - Image ID to be deregistered.
+      required: true
       default: null
-      aliases: []
 '''
 
 EXAMPLES = '''
