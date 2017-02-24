@@ -9,6 +9,7 @@ import os
 import sys
 import footmark.ecs
 import footmark.slb
+import footmark.vpc
 
 
 class AnsibleACSError(Exception):
@@ -130,3 +131,16 @@ def slb_connect(module):
     # Otherwise, no region so we fallback to the old connection method
     return slb
 
+
+def vpc_connect(module):
+    """ Return an vpc connection"""
+
+    region, vpc_params = get_acs_connection_info(module)
+    # If we have a region specified, connect to its endpoint.
+    if region:
+        try:
+            vpc = connect_to_acs(footmark.vpc, region, **vpc_params)
+        except AnsibleACSError, e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return vpc

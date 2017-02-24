@@ -13,6 +13,8 @@ There are several files in the module directory, and these files describe some f
 - `ecs_slb.py`: Add, Remove, Set and Describe Backend Servers Health
 - `ecs_slb_lb.py`: Create, Delete SLB and Listener and Add Backend Server
 - `ecs_slb_vsg.py`: Create, Remove, Set VServer Group - Add, Remove and Modify VServer Group Backend Sever
+- `ecs_vpc.py`: Create Delete Vpc and Vswitch, Querying Vswitch and VRouter and Adding Route Entry
+- `ecs_vpc_net.py`: Request, Bind, Unbind, Modify and Release EIP
 
 ## utils/
 In the utils directory, the file ecs.py identifies and gains playbook params, and provides this params to module/*.py. In addition, this file implements connection between ansible and Alicloud ecs api via footmark.
