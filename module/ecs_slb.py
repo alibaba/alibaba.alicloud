@@ -62,7 +62,7 @@ function add set backend servers to SLB
           - List of hash/dictionary of backend servers to add or set in
           - '[{"key":"value", "key":"value"}]', keys allowed:
             - server_id (required:true)
-            - weight (required:true; default: 100 )
+            - weight (required:false; default: 100 )
         required: true
 
 function remove backend servers from SLB
