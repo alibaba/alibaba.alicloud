@@ -379,6 +379,7 @@ def validate_backend_server_info(module, backend_servers, check_weight, default_
                 except Exception as e:
                     module.fail_json(msg='Invalid weight parameter.')
 
+
         else:
             if isinstance(backend_server, str) is False:
                 module.fail_json(msg='Invalid backend_server parameter type [%s].' % type(backend_server))
@@ -399,6 +400,27 @@ def get_alias_value(dictionary, aliases):
         return None
     else:
         return None
+
+def get_verify_listener_ports(module, listener_ports=None):
+    """
+
+    :param module:
+    :param listener_ports:
+    :return:
+    """
+
+    if listener_ports:
+        if len(listener_ports) > 0:
+            for port in listener_ports:
+
+                try:
+                    port = int(port)
+                except Exception as ex:
+                    module.fail_json(msg='Invalid port value')
+        else:
+            listener_ports = None
+
+    return listener_ports
 
 
 def main():
@@ -474,13 +496,7 @@ def main():
 
         if load_balancer_id:
 
-            if listener_ports:
-                if len(listener_ports) > 0:
-                    for port in listener_ports:
-                        if isinstance(port, int) is False:
-                            module.fail_json(msg='Invalid port type [%s].' % type(port))
-                else:
-                    listener_ports = None
+            listener_ports = get_verify_listener_ports(module, listener_ports)
 
             backend_servers_health_status, result = \
                 describe_backend_servers_health_status(module, slb,
