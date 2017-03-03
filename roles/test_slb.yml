@@ -1,0 +1,280 @@
+# This Playbook contains test scenario for Create SLB, Listener and add Backend Server
+# Playbook created by : Shrutika M
+
+- name: Testing Create SLB, Listener, Add Backend Server, Create, Set and Delete VServer Group
+  hosts: localhost
+  connection: local
+  vars:
+    region: cn-beijing
+    master_zone_id: cn-beijing-a
+    slave_zone_id: cn-beijing-b
+    load_balancer_name: Test_SLB
+    scheme: internet
+    internet_charge_type: paybytraffic
+    bandwidth: 1
+    listeners_1:
+      - protocol: http
+        load_balancer_port: 80
+        instance_port: 80
+        bandwidth: 1
+        scheduler: wrr
+        gzip: "on"
+        health_check:
+          ping_port: 80
+          ping_path: /index.html
+          response_timeout: 5
+          interval: 30
+          unhealthy_threshold: 2
+          healthy_threshold: 10
+          http_code: http_2xx
+        stickiness:
+          enabled: "on"
+          session_type: insert
+          cookie: 300
+          cookie_timeout: 1
+    listeners_2:
+      - protocol: http
+        load_balancer_port: 90
+        instance_port: 90
+        bandwidth: 1
+        scheduler: wrr
+        gzip: "on"
+        health_check:
+          ping_port: 90
+          ping_path: /index.html
+          response_timeout: 5
+          interval: 30
+          unhealthy_threshold: 2
+          healthy_threshold: 10
+          http_code: http_2xx
+        stickiness:
+          enabled: "on"
+          session_type: insert
+          cookie: 300
+          cookie_timeout: 1
+
+    purge_listeners: true
+    purge_instance_ids: true
+    wait: on
+    wait_timeout: 30
+
+    # create instance
+    zone: cn-beijing-a
+    image: ubuntu_140405_64_40G_cloudinit_20161115.vhd
+    type: ecs.n1.tiny
+    instance_name: travis_ansible_instance_1
+    description: travis_ansible_instance_1
+    host_name: myhost
+    password: pass@123
+    count: 1
+    allocate_public_ip: yes
+
+    # create vserver group
+    vserver_group_name: Test_VSG
+    set_vserver_group_name: Test_VSG_new
+
+  tasks:
+    - name: Create server load balancer
+      ecs_slb_lb:
+        region: '{{ region }}'
+        master_zone_id: '{{ master_zone_id }}'
+        slave_zone_id: '{{ slave_zone_id }}'
+        scheme: '{{ scheme }}'
+        internet_charge_type: '{{ internet_charge_type }}'
+        listeners: '{{ listeners_1 }}'
+        wait: '{{ wait }}'
+        wait_timeout: '{{ wait_timeout }}'
+      register: create_slb_result
+    - debug: var=create_slb_result
+
+    - name: Add HTTP Listener to SLB
+      ecs_slb_lb:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        purge_listeners: '{{ purge_listeners }}'
+        listeners: '{{ listeners_2 }}'
+      register: add_listener_result
+    - debug: var=add_listener_result
+
+    - pause:
+        seconds: 15
+
+    - name: Creating an ECS instance for Backend Server
+      ecs:
+        region: '{{ region }}'
+        zone: '{{ zone }}'
+        image: '{{ image }}'
+        type: '{{ type }}'
+        instance_name: '{{ instance_name }}'
+        description: '{{ description }}'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+        count: '{{ count }}'
+        allocate_public_ip: '{{ allocate_public_ip }}'
+      register: create_instance_result
+    - debug: var=create_instance_result
+
+    - pause:
+        seconds: 30
+
+    - name: Add Backend Servers to SLB
+      ecs_slb_lb:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        instance_ids: '{{ create_instance_result.result[0].instance_id }}'
+      register: backend_server_result
+    - debug: var=backend_server_result
+
+    - name: Set Backend Servers of SLB
+      ecs_slb:
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        status: present
+        backend_servers:
+          - server_id: '{{ create_instance_result.result[0].instance_id }}'
+            weight: 15
+      register: set_backend_server_result
+    - debug: var=set_backend_server_result
+
+    - name: Describe Backend Servers of SLB
+      ecs_slb:
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        status: check
+        ports: 90
+      register: describe_backend_server_result
+    - debug: var=describe_backend_server_result
+
+    - name: Remove Backend Servers of SLB
+      ecs_slb:
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        status: absent
+        backend_servers:  '{{ create_instance_result.result[0].instance_id }}'
+      register: remove_backend_server_result
+    - debug: var=remove_backend_server_result
+
+    - name: Modify SLB Internet Spec
+      ecs_slb_lb:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        internet_charge_type: '{{ internet_charge_type }}'
+        bandwidth: '{{ bandwidth }}'
+      register: internet_spec_result
+    - debug: var=internet_spec_result
+
+    - name: Set SLB Name
+      ecs_slb_lb:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        load_balancer_name: '{{ load_balancer_name }}'
+      register: set_slb_name_result
+    - debug: var=set_slb_name_result
+
+    - name: Add purge Listeners and add Listeners
+      ecs_slb_lb:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        purge_listeners: '{{ purge_listeners }}'
+        listeners: '{{ listeners_1 }}'
+      register: purge_listener_and_add_listener_result
+    - debug: var=purge_listener_and_add_listener_result
+
+    - name: Add purge Instance and add Instance
+      ecs_slb_lb:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        purge_instance_ids: '{{ purge_instance_ids }}'
+        instance_ids: '{{ create_instance_result.result[0].instance_id }}'
+      register: purge_instance_and_add_instance_result
+    - debug: var=purge_instance_and_add_instance_result
+
+    - name: Set SLB Status
+      ecs_slb_lb:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        status: 'inactive'
+      register: set_slb_status_result
+    - debug: var=set_slb_status_result
+
+    - name: create vserver group
+      ecs_slb_vsg:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        vserver_group_name: '{{ vserver_group_name }}'
+        backend_servers:
+          - server_id: '{{ create_instance_result.result[0].instance_id }}'
+            weight: 15
+            port: 8080
+      register: create_vsg_result
+    - debug: var=create_vsg_result
+
+    - name: set vserver group attributes
+      ecs_slb_vsg:
+        region: '{{ region }}'
+        vserver_group_id: '{{ create_vsg_result.result["VServerGroupId"] }}'
+        vserver_group_name: '{{ set_vserver_group_name }}'
+        backend_servers:
+          - server_id: '{{ create_instance_result.result[0].instance_id }}'
+            weight: 20
+            port: 8080
+      register: set_vsg_attributes_result
+    - debug: var=set_vsg_attributes_result
+
+    - name: add vserver group backend server
+      ecs_slb_vsg:
+        region: '{{ region }}'
+        vserver_group_id: '{{ create_vsg_result.result["VServerGroupId"] }}'
+        backend_servers:
+          - server_id: '{{ create_instance_result.result[0].instance_id }}'
+            weight: 20
+            port: 8085
+      register: add_vsg_bs_result
+    - debug: var=add_vsg_bs_result
+
+    - name: remove vserver group backend server
+      ecs_slb_vsg:
+        region: '{{ region }}'
+        vserver_group_id: '{{ create_vsg_result.result["VServerGroupId"] }}'
+        purge_backend_servers:
+          - server_id: '{{ create_instance_result.result[0].instance_id }}'
+            port: 8080
+      register: remove_vsg_bs_result
+    - debug: var=remove_vsg_bs_result
+
+    - name: modify vserver group backend server
+      ecs_slb_vsg:
+        region: '{{ region }}'
+        vserver_group_id: '{{ create_vsg_result.result["VServerGroupId"] }}'
+        purge_backend_servers:
+          - server_id: '{{ create_instance_result.result[0].instance_id }}'
+            weight: 20
+            port: 8085
+        backend_servers:
+          - server_id: '{{ create_instance_result.result[0].instance_id }}'
+            weight: 30
+            port: 8075
+      register: remove_vsg_bs_result
+    - debug: var=remove_vsg_bs_result
+
+    - name: Delete vserver group
+      ecs_slb_vsg:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        vserver_group_id: '{{ create_vsg_result.result["VServerGroupId"] }}'
+        status: absent
+      register: delete_vsg_result
+    - debug: var=delete_vsg_result
+
+    - name: Deleting ECS instance
+      ecs:
+        region: '{{ region }}'
+        instance_ids: '{{ create_instance_result.result[0].instance_id }}'
+        state: 'terminate'
+      register: delete_ecs_instance_result
+    - debug: var=delete_ecs_instance_result
+
+    - name: Delete SLB
+      ecs_slb_lb:
+        region: '{{ region }}'
+        load_balancer_id: '{{ create_slb_result.result[0].LoadBalancerId }}'
+        status: 'absent'
+      register: delete_slb_result
+    - debug: var=delete_slb_result

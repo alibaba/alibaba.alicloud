@@ -401,12 +401,14 @@ def get_alias_value(dictionary, aliases):
     else:
         return None
 
+
 def get_verify_listener_ports(module, listener_ports=None):
     """
+    Validate and get listener ports
 
-    :param module:
-    :param listener_ports:
-    :return:
+    :param module: Ansible module object
+    :param listener_ports: list of ports to for which backend server health status is required
+    :return: formatted listener ports
     """
 
     if listener_ports:

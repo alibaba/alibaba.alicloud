@@ -266,16 +266,13 @@
     - pause:
         seconds: 30
 
-    - name: Stopping ECS instance
+    - name: Delete ECS Instance
       ecs:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
-        instance_ids:
-          - '{{ createinstanceresult.result[0].instance_id }}'
-        state: 'stopped'
-      register: stopresult
-    - debug: var=stopresult
+        instance_ids: '{{ createinstanceresult.result[0].instance_id }}'
+        state: terminate
+      register: delete_instance_result
+    - debug: var=delete_instance_result
 
 
     # SMP: Terminate instance is not working as expected. Feature is not the part of scope of ASPEN-I

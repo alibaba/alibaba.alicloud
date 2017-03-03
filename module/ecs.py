@@ -813,6 +813,35 @@ def startstop_instances(module, ecs, instance_ids, state, instance_tags):
     return (changed, instance_dict_array, instance_ids)
 
 
+def delete_instance(module, ecs, instance_id):
+    """
+    Delete an ECS Instance
+    :param module: Ansible module object
+    :param ecs: authenticated ecs connection object
+    :param instance_id: Id of ECS instances to be deleted
+    :return: Id of ECS Instances
+    """
+    try:
+        instance_info, result = ecs.get_instance_details(instance_id=str(instance_id[0]))
+
+        if 'error' in (''.join(str(result))).lower():
+            module.fail_json(msg=result)
+
+        elif instance_info['Status'] != "Stopped":
+            startstop_instances(
+                module=module, ecs=ecs, instance_ids=instance_id, state="stopped", instance_tags=None)
+            time.sleep(60)
+
+        result = ecs.terminate_instances(instance_ids=instance_id, force=True)
+        if 'error' in (''.join(str(result))).lower():
+            module.fail_json(msg=result)
+
+    except ECSResponseError as e:
+        module.fail_json(msg='Unable to delete instance, error: {0}'.format(e))
+
+    return result
+
+
 def create_instance(module, ecs, image_id, instance_type, group_id, zone_id, instance_name, description, internet_data,
                     host_name, password, io_optimized, system_disk, disks, vswitch_id, private_ip, count,
                     allocate_public_ip, bind_eip, instance_charge_type, period, auto_renew, auto_renew_period,
@@ -888,16 +917,10 @@ def create_instance(module, ecs, image_id, instance_type, group_id, zone_id, ins
         if len(disks) > 4:
             module.fail_json(msg='more than four volumes or disk are not allowed.')
 
-    if vswitch_id:
-        # Allocating public ip is not supported with vpc n/w type
-        if allocate_public_ip:
-            module.fail_json(
-                msg='allocating public ip address is not allowed as specified instance is configured in VPC.')
-    else:
-        # Associating elastic ip binding is not supported for classic n/w type
-        if bind_eip:
-            module.fail_json(
-                msg='associating elastic ip address is not allowed as specified instance is not configured in VPC.')
+    # Associating elastic ip binding is not supported for classic n/w type
+    if bind_eip:
+        module.fail_json(
+            msg='associating elastic ip address is not allowed as specified instance is not configured in VPC.')
 
     # Restrict Instance Count
     if int(count) > 99:
@@ -1094,7 +1117,7 @@ def leave_security_group(module, ecs, instance_ids, security_group_id):
     return changed, result, success_instance_ids, failed_instance_ids, security_group_id
 
 
-def main():   
+def main():
     if HAS_ECS is False:
         print("ecsutils required for this module")
         sys.exit(1)
@@ -1120,7 +1143,7 @@ def main():
             force=dict(type='bool', default=False),
             instance_tags=dict(type='list', aliases=['tags']),
             status=dict(default='present', aliases=['state'], choices=['present', 'running', 'stopped', 'restarted',
-                                                                        'absent', 'getinfo', 'getstatus']),
+                                                                       'absent', 'getinfo', 'getstatus', 'terminate']),
             description=dict(),
             allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
             bind_eip=dict(),
@@ -1257,6 +1280,12 @@ def main():
 
             (changed, result) = get_instance_status(module, ecs, zone_id, pagenumber, pagesize)
             module.exit_json(changed=changed, result=result)
+
+        elif status == 'terminate':
+            instance_id = module.params['instance_id']
+
+            result = delete_instance(module=module, ecs=ecs, instance_id=instance_id)
+            module.exit_json(changed=True, result=result)
 
 
 # import module snippets
