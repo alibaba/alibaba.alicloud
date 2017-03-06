@@ -187,7 +187,7 @@
     - debug: var=createimageresult
 
     - pause:
-        seconds: 30
+        seconds: 40
 
     - name: Deleting image
       ecs_ami:

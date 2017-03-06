@@ -6,7 +6,7 @@
   connection: local
   vars:
     # create vpc
-    region: cn-hongkong
+    region: ap-northeast-1
     status: present
     statusDel: absent
     cidr_block: 10.0.0.0/8
@@ -15,7 +15,7 @@
     vswitches:
         - cidr: 10.0.13.0/24
           name: Test_Vswitch
-          zone: cn-hongkong-b
+          zone: ap-northeast-1a
           description: Test vswitch created
     # Eip Realted interface
     internetChargeType: PayByTraffic
@@ -23,9 +23,9 @@
     new_bandwidth: 7
 
     # create ecs instance connected to the switch
-    zone: cn-hongkong-b
-    image: ubuntu_140405_64_40G_cloudinit_20161115.vhd
-    type: ecs.n1.tiny
+    zone: ap-northeast-1a
+    image: ubuntu_14_0405_64_40G_base_20170222.vhd
+    type: ecs.n4.small
     instance_name: travis-ansible-vpc-instance
     host_name: myhost
     password: pass@123
