@@ -170,7 +170,7 @@
     - debug: var=delete_route_entry
 
     - pause:
-        seconds: 15
+        seconds: 30
 
     - name: Delete ECS Instance
       ecs:
@@ -181,7 +181,7 @@
     - debug: var=delete_instance_result
 
     - pause:
-        seconds: 15
+        seconds: 30
 
     - name: Delete Vswitch
       ecs_vpc:
