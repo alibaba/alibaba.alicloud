@@ -918,7 +918,7 @@ def create_instance(module, ecs, image_id, instance_type, group_id, zone_id, ins
             module.fail_json(msg='more than four volumes or disk are not allowed.')
 
     # Associating elastic ip binding is not supported for classic n/w type
-    if bind_eip:
+    if (bind_eip is not None) and (vswitch_id is None):
         module.fail_json(
             msg='associating elastic ip address is not allowed as specified instance is not configured in VPC.')
 
