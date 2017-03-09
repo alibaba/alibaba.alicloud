@@ -11,7 +11,8 @@
     statusDel: absent
     cidr_block: 10.0.0.0/8
     vpc_name: Travis_VPC
-    description: Demo VPC created
+    description: VPC created Travis
+    description: VPC created Travis
     vswitches:
         - cidr: 10.0.13.0/24
           name: Test_Vswitch
@@ -74,7 +75,7 @@
         region: '{{ region }}'
         status: '{{ status }}'
         vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
-        route_tables:
+        route_entries:
           - next_hop_id: '{{ create_instance_result.result[0].instance_id }}'
             route_table_id: '{{ create_vpc.result[0]["RouteTableId"] }}'
             destination_cidrblock: 10.0.14.0/24

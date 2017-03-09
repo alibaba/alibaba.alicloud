@@ -275,17 +275,16 @@
     - debug: var=delete_instance_result
 
 
-    # SMP: Terminate instance is not working as expected. Feature is not the part of scope of ASPEN-I
-    #- pause:
-    #    seconds: 30
+    - pause:
+        seconds: 30
 
-    #- name: Terminating ECS instance
-    #  ecs:
-    #    acs_access_key: '{{ acs_access_key }}'
-    #    acs_secret_access_key: '{{ acs_secret_access_key }}'
-    #    region: '{{ region }}'
-    #    instance_ids:
-    #      - '{{ createinstanceresult.result[0].instance_id }}'
-    #    state: 'absent'
-    #  register: absentresult
-    #- debug: var=absentresult
+    - name: Terminating ECS instance
+      ecs:
+        acs_access_key: '{{ acs_access_key }}'
+        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        region: '{{ region }}'
+        instance_ids:
+          - '{{ createinstanceresult.result[0].instance_id }}'
+        state: 'absent'
+      register: absentresult
+    - debug: var=absentresult
