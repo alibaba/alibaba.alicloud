@@ -1143,7 +1143,7 @@ def main():
             force=dict(type='bool', default=False),
             instance_tags=dict(type='list', aliases=['tags']),
             status=dict(default='present', aliases=['state'], choices=['present', 'running', 'stopped', 'restarted',
-                                                                       'absent', 'getinfo', 'getstatus', 'terminate']),
+                                                                       'absent', 'getinfo', 'getstatus', 'absent']),
             description=dict(),
             allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
             bind_eip=dict(),
@@ -1281,7 +1281,7 @@ def main():
             (changed, result) = get_instance_status(module, ecs, zone_id, pagenumber, pagesize)
             module.exit_json(changed=changed, result=result)
 
-        elif status == 'terminate':
+        elif status == 'absent':
             instance_id = module.params['instance_id']
 
             result = delete_instance(module=module, ecs=ecs, instance_id=instance_id)

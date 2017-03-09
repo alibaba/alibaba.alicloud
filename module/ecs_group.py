@@ -485,7 +485,7 @@ def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
                                                  "GroupId is specified, while CidrIp is not specified), "
                                                  "you must specify the nic_type as intranet")
 
-                #format rules to return for authorization
+                # format rules to return for authorization
                 formatted_rule = {}
 
                 formatted_rule['ip_protocol'] = ip_protocol
@@ -494,7 +494,7 @@ def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
                 if cidr_ip:
                     formatted_rule['cidr_ip'] = cidr_ip
 
-                group_id  = get_alias_value(rule, group_id_aliases.get(rule_type))
+                group_id = get_alias_value(rule, group_id_aliases.get(rule_type))
                 if group_id:
                     formatted_rule['group_id'] = group_id
 
@@ -553,7 +553,6 @@ def get_security_status(module, ecs, vpc_id=None, group_ids=None):
 
         if 'error' in (''.join(str(result))).lower():
             module.fail_json(changed=changed, msg=result)
-        changed = True
     except ECSResponseError as e:
         module.fail_json(msg='Unable to get status of SecurityGroup(s), error: {0}'.format(e))
     return changed, result
@@ -568,9 +567,9 @@ def del_security_group(module, ecs, security_group_ids):
     :return: result of after successfully deletion of security group
     """
     changed = False
-    
+
     if not security_group_ids:
-            module.fail_json(msg='Security Group Id  is required to Delete from security group')
+        module.fail_json(msg='Security Group Id  is required to Delete from security group')
     else:
         for id in security_group_ids:
             if not id:
@@ -682,7 +681,7 @@ def main():
 
     elif state == 'absent':
 
-        security_group_ids = module.params['group_ids']        
+        security_group_ids = module.params['group_ids']
 
         (changed, result) = del_security_group(module, ecs, security_group_ids)
         module.exit_json(changed=changed, result=result)

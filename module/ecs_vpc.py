@@ -52,7 +52,7 @@ function create vpc in VPC
         description:
           - The CIDR block representing the VPC, e.g. 10.0.0.0/8. Value options: 10.0.0.0/8, 172.16.0.0/12,
            192.168.0.0/16.
-        required: True
+        required: false
         default: 172.16.0.0/16
       vpc_name:
         description:
@@ -82,7 +82,7 @@ function create vpc in VPC
             - zone_id (required:true, description: zone_id is the desired availability zone of the subnet.)
             - vswitch_name (required:false; default: The name should be 2-128 characters. It should start with a letter
             in either the upper or lower case, or a Chinese character. It can contain digits, "_" or "-")
-            - description (required:true; default: The description can be empty, or contain 2-256 characters. Cannot
+            - description (required:false; default: The description can be empty, or contain 2-256 characters. Cannot
              start with http:// or https://)
         required: false
         default: null
@@ -126,7 +126,7 @@ function create vswitches in VPC
             - zone_id (required:true, description: zone_id is the desired availability zone of the subnet.)
             - vswitch_name (required:false; default: The name should be 2-128 characters. It should start with a letter
             in either the upper or lower case, or a Chinese character. It can contain digits, "_" or "-")
-            - description (required:true; default: The description can be empty, or contain 2-256 characters. Cannot
+            - description (required:false; default: The description can be empty, or contain 2-256 characters. Cannot
              start with http:// or https://)
         required: True
         default: null
@@ -158,9 +158,9 @@ function create custom route in VPC
           - The unique ID of a VPC to delete.
         required: True
         default: null
-      route_tables:
+      route_entries:
         description:
-          - A dictionary array of route tables to add in VPC
+          - A dictionary array of route entries to add in VPC
           - '[{"key":"value", "key":"value"}]', keys allowed:
             - destination_cidrblock (required: True; aliases: dest; description: It must be a legal CIDR or IP address,
             such as: 192.168.0.0/24 or 192.168.0.1)
@@ -265,6 +265,7 @@ EXAMPLES = """
     vswitches:
       - zone_id: 'cn-hongkong-b'
         description: 'dummy'
+        cidr_block: '172.16.0.0/24'
   tasks:
     - name: create vpc
       ecs_vpc:
@@ -359,9 +360,8 @@ EXAMPLES = """
     region: cn-hongkong
     state: present
     vpc_id: xxxxxxxxxx
-    route_tables:
-      - dest: '192.168.3.0/24'
-        destination_cidrblock: '192.168.4.0/24'
+    route_entries:
+      - destination_cidrblock: '192.168.4.0/24'
         next_hop_id: 'xxxxxxxxxx'
   tasks:
     - name: create vpc
@@ -370,7 +370,7 @@ EXAMPLES = """
         acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
         state: '{{ state }}'
-        route_tables: '{{ route_tables }}'
+        route_entries: '{{ route_entries }}'
         vpc_id: '{{ vpc_id }}'
       register: result
     - debug: var=result
@@ -479,11 +479,13 @@ def create_vpc(module, vpc, cidr_block, user_cidr, vpc_name, description, vswitc
     if str(vpc_name).startswith('http://') or str(vpc_name).startswith('https://'):
         module.fail_json(msg='vpc_name can not start with http:// or https://')
     if vswitches:
-        for key in vswitches:                      
-            if "description" not in key or not key["description"]:
-                module.fail_json(msg='description key and value is required for creating a vswitch')
-            elif str(key["description"]).startswith('http://') or str(key["description"]).startswith('https://'):
-                module.fail_json(msg='description can not start with http:// or https://')
+        for vswitch in vswitches:
+            vswitch_description = vswitch.pop('description', None)
+            if vswitch_description:
+                if str(vswitch_description).startswith('http://') or \
+                        str(vswitch_description).startswith('https://'):
+                    module.fail_json(msg='description can not start with http:// or https://')
+
     try:
         changed, result = vpc.create_vpc(cidr_block=cidr_block, user_cidr=user_cidr, vpc_name=vpc_name,
                                          description=description, vswitches=vswitches)
@@ -550,16 +552,17 @@ def create_vswitch(module, vpc, vpc_id, vswitches):
          - description: The VSwitch description. The default value is blank. [2, 256] English or Chinese characters.
          Cannot begin with http:// or https://.
     :return: VSwitchId The system allocated VSwitchID
-    """            
+    """
     if not vpc_id:
         module.fail_json(msg='vpc_id is required for creating a vswitch')
 
     if vswitches:
-        for key in vswitches:                      
-            if "description" not in key or not key["description"]:
-                module.fail_json(msg='description key and value is required for creating a vswitch')
-            elif str(key["description"]).startswith('http://') or str(key["description"]).startswith('https://'):
-                module.fail_json(msg='description can not start with http:// or https://')
+        for vswitch in vswitches:
+            vswitch_description = vswitch.pop('description', None)
+            if vswitch_description:
+                if str(vswitch_description).startswith('http://') or \
+                        str(vswitch_description).startswith('https://'):
+                    module.fail_json(msg='description can not start with http:// or https://')
     else:
         module.fail_json(msg='vswitches is required for creating a vswitch')
     changed = False
@@ -614,26 +617,26 @@ def delete_vswitch(module, vpc, vpc_id, purge_vswitches):
     return changed, result
 
 
-def create_route_entry(module, vpc, route_tables, vpc_id):
+def create_route_entry(module, vpc, route_entries, vpc_id):
     """
     Create Route Entry in VPC
     :param module: Ansible module object
     :param vpc: authenticated vpc connection object
     :param vpc_id: ID of vpc
-    :param route_tables:
+    :param route_entries:
      - route_table_id: ID of VPC route table
      - dest: It must be a legal CIDR or IP address, such as: 192.168.0.0/24 or 192.168.0.1
      - next_hop_type: The next hop type. Available value options: Instance or Tunnel
      - next_hop_id: The route entry's next hop
     :return: Returns details of RouteEntry
     """
-    if not route_tables:
-        module.fail_json(msg='route_tables is required for CreateRouteEntry')
+    if not route_entries:
+        module.fail_json(msg='route_entries is required for CreateRouteEntry')
     if not vpc_id:
         module.fail_json(msg='vpc_id is required for CreateRouteEntry')
     changed = False
     try:
-        changed, result = vpc.create_route_entry(route_tables=route_tables, vpc_id=vpc_id)
+        changed, result = vpc.create_route_entry(route_tables=route_entries, vpc_id=vpc_id)
         if 'error' in (''.join(str(result))).lower():
             module.fail_json(changed=changed, msg=result)
 
@@ -754,14 +757,14 @@ def manage_present_state(module, vpc):
     user_cidr = module.params['user_cidr']
     vpc_name = module.params['vpc_name']
     description = module.params['description']
-    route_tables = module.params['route_tables']
+    route_entries = module.params['route_entries']
     purge_vswitches = module.params['purge_vswitches']
     purge_routes = module.params['purge_routes']
     vswitches = module.params['vswitches']
     vpc_id = module.params['vpc_id']
-    
-    if route_tables is not None:
-        (changed, result) = create_route_entry(module=module, vpc=vpc, route_tables=route_tables, vpc_id=vpc_id)
+
+    if route_entries is not None:
+        (changed, result) = create_route_entry(module=module, vpc=vpc, route_entries=route_entries, vpc_id=vpc_id)
         module.exit_json(changed=changed, result=result)
 
     elif vpc_id and purge_routes is not None:
@@ -777,19 +780,18 @@ def manage_present_state(module, vpc):
 
         (changed, result, VSwitchId) = create_vswitch(module=module, vpc=vpc, vpc_id=vpc_id, vswitches=vswitches)
         module.exit_json(changed=changed, VSwitchId=VSwitchId)
-    
+
     elif vpc_id and purge_vswitches:
         (changed, result) = delete_vswitch(module=module, vpc=vpc, vpc_id=vpc_id, purge_vswitches=purge_vswitches)
         module.exit_json(changed=changed, result=result)
 
     else:
         module.fail_json(msg=[
-                {'To create route entry': 'route_tables parameters are required.'},
-                {' To delete custom route entry': 'vpc_id and purge_routes parameters are required.'},
-                {' To create vpc': 'cidr_block parameters is required.'},
-                {' To create vswitch': 'vpc_id and vswitches parameters are required.'},
-                {' To delete vswitch': 'vpc_id and purge_vswitches parameters are required.'}])
-        
+            {'To create route entry': 'route_entries parameters are required.'},
+            {' To delete custom route entry': 'vpc_id and purge_routes parameters are required.'},
+            {' To create vswitch': 'vpc_id and vswitches parameters are required.'},
+            {' To delete vswitch': 'vpc_id and purge_vswitches parameters are required.'}])
+
 
 def manage_absent_state(module, vpc):
     """
@@ -817,12 +819,12 @@ def main():
     argument_spec.update(dict(
         status=dict(default='present', aliases=['state'], choices=['present', 'absent', 'getinfo_vroute',
                                                                    'getinfo_vswitch']),
-        cidr_block=dict(aliases=['cidr'], type="str"),
+        cidr_block=dict(default='172.16.0.0/16', aliases=['cidr'], type="str"),
         user_cidr=dict(),
         vpc_name=dict(),
         description=dict(),
         subnet=dict(type='list'),
-        route_tables=dict(type='list'),
+        route_entries=dict(type='list'),
         zone_id=dict(aliases=['zone', 'az']),
         vpc_id=dict(),
         vpc_ids=dict(type='list'),
