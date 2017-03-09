@@ -252,6 +252,9 @@
       register: deletesggeresult
     - debug: var=deletesggeresult
 
+    - pause:
+        seconds: 30
+
     - name: Restarting ECS instance
       ecs:
         #acs_access_key: '{{ acs_access_key }}'
@@ -266,25 +269,12 @@
     - pause:
         seconds: 30
 
-    - name: Delete ECS Instance
-      ecs:
-        region: '{{ region }}'
-        instance_ids: '{{ createinstanceresult.result[0].instance_id }}'
-        state: terminate
-      register: delete_instance_result
-    - debug: var=delete_instance_result
-
-
-    - pause:
-        seconds: 30
-
     - name: Terminating ECS instance
       ecs:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        #acs_access_key: '{{ acs_access_key }}'
+        #acs_secret_access_key: '{{ acs_secret_access_key }}'
         region: '{{ region }}'
-        instance_ids:
-          - '{{ createinstanceresult.result[0].instance_id }}'
+        instance_id: '{{ createinstanceresult.result[0].instance_id }}'
         state: 'absent'
-      register: absentresult
-    - debug: var=absentresult
+      register: deleteresult
+    - debug: var=deleteresult

@@ -1143,7 +1143,7 @@ def main():
             force=dict(type='bool', default=False),
             instance_tags=dict(type='list', aliases=['tags']),
             status=dict(default='present', aliases=['state'], choices=['present', 'running', 'stopped', 'restarted',
-                                                                       'absent', 'getinfo', 'getstatus', 'absent']),
+                                                                       'absent', 'getinfo', 'getstatus']),
             description=dict(),
             allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
             bind_eip=dict(),
@@ -1170,13 +1170,10 @@ def main():
         status = module.params['status']
 
         if status == 'absent':
-            instance_ids = module.params['instance_ids']
-            if not instance_ids:
-                module.fail_json(msg='instance_ids list is required for absent status')
+            instance_id = module.params['instance_id']
 
-            (changed, instance_dict_array, new_instance_ids) = terminate_instances(module, ecs, instance_ids)
-            module.exit_json(changed=changed, instance_ids=new_instance_ids, instances=instance_dict_array,
-                             tagged_instances=tagged_instances)
+            result = delete_instance(module=module, ecs=ecs, instance_id=instance_id)
+            module.exit_json(changed=True, result=result)
 
         elif status in ('running', 'stopped', 'restarted'):
             instance_ids = module.params['instance_ids']
@@ -1281,11 +1278,6 @@ def main():
             (changed, result) = get_instance_status(module, ecs, zone_id, pagenumber, pagesize)
             module.exit_json(changed=changed, result=result)
 
-        elif status == 'absent':
-            instance_id = module.params['instance_id']
-
-            result = delete_instance(module=module, ecs=ecs, instance_id=instance_id)
-            module.exit_json(changed=True, result=result)
 
 
 # import module snippets

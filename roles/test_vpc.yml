@@ -11,8 +11,7 @@
     statusDel: absent
     cidr_block: 10.0.0.0/8
     vpc_name: Travis_VPC
-    description: VPC created Travis
-    description: VPC created Travis
+    description: Demo VPC created
     vswitches:
         - cidr: 10.0.13.0/24
           name: Test_Vswitch
@@ -177,7 +176,7 @@
       ecs:
         region: '{{ region }}'
         instance_ids: '{{ create_instance_result.result[0].instance_id }}'
-        state: terminate
+        state: absent
       register: delete_instance_result
     - debug: var=delete_instance_result
 

@@ -267,7 +267,7 @@
       ecs:
         region: '{{ region }}'
         instance_ids: '{{ create_instance_result.result[0].instance_id }}'
-        state: 'terminate'
+        state: absent
       register: delete_ecs_instance_result
     - debug: var=delete_ecs_instance_result
 
