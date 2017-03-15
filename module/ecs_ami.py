@@ -311,13 +311,13 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
 
         if image_name.startswith('http://') or image_name.startswith('https://'):
             module.fail_json(msg='image_name can not start with http:// or https://')
-
-    if image_version.isdigit():
-        if int(image_version) < 1 or int(image_version) > 40:
-                module.fail_json(msg='The permitted range of image_version is between 1 - 40')
-    else:
-        module.fail_json(msg='The permitted range of image_version is between 1 - 40, entered value is {0}'
-                            .format(image_version))    
+    if image_version:
+        if image_version.isdigit():
+            if int(image_version) < 1 or int(image_version) > 40:
+                    module.fail_json(msg='The permitted range of image_version is between 1 - 40')
+        else:
+            module.fail_json(msg='The permitted range of image_version is between 1 - 40, entered value is {0}'
+                                .format(image_version))    
 
     if disk_mapping:        
         for mapping in disk_mapping:
