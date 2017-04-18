@@ -17,8 +17,8 @@ before_install:
 
 install:
   - sudo pip install docker-py
-  - sudo -H pip install roles/packages/ecsutils-1.2.0.tar.gz
-  - sudo -H pip install roles/packages/footmark-1.6.1.tar.gz
+  - sudo -H pip install roles/packages/ecsutils-1.0.3.tar.gz
+  - sudo -H pip install roles/packages/footmark-1.0.7.tar.gz
     # software-properties-common for ubuntu 14.04
     # python-software-properties for ubuntu 12.04
   - sudo apt-get install -y sshpass software-properties-common python-software-properties
