@@ -1,0 +1,217 @@
+# This Playbook contains test scenario for vpc
+# Playbook created by : Shrutika M
+
+- name: Create VPC
+  hosts: localhost
+  connection: local
+  vars:
+    # create vpc
+    region: ap-northeast-1
+    status: present
+    statusDel: absent
+    cidr_block: 10.0.0.0/8
+    vpc_name: Travis_VPC
+    description: Demo VPC created
+    vswitches:
+        - cidr: 10.0.13.0/24
+          name: Test_Vswitch
+          zone: ap-northeast-1a
+          description: Test vswitch created
+    # Eip Realted interface
+    internetChargeType: PayByTraffic
+    bandwidth: 5
+    new_bandwidth: 7
+
+    # create ecs instance connected to the switch
+    zone: ap-northeast-1a
+    image: ubuntu_14_0405_64_40G_base_20170222.vhd
+    type: ecs.n4.small
+    instance_name: travis-ansible-vpc-instance
+    host_name: myhost
+    password: pass@123
+    count: 1
+    allocate_public_ip: False
+    pagenumber: 1
+    pagesize: 10
+
+  tasks:
+    - name: Create VPC
+      ecs_vpc:
+        region: '{{ region }}'
+        status: '{{ status }}'
+        cidr_block: '{{ cidr_block }}'
+        vpc_name: '{{ vpc_name }}'
+        description: '{{ description }}'
+        vswitches: '{{ vswitches }}'
+      register: create_vpc
+    - debug: var=create_vpc
+
+    - pause:
+        seconds: 10
+
+    - name: Creating an ECS instance
+      ecs:
+        region: '{{ region }}'
+        zone: '{{ zone }}'
+        image: '{{ image }}'
+        type: '{{ type }}'
+        instance_name: '{{ instance_name }}'
+        description: '{{ description }}'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+        count: '{{ count }}'
+        allocate_public_ip: '{{ allocate_public_ip }}'
+        vswitch_id: '{{ create_vpc.result[1][0]["VSwitchId"] }}'
+      register: create_instance_result
+    - debug: var=create_instance_result
+
+    - pause:
+        seconds: 15
+
+     # create route entry
+    - name: Create route entry
+      ecs_vpc:
+        region: '{{ region }}'
+        status: '{{ status }}'
+        vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
+        route_entries:
+          - next_hop_id: '{{ create_instance_result.result[0].instance_id }}'
+            route_table_id: '{{ create_vpc.result[0]["RouteTableId"] }}'
+            destination_cidrblock: 10.0.14.0/24
+
+      register: create_route_entry
+    - debug: var=create_route_entry
+
+
+      # Querying vrouter list with all valid parameters
+    - name: Querying vrouter list
+      ecs_vpc:
+       region: '{{ region }}'
+       vrouter_id: '{{ create_vpc.result[0]["VRouterId"] }}'
+       pagenumber: '{{ pagenumber }}'
+       pagesize: '{{ pagesize }}'
+       status: getinfo_vroute
+      register: query_vrouter_result
+    - debug: var=query_vrouter_result
+
+
+     # Querying vrouter list
+    - name: Querying vswitch list
+      ecs_vpc:
+       region: '{{ region }}'
+       zone_id: '{{ zone }}'
+       vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
+       vswitch_id: '{{ create_vpc.result[1][0]["VSwitchId"] }}'
+       pagenumber: '{{ pagenumber }}'
+       pagesize: '{{ pagesize }}'
+       status: getinfo_vswitch
+      register: query_vswitch_result
+    - debug: var=query_vswitch_result
+
+    - name: Request EIP with all parameters
+      ecs_vpc_net:
+       region: '{{ region }}'
+       bandwidth: '{{ bandwidth }}'
+       internet_charge_type: '{{ internetChargeType }}'
+      register: req_eip_result
+    - debug: var=req_eip_result
+
+
+    - name: Modify EIP with all parameters
+      ecs_vpc_net:
+       region: '{{ region }}'
+       bandwidth: '{{ new_bandwidth }}'
+       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
+      register: modify_eip
+    - debug: var=modify_eip
+
+    - name: Binding EIP with all parameters
+      ecs_vpc_net:
+       region: '{{ region }}'
+       status: join
+       instance_id: '{{ create_instance_result.result[0].instance_id }}'
+       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
+      register: bind_eip_result
+    - debug: var=bind_eip_result
+
+    - pause:
+        seconds: 15
+
+    - name: Unbinding EIP with all parameters
+      ecs_vpc_net:
+       region: '{{ region }}'
+       status: leave
+       instance_id: '{{ create_instance_result.result[0].instance_id }}'
+       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
+      register: unbind_eip_result
+    - debug: var=unbind_eip_result
+
+    - pause:
+        seconds: 15
+
+    - name: Release EIP with all parameters
+      ecs_vpc_net:
+       region: '{{ region }}'
+       status: absent
+       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
+      register: release_eip_result
+    - debug: var=release_eip_result
+
+    - name: Delete route entry
+      ecs_vpc:
+        region: '{{ region }}'
+        status: present
+        vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
+        purge_routes:
+             destination_cidrblock: '10.0.14.0/24'
+             next_hop_id: '{{ create_instance_result.result[0].instance_id}}'
+             route_table_id: '{{ create_vpc.result[0]["RouteTableId"] }}'
+      register: delete_route_entry
+    - debug: var=delete_route_entry
+
+    - pause:
+        seconds: 30
+
+    - name: Delete ECS Instance
+      ecs:
+        region: '{{ region }}'
+        instance_ids: '{{ create_instance_result.result[0].instance_id }}'
+        state: absent
+      register: delete_instance_result
+    - debug: var=delete_instance_result
+
+    - pause:
+        seconds: 30
+
+    - name: Delete Vswitch
+      ecs_vpc:
+        status: present
+        region: '{{ region }}'
+        vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
+        purge_vswitches: '{{ create_vpc.result[1][0]["VSwitchId"] }}'
+      register: delete_vswitch
+    - debug: var=delete_vswitch
+
+    - name: Get Security Group Info
+      ecs_group:
+        status: getinfo
+        region: '{{ region }}'
+        vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
+      register: security_group_result
+    - debug: var=security_group_result
+
+    - name: Delete Security Group
+      ecs_group:
+        status: absent
+        region: '{{ region }}'
+        group_id: '{{ security_group_result.result["SecurityGroups"]["SecurityGroup"][0]["SecurityGroupId"] }}'
+      register: delete_security_group_result
+    - debug: var=delete_security_group_result
+
+    - name: Delete VPC
+      ecs_vpc:
+        region: '{{ region }}'
+        vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
+        status: absent
+      register: delete_vpc
+    - debug: var=delete_vpc
