@@ -109,7 +109,7 @@
     - debug: var=query_vswitch_result
 
     - name: Request EIP with all parameters
-      ecs_vpc_net:
+      ecs_eip:
        region: '{{ region }}'
        bandwidth: '{{ bandwidth }}'
        internet_charge_type: '{{ internetChargeType }}'
@@ -118,7 +118,7 @@
 
 
     - name: Modify EIP with all parameters
-      ecs_vpc_net:
+      ecs_eip:
        region: '{{ region }}'
        bandwidth: '{{ new_bandwidth }}'
        allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
@@ -126,7 +126,7 @@
     - debug: var=modify_eip
 
     - name: Binding EIP with all parameters
-      ecs_vpc_net:
+      ecs_eip:
        region: '{{ region }}'
        status: join
        instance_id: '{{ create_instance_result.result[0].instance_id }}'
@@ -138,7 +138,7 @@
         seconds: 15
 
     - name: Unbinding EIP with all parameters
-      ecs_vpc_net:
+      ecs_eip:
        region: '{{ region }}'
        status: leave
        instance_id: '{{ create_instance_result.result[0].instance_id }}'
@@ -150,7 +150,7 @@
         seconds: 15
 
     - name: Release EIP with all parameters
-      ecs_vpc_net:
+      ecs_eip:
        region: '{{ region }}'
        status: absent
        allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
@@ -170,7 +170,7 @@
     - debug: var=delete_route_entry
 
     - pause:
-        seconds: 30
+        seconds: 15
 
     - name: Delete ECS Instance
       ecs:
@@ -181,7 +181,7 @@
     - debug: var=delete_instance_result
 
     - pause:
-        seconds: 30
+        seconds: 15
 
     - name: Delete Vswitch
       ecs_vpc:
