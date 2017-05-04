@@ -10,8 +10,8 @@
     status: present
     statusDel: absent
     cidr_block: 10.0.0.0/8
-    vpc_name: Travis_VPC
-    description: Demo VPC created
+    vpc_name: travis-ansible-instance
+    description: travis-ansible-instance
     vswitches:
         - cidr: 10.0.13.0/24
           name: Test_Vswitch
