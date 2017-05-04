@@ -23,7 +23,7 @@ ANSIBLE_METADATA = {'status': ['stableinterface'],
 
 DOCUMENTATION = """
 ---
-module: ecs_elb_vsg
+module: ecs_slb_vsg
 short_description: Creates,remove VServer Groups and add, remove and modify VServer Group backend server
 common options:
   alicloud_access_key:

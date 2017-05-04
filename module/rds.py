@@ -63,7 +63,7 @@ function: create rds instances
       required: false
       default: null
       aliases: ['acs_region', 'ecs_region', 'region']
-    zone:
+    alicloud_zone:
       description:
         - availability zone in which to launch the instance. Used only when command=create, command=replicate.
       required: false
@@ -236,7 +236,7 @@ function: change rds instance type
         - ID of the database to change.
       required: true
       default: null      
-    region:
+    alicloud_region:
       description:
         - The ACS region to use. If not specified then the value of the ECS_REGION environment variable,
         if any, is used.
@@ -272,13 +272,13 @@ function: create an rds read-only instance
       required: true
       default: null
       aliases: ['instance_id']
-    region:
+    alicloud_region:
       description:
         - The ACS region to use. If not specified then the value of the ECS_REGION environment variable,
         if any, is used.
       required: true
       aliases: [ 'acs_region', 'ecs_region' ]
-    zone:
+    alicloud_zone:
       description:
         - availability zone in which to launch the instance. Used only when command=create, command=replicate.
       required: true

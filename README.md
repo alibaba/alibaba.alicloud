@@ -14,11 +14,11 @@ There are several files in the module directory, and these files describe some f
 - `ecs_slb_lb.py`: Create, Delete SLB and Listener and Add Backend Server
 - `ecs_slb_vsg.py`: Create, Remove, Set VServer Group - Add, Remove and Modify VServer Group Backend Sever
 - `ecs_vpc.py`: Create Delete Vpc and Vswitch, Querying Vswitch and VRouter and Adding Route Entry
-- `ecs_vpc_net.py`: Request, Bind, Unbind, Modify and Release EIP
+- `ecs_eip.py`: Request, Bind, Unbind, Modify and Release EIP
 - `oss.py`: Create, Delete Bucket and Folder. Upload Files in Bucket, List Bucket objects.
 - `rds.py`: Create, Restart, Release and Modify RDS Instance, Create an RDS Read-only Instance, Changing RDS Instance type,
  Switching between Primary and Standby Database, Create Database, Delete database in RDS.
-- `rds_acc_mgmt.py`: Create and Delete Account, Resetting Instance password, Resetting account, Granting account permission and Revoking account permission.
+- `rds_account.py`: Create and Delete Account, Resetting Instance password, Resetting account, Granting account permission and Revoking account permission.
 
 ## utils/ecsutils
 In the utils directory, the file ecs.py identifies and gains playbook params, and provides this params to module/*.py. In addition, this file implements connection between ansible and Alicloud ECS api via footmark.

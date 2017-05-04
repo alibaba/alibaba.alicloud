@@ -2,7 +2,7 @@
   hosts: localhost
   connection: local
   vars:
-    region: cn-beijing
+    alicloud_region: cn-beijing
     bucket: c2cbucket
     folder_name: MeetingDocs
     permission: public-read-write
@@ -16,7 +16,7 @@
   tasks:
     - name: create oss bucket
       oss:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         permission: '{{ permission }}'
         mode: create
@@ -25,7 +25,7 @@
 
 #    - name: simple upload to bucket 
 #      oss:
-#        region: '{{ region }}'
+#        alicloud_region: '{{ alicloud_region }}'
 #        bucket: '{{ bucket }}'
 #        src: '{{ src }}'
 #        file_name: '{{ file_name }}'
@@ -38,7 +38,7 @@
 
     - name: create bucket folder
       oss:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         mode: put_folder
         bucket: '{{ bucket }}'
         folder_name: '{{ folder_name }}'
@@ -47,7 +47,7 @@
 
     - name: list bucket objects
       oss:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         mode: list
         bucket: '{{ bucket }}'
       register: list_result
@@ -55,7 +55,7 @@
 
     - name: delete bucket objects
       oss:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         mode: delobj
         bucket: '{{ bucket }}'
         object_list: '{{ list_result["keys"] }}'
@@ -64,7 +64,7 @@
 
     - name: delete oss bucket
       oss:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         mode: delete
       register: delete_bucket_result

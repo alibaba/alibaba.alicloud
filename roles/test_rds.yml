@@ -6,8 +6,8 @@
   connection: local
   vars:
 #create rds instance     
-    region: cn-beijing
-    zone: 
+    alicloud_region: cn-beijing
+    alicloud_zone: 
     db_engine: MySQL 
     engine_version: 5.6
     db_instance_class: rds.mysql.s1.small
@@ -47,8 +47,8 @@
   tasks:
     - name: create rds instance
       rds:
-        region: '{{ region }}'
-        zone: '{{ zone }}'
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
         command: create
         db_engine: '{{ db_engine }}'
         engine_version: '{{ engine_version }}'
@@ -82,7 +82,7 @@
 
     - name: create account
       rds_account:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: create
         db_instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'
         account_name: '{{ account_name }}'
@@ -97,7 +97,7 @@
 
     - name: Create Database
       rds:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: create
         instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'
         db_name: '{{ db_name }}'
@@ -111,7 +111,7 @@
 
     - name: change rds instance type
       rds:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: modify
         instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'
         db_instance_class: '{{ db_instance_class }}'
@@ -125,7 +125,7 @@
 
     - name: grant account permission
       rds_account:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: grant
         db_instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'
         db_name: '{{ db_name }}'
@@ -139,7 +139,7 @@
 
     - name: revoke account permission
       rds_account:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: revoke
         db_instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'
         db_name: '{{ db_name }}'
@@ -151,7 +151,7 @@
         seconds: 20  
     - name: modify rds instance
       rds:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: modify
         instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'
         db_instance_class: '{{ db_instance_class }}'
@@ -178,7 +178,7 @@
 
     - name: Reset Instance Password
       rds_account:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: reset_password
         db_instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'
         account_name: '{{ account_name }}'
@@ -189,7 +189,7 @@
 
     - name: delete account
       rds_account:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: delete
         db_instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'
         account_name: '{{ account_name }}'
@@ -201,7 +201,7 @@
 
     - name: Restart rds instance
       rds:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: reboot
         instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'   
       register: restart_instance
@@ -212,7 +212,7 @@
 
     - name: Release rds instance
       rds:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         command: delete
         instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'   
       register: release_instance
