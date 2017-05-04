@@ -13,17 +13,14 @@
     db_instance_class: rds.mysql.s1.small
     db_instance_storage: 5
     instance_net_type: Intranet
-    instance_description: test_desc
+    instance_description: travis-ansible-rds-instance
     security_ip_list: 192.168.0.0
     pay_type: Postpaid
     used_time: 
     connection_mode: Safe  
     instance_network_type: Classic
- #   vpc_id: vpc-2zermg3z16azq6iy4l70h
- #   vswitch_id: vsw-2zenp6eyukzkuriguwlwn
     private_ip_address:
-    allocate_public_ip: true 
-    connection_string_prefix: testdemoconnstring
+    allocate_public_ip: true
     public_port: 3306	
     maint_window: 22:00Z-02:00Z
     preferred_backup_time: 22:00Z-23:00Z
@@ -61,15 +58,10 @@
         used_time: '{{ used_time }}'    
         connection_mode: '{{ connection_mode }}'
         instance_network_type: '{{ instance_network_type }}'        
- #       vpc_id: '{{ vpc_id }}'
-#        vswitch_id: '{{ vswitch_id }}'
         private_ip_address:
         allocate_public_ip: '{{ allocate_public_ip }}'
-        connection_string_prefix: '{{ connection_string_prefix }}'
+        connection_string_prefix: '{{ ansible_date_time.date.iso8601_basic }}'
         public_port: '{{ public_port }}'
-#        db_name: '{{ db_name }}'    
- #       db_description: '{{ db_description }}'
-#        character_set_name: '{{ character_set_name }}'
         maint_window: '{{ maint_window }}'
         preferred_backup_time: '{{ preferred_backup_time }}'
         preferred_backup_period: '{{ preferred_backup_period }}'
@@ -159,13 +151,6 @@
         instance_description: '{{ instance_description }}'
         security_ip_list: '{{ security_ip_list }}'
         pay_type: '{{ pay_type }}'      
-        #connection_mode: '{{ connection_mode }}'
- #      instance_network_type: Classic
-        #vpc_id: '{{ vpc_id }}'
-        #vswitch_id: '{{ vswitch_id }}'
-        #current_connection_string: '{{ current_connection_string }}'
-        #connection_string_prefix: '{{ connection_string_prefix }}'
-        #port: '{{ port }}'
         maint_window: '{{ maint_window }}'
         preferred_backup_time: '{{ preferred_backup_time }}'
         preferred_backup_period: '{{ preferred_backup_period }}'
@@ -217,6 +202,3 @@
         instance_id: '{{ result_create_rds_instance.result[0].DBInstanceId }}'   
       register: release_instance
     - debug: var=release_instance
-
-
-    
