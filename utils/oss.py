@@ -57,8 +57,8 @@ def get_oss_connection_info(module):
             module.fail_json(msg="access key is required")
 
     if not secret_key:
-        if 'ALICLOUD_SECRET_ACCESS_KEY' in os.environ:
-            secret_key = os.environ['ALICLOUD_SECRET_ACCESS_KEY']
+        if 'ALICLOUD_SECRET_KEY' in os.environ:
+            secret_key = os.environ['ALICLOUD_SECRET_KEY']
         elif 'ACS_SECRET_ACCESS_KEY' in os.environ:
             secret_key = os.environ['ACS_SECRET_ACCESS_KEY']
         elif 'ACS_SECRET_KEY' in os.environ:

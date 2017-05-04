@@ -31,8 +31,8 @@ install:
 
 
 script:
+  - ansible-playbook -i roles/hosts -M module/ roles/test_ecs.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_slb.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_vpc.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_oss.yml
   - ansible-playbook -i roles/hosts -M module/ roles/test_rds.yml
-  #- ansible-playbook -i roles/hosts -M module/ roles/test_ecs.yml
-  #- ansible-playbook -i roles/hosts -M module/ roles/test_slb.yml
-  #- ansible-playbook -i roles/hosts -M module/ roles/test_vpc.yml
-  #- ansible-playbook -i roles/hosts -M module/ roles/test_oss.yml

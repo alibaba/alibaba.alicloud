@@ -34,7 +34,7 @@ common options:
     aliases: ['acs_access_key', 'ecs_access_key','access_key']
   alicloud_secret_key:
     description:
-      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_ACCESS_KEY`, `ACS_SECRET_ACCESS_KEY`,
+      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_KEY`, `ACS_SECRET_ACCESS_KEY`,
         `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
