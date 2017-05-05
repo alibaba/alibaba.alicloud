@@ -17,8 +17,8 @@ before_install:
 
 install:
   - sudo pip install docker-py
-  - sudo -H pip install roles/packages/ecsutils-1.0.4.tar.gz
   - sudo -H pip install roles/packages/footmark-1.0.8.tar.gz
+  - sudo -H pip install roles/packages/ecsutils-1.0.4.tar.gz
   - sudo -H pip install roles/packages/ossutils-1.0.0.tar.gz
     # software-properties-common for ubuntu 14.04
     # python-software-properties for ubuntu 12.04
