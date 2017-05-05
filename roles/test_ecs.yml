@@ -6,8 +6,8 @@
   connection: local
   vars:
     # general
-    alicloud_region: cn-hongkong
-    alicloud_zone: cn-hongkong-b
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a
     # create instance
     image: ubuntu_140405_64_40G_cloudinit_20161115.vhd
     type: ecs.n1.tiny
