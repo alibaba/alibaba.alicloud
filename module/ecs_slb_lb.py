@@ -19,23 +19,34 @@
 
 ANSIBLE_METADATA = {'status': ['stableinterface'],
                     'supported_by': 'core',
-                    'version': '1.0'}
+                    'version': '1.0'} 
 
 DOCUMENTATION = """ 
 ---
 module: ecs_slb_lb
 short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS
 common options:
-  acs_access_key:
-    description: The access key.
+  alicloud_access_key:
+    description:
+      - Aliyun Cloud access key. If not set then the value of the `ALICLOUD_ACCESS_KEY`, `ACS_ACCESS_KEY_ID`, 
+        `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
     required: false
     default: null
-    aliases: [ 'ecs_access_key', 'access_key' ]
-  acs_secret_access_key:
-    description: The access secret key.
+    aliases: ['acs_access_key', 'ecs_access_key','access_key']
+  alicloud_secret_key:
+    description:
+      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_KEY`, `ACS_SECRET_ACCESS_KEY`,
+        `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
-    aliases: [ 'ecs_secret_key', 'secret_key' ]
+    aliases: ['acs_secret_access_key', 'ecs_secret_key','secret_key']
+  alicloud_region:
+    description:
+      - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`, 
+        `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
+    required: false
+    default: null
+    aliases: ['acs_region', 'ecs_region', 'region']
   status:
     description: The state of the instance after operating.
     required: false
@@ -43,11 +54,6 @@ common options:
     aliases: [ 'state' ]
     choices: [ 'present', 'absent', 'active', 'inactive' ]
             map operation ['create', 'delete', 'enable', 'disable']
-  region:
-    description: The Aliyun region ID to use for the Load Balancer
-    required: false
-    default: null
-    aliases: [ 'acs_region', 'ecs_region' ]
 
 function create Server Load Balancer
     description: create a Server Load Balancer
@@ -253,9 +259,9 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-beijing
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-beijing
     load_balancer_name: demo_slb
     address_type: internet
     internet_charge_type: paybytraffic
@@ -263,9 +269,9 @@ EXAMPLES = """
   tasks:
     - name: create server load balancer add listeners and add backend server
       ecs_slb_lb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         load_balancer_name: '{{ load_balancer_name }}'
         address_type: '{{ address_type }}'
         internet_charge_type: '{{ internet_charge_type }}'
@@ -278,9 +284,9 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-beijing
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-beijing
     master_zone_id: cn-beijing-a
     slave_zone_id: cn-beijing-b
     load_balancer_name: demo_slb
@@ -315,9 +321,9 @@ EXAMPLES = """
   tasks:
     - name: create server load balancer add listeners and add backend server
       ecs_slb_lb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         master_zone_id: '{{ master_zone_id }}'
         slave_zone_id: '{{ slave_zone_id }}'
         load_balancer_name: '{{ load_balancer_name }}'
@@ -336,18 +342,18 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-beijing
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-beijing
     load_balancer_id: xxxxxxxxxx
     internet_charge_type: paybytraffic
     bandwidth: 5
   tasks:
     - name: modify server load balancer internet specification
       ecs_slb_lb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ load_balancer_id }}'
         internet_charge_type: '{{ internet_charge_type }}'
         bandwidth: '{{ bandwidth }}'
@@ -359,17 +365,17 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-beijing
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-beijing
     load_balancer_id: xxxxxxxxxx
     status : absent
   tasks:
     - name: delete server load balancer
       ecs_slb_lb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ load_balancer_id }}'
         status: '{{ status }}'
       register: result
@@ -380,17 +386,17 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-beijing
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-beijing
     load_balancer_id: xxxxxxxxxx
     status: active
   tasks:
     - name: set server load balancer
       ecs_slb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ load_balancer_id }}'
         status: '{{ status }}'
       register: result
@@ -401,18 +407,18 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-beijing
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-beijing
     load_balancer_id: xxxxxxxxxx
     load_balancer_name: slb_new_name
     status : present
   tasks:
     - name: set server load balancer name
       ecs_slb_lb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ load_balancer_id }}'
         load_balancer_name: '{{ load_balancer_name }}'
         status: '{{ status }}'

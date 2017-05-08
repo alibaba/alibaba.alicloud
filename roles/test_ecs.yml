@@ -5,11 +5,9 @@
   hosts: localhost
   connection: local
   vars:
-    #acs_access_key: xxxxxxxxxx
-    #acs_secret_access_key: xxxxxxxxxx
     # general
-    region: cn-hongkong
-    zone: cn-hongkong-b
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a
     # create instance
     image: ubuntu_140405_64_40G_cloudinit_20161115.vhd
     type: ecs.n1.tiny
@@ -83,10 +81,8 @@
   tasks:
     - name: Creating an ECS instance
       ecs:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
-        zone: '{{ zone }}'
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
         image: '{{ image }}'
         type: '{{ type }}'
         instance_name: '{{ instance_name }}'
@@ -101,9 +97,7 @@
 
     - name: Modifying instance attribute
       ecs:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         attributes:
           - id: '{{ createinstanceresult.result[0].instance_id }}'
             password: 'changed@123'
@@ -113,20 +107,16 @@
 
     - name: Querying instance status
       ecs:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
-        zone: '{{ zone }}'
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
         state: 'getstatus'
       register: queryinstanceresult
     - debug: var=queryinstanceresult
 
     - name: Creating disk
       ecs_disk:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
-        zone: '{{ zone }}'
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
         disk_name: '{{ disk_name }}'
         disk_category: '{{ disk_category }}'
         description: '{{ description }}'
@@ -137,9 +127,7 @@
 
     - name: Attaching disk
       ecs_disk:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         instance_id: '{{ createinstanceresult.result[0].instance_id }}'
         disk_id: '{{ creatediskresult.disk_id }}'
         device: '{{ device }}'
@@ -152,9 +140,7 @@
 
     - name: Detaching disk
       ecs_disk:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         disk_id: '{{ creatediskresult.disk_id }}'
       register: detachingdiskresult
     - debug: var=detachingdiskresult
@@ -164,9 +150,7 @@
 
     - name: Deleting disk
       ecs_disk:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         disk_id: '{{ creatediskresult.disk_id }}'
         state: absent
       register: deletingdiskresult
@@ -174,9 +158,7 @@
 
     - name: Creating image
       ecs_ami:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         instance_id: '{{ createinstanceresult.result[0].instance_id }}'
         image_name: '{{ image_name }}'
         image_version: '{{ image_version }}'
@@ -191,9 +173,7 @@
 
     - name: Deleting image
       ecs_ami:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         image_id: '{{ createimageresult.image_id }}'
         state: absent
       register: deleteimageresult
@@ -201,9 +181,7 @@
 
     - name: Creating security group
       ecs_group:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         name: '{{ sg_name }}'
         description: '{{description}}'
         rules: '{{ inboundRules }}'
@@ -213,18 +191,14 @@
 
     - name: Quering security group
       ecs_group:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         state: getinfo
       register: quetysgeresult
     - debug: var=quetysgeresult
 
     - name: Adding ecs instance to security group
       ecs:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ createsgeresult.group_id }}'
         instance_ids: '{{ createinstanceresult.result[0].instance_id }}'
         sg_action: join
@@ -233,9 +207,7 @@
 
     - name: Removing ecs instance from security group
       ecs:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ createsgeresult.group_id }}'
         instance_ids: '{{ createinstanceresult.result[0].instance_id }}'
         sg_action: leave
@@ -244,9 +216,7 @@
 
     - name: Deleting security group
       ecs_group:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ createsgeresult.group_id }}'
         state: absent
       register: deletesggeresult
@@ -257,9 +227,7 @@
 
     - name: Restarting ECS instance
       ecs:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         instance_ids:
           - '{{ createinstanceresult.result[0].instance_id }}'
         state: 'restarted'
@@ -271,9 +239,7 @@
 
     - name: Terminating ECS instance
       ecs:
-        #acs_access_key: '{{ acs_access_key }}'
-        #acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         instance_id: '{{ createinstanceresult.result[0].instance_id }}'
         state: 'absent'
       register: deleteresult

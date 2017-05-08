@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'status': ['stableinterface'],
+ANSIBLE_METADATA = {'status': ['stableinterface'], 
                     'supported_by': 'core',
                     'version': '1.0'}
 DOCUMENTATION = """
@@ -25,16 +25,20 @@ DOCUMENTATION = """
 module: ecs_vpc
 short_description: Create VPC,
 common options:
-  acs_access_key:
-    description: The access key.
+  alicloud_access_key:
+    description:
+      - Aliyun Cloud access key. If not set then the value of the `ALICLOUD_ACCESS_KEY`, `ACS_ACCESS_KEY_ID`, 
+        `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
     required: false
     default: null
-    aliases: [ 'ecs_access_key', 'access_key' ]
-  acs_secret_access_key:
-    description: The access secret key.
+    aliases: ['acs_access_key', 'ecs_access_key','access_key']
+  alicloud_secret_key:
+    description:
+      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_KEY`, `ACS_SECRET_ACCESS_KEY`,
+        `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
-    aliases: [ 'ecs_secret_key', 'secret_key' ]
+    aliases: ['acs_secret_access_key', 'ecs_secret_key','secret_key']
   status:
     description:
       -  status for create VPC,
@@ -226,12 +230,12 @@ function querying vswitch in VPC
         required: false
         default: null
         aliases: ['subnet']
-      zone_id:
+      alicloud_zone:
         description:
           - The number of lines per page set for paging query. The maximum value is 50 and default value is 10
         required: false
         default: null
-        aliases: ['zone']
+        aliases: ['zone_id', 'zone']
       pagenumber:
         description:
           - Page number of the instance status list. The start value is 1. The default value is 1
@@ -255,9 +259,9 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-hongkong
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-hongkong
     status: present
     cidr_block: 192.168.0.0/16
     vpc_name: Demo_VPC
@@ -269,9 +273,9 @@ EXAMPLES = """
   tasks:
     - name: create vpc
       ecs_vpc:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         status: '{{ status }}'
         cidr_block: '{{ cidr_block }}'
         vpc_name: '{{ vpc_name }}'
@@ -285,15 +289,15 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-hongkong
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-hongkong
   tasks:
     - name: delete vpc
       ecs_vpc:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         state: absent
         vpc_id: xxxxxxxxxx
       register: result
@@ -304,9 +308,9 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-hongkong
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-hongkong
     vpc_id: xxxxxxxxxx
     vswitches:
       - zone_id: cn-hongkong-b
@@ -317,9 +321,9 @@ EXAMPLES = """
   tasks:
     - name: create vswitch
       ecs_vpc:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         vswitches: '{{ vswitches }}'
         vpc_id: '{{ vpc_id }}'
         state: '{{ state }}'
@@ -331,9 +335,9 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-hongkong
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-hongkong
     vpc_id: xxxxxxxxxx
     purge_vswitches:
      - xxxxxxxxxx
@@ -341,9 +345,9 @@ EXAMPLES = """
   tasks:
     - name: delete vswitch
       ecs_vpc:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ vpc_id }}'
         purge_vswitches: '{{ purge_vswitches }}'
         state: '{{ state }}'
@@ -355,9 +359,9 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-hongkong
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-hongkong
     state: present
     vpc_id: xxxxxxxxxx
     route_entries:
@@ -366,9 +370,9 @@ EXAMPLES = """
   tasks:
     - name: create vpc
       ecs_vpc:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         state: '{{ state }}'
         route_entries: '{{ route_entries }}'
         vpc_id: '{{ vpc_id }}'
@@ -380,9 +384,9 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-hongkong
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-hongkong
     vpc_id: vpc-j6cjkmappmgb4fywpbj0u
     purge_routes:
          destination_cidrblock: "192.168.4.0/24"
@@ -391,9 +395,9 @@ EXAMPLES = """
   tasks:
     - name: delete route
       ecs_vpc:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         purge_routes: '{{ purge_routes }}'
         state: '{{ state }}'
         vpc_id: '{{ vpc_id }}'
@@ -405,9 +409,9 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-hongkong
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-hongkong
     vrouter_id: xxxxxxxxxx
     pagenumber: 1
     pagesize: 10
@@ -415,9 +419,9 @@ EXAMPLES = """
   tasks:
     - name: get vrouter list
       ecs_vpc:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         vrouter_id: '{{ vrouter_id }}'
         state: '{{ state }}'
         pagenumber: '{{ pagenumber }}'
@@ -430,11 +434,11 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: ap-southeast-1
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: ap-southeast-1
     status: getinfo_vswitch
-    zone_id: ap-southeast-1a
+    alicloud_zone: ap-southeast-1a
     vpc_id: xxxxxxxxxx
     vswitch_id: xxxxxxxxxx
     page_size: 10
@@ -442,11 +446,11 @@ EXAMPLES = """
   tasks:
     - name: querying instance status
       ecs_vpc:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         status: '{{ status }}'
-        zone_id: '{{ zone_id }}'
+        alicloud_zone: '{{ alicloud_zone }}'
         vpc_id: '{{ vpc_id }}'
         vswitch_id: '{{ vswitch_id }}'
         page_size: '{{ page_size }}'
@@ -552,7 +556,7 @@ def create_vswitch(module, vpc, vpc_id, vswitches):
          - description: The VSwitch description. The default value is blank. [2, 256] English or Chinese characters.
          Cannot begin with http:// or https://.
     :return: VSwitchId The system allocated VSwitchID
-    """
+    """            
     if not vpc_id:
         module.fail_json(msg='vpc_id is required for creating a vswitch')
 
@@ -762,7 +766,7 @@ def manage_present_state(module, vpc):
     purge_routes = module.params['purge_routes']
     vswitches = module.params['vswitches']
     vpc_id = module.params['vpc_id']
-
+    
     if route_entries is not None:
         (changed, result) = create_route_entry(module=module, vpc=vpc, route_entries=route_entries, vpc_id=vpc_id)
         module.exit_json(changed=changed, result=result)
@@ -780,18 +784,18 @@ def manage_present_state(module, vpc):
 
         (changed, result, VSwitchId) = create_vswitch(module=module, vpc=vpc, vpc_id=vpc_id, vswitches=vswitches)
         module.exit_json(changed=changed, VSwitchId=VSwitchId)
-
+    
     elif vpc_id and purge_vswitches:
         (changed, result) = delete_vswitch(module=module, vpc=vpc, vpc_id=vpc_id, purge_vswitches=purge_vswitches)
         module.exit_json(changed=changed, result=result)
 
     else:
         module.fail_json(msg=[
-            {'To create route entry': 'route_entries parameters are required.'},
-            {' To delete custom route entry': 'vpc_id and purge_routes parameters are required.'},
-            {' To create vswitch': 'vpc_id and vswitches parameters are required.'},
-            {' To delete vswitch': 'vpc_id and purge_vswitches parameters are required.'}])
-
+                {'To create route entry': 'route_entries parameters are required.'},
+                {' To delete custom route entry': 'vpc_id and purge_routes parameters are required.'},
+                {' To create vswitch': 'vpc_id and vswitches parameters are required.'},
+                {' To delete vswitch': 'vpc_id and purge_vswitches parameters are required.'}])
+        
 
 def manage_absent_state(module, vpc):
     """
@@ -825,7 +829,7 @@ def main():
         description=dict(),
         subnet=dict(type='list'),
         route_entries=dict(type='list'),
-        zone_id=dict(aliases=['zone', 'az']),
+        alicloud_zone=dict(aliases=['zone_id', 'zone', 'az']),
         vpc_id=dict(),
         vpc_ids=dict(type='list'),
         cidr=dict(),
@@ -870,7 +874,7 @@ def main():
         module.exit_json(changed=changed, result=result)
 
     elif status == 'getinfo_vswitch':
-        zone_id = module.params['zone_id']
+        zone_id = module.params['alicloud_zone']
         vpc_id = module.params['vpc_id']
         vswitch_id = module.params['vswitch_id']
         pagenumber = module.params['pagenumber']
