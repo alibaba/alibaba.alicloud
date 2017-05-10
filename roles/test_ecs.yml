@@ -1,0 +1,246 @@
+# This Playbook contains test scenario for instance in classic network type
+# Playbook created by : Shrutika M
+
+- name: Testing Classic network type scenarions
+  hosts: localhost
+  connection: local
+  vars:
+    # general
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a
+    # create instance
+    image: ubuntu_140405_64_40G_cloudinit_20161115.vhd
+    type: ecs.n1.tiny
+    instance_name: travis-ansible-instance
+    description: travis-ansible-instance
+    host_name: myhost
+    password: pass@123
+    count: 1
+    allocate_public_ip: yes
+    instance_tags:
+      - tag_key: create_test_1
+        tag_value: '0.01'
+      - tag_key: create_test_2
+        tag_value: '0.02'
+
+    # disk interface
+    disk_name: travis-ansible-instance
+    disk_category: cloud_efficiency
+    size: 25
+    disk_tags:
+      - tag_key: create_test_1
+        tag_value: '0.01'
+      - tag_key: create_test_2
+        tag_value: '0.02'
+    device: /dev/xvdb
+
+    # User defined image
+    image_name: travis-ansible-instance
+    image_version: 1
+    images_tags:
+      - tag_key: create_test_1
+        tag_value: '0.01'
+      - tag_key: create_test_2
+        tag_value: '0.02'
+    wait: yes
+
+    # Security Group
+    sg_name: travis-ansible-instance
+    inboundRules:
+      - proto: tcp
+        port_range: 80/86
+        cidr_ip: 192.168.0.54/32
+        priority: 1
+
+      - proto: tcp
+        port_range: 8080/8088
+        cidr_ip: 47.89.23.33/32
+        priority: 1
+
+      - proto: udp
+        port_range: 10988/10989
+        cidr_ip: 47.89.23.33/32
+        priority: 2
+
+    outboundRules:
+      - proto: tcp
+        port_range: 80/80
+        cidr_ip: 192.168.0.54/32
+        priority: 1
+
+      - proto: tcp
+        port_range: 8080/8085
+        cidr_ip: 47.89.23.33/32
+        priority: 1
+
+      - proto: udp
+        port_range: 10989/10997
+        cidr_ip: 47.89.23.33/32
+        priority: 2
+
+  tasks:
+    - name: Creating an ECS instance
+      ecs:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        image: '{{ image }}'
+        type: '{{ type }}'
+        instance_name: '{{ instance_name }}'
+        description: '{{ description }}'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+        count: '{{ count }}'
+        allocate_public_ip: '{{ allocate_public_ip }}'
+        instance_tags: '{{ instance_tags }}'
+      register: createinstanceresult
+    - debug: var=createinstanceresult
+
+    - name: Modifying instance attribute
+      ecs:
+        alicloud_region: '{{ alicloud_region }}'
+        attributes:
+          - id: '{{ createinstanceresult.result[0].instance_id }}'
+            password: 'changed@123'
+            host_name: 'mychangedhostname'
+      register: modifyinstanceresult
+    - debug: var=modifyinstanceresult
+
+    - name: Querying instance status
+      ecs:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        state: 'getstatus'
+      register: queryinstanceresult
+    - debug: var=queryinstanceresult
+
+    - name: Creating disk
+      ecs_disk:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        disk_name: '{{ disk_name }}'
+        disk_category: '{{ disk_category }}'
+        description: '{{ description }}'
+        size: '{{ size }}'
+        disk_tags: '{{ disk_tags }}'
+      register: creatediskresult
+    - debug: var=creatediskresult
+
+    - name: Attaching disk
+      ecs_disk:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_id: '{{ createinstanceresult.result[0].instance_id }}'
+        disk_id: '{{ creatediskresult.disk_id }}'
+        device: '{{ device }}'
+        delete_with_instance: yes
+      register: attachingdiskresult
+    - debug: var=attachingdiskresult
+
+    - pause:
+        seconds: 30
+
+    - name: Detaching disk
+      ecs_disk:
+        alicloud_region: '{{ alicloud_region }}'
+        disk_id: '{{ creatediskresult.disk_id }}'
+      register: detachingdiskresult
+    - debug: var=detachingdiskresult
+
+    - pause:
+        seconds: 30
+
+    - name: Deleting disk
+      ecs_disk:
+        alicloud_region: '{{ alicloud_region }}'
+        disk_id: '{{ creatediskresult.disk_id }}'
+        state: absent
+      register: deletingdiskresult
+    - debug: var=deletingdiskresult
+
+    - name: Creating image
+      ecs_ami:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_id: '{{ createinstanceresult.result[0].instance_id }}'
+        image_name: '{{ image_name }}'
+        image_version: '{{ image_version }}'
+        description: '{{ description}}'
+        images_tags: '{{ images_tags }}'
+        wait: '{{ wait }}'
+      register: createimageresult
+    - debug: var=createimageresult
+
+    - pause:
+        seconds: 40
+
+    - name: Deleting image
+      ecs_ami:
+        alicloud_region: '{{ alicloud_region }}'
+        image_id: '{{ createimageresult.image_id }}'
+        state: absent
+      register: deleteimageresult
+    - debug: var=deleteimageresult
+
+    - name: Creating security group
+      ecs_group:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ sg_name }}'
+        description: '{{description}}'
+        rules: '{{ inboundRules }}'
+        rules_egress: '{{ outboundRules }}'
+      register: createsgeresult
+    - debug: var=createsgeresult
+
+    - name: Quering security group
+      ecs_group:
+        alicloud_region: '{{ alicloud_region }}'
+        state: getinfo
+      register: quetysgeresult
+    - debug: var=quetysgeresult
+
+    - name: Adding ecs instance to security group
+      ecs:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ createsgeresult.group_id }}'
+        instance_ids: '{{ createinstanceresult.result[0].instance_id }}'
+        sg_action: join
+      register: joiningsgeresult
+    - debug: var=joiningsgeresult
+
+    - name: Removing ecs instance from security group
+      ecs:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ createsgeresult.group_id }}'
+        instance_ids: '{{ createinstanceresult.result[0].instance_id }}'
+        sg_action: leave
+      register: leavingsgeresult
+    - debug: var=leavingsgeresult
+
+    - name: Deleting security group
+      ecs_group:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ createsgeresult.group_id }}'
+        state: absent
+      register: deletesggeresult
+    - debug: var=deletesggeresult
+
+    - pause:
+        seconds: 30
+
+    - name: Restarting ECS instance
+      ecs:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids:
+          - '{{ createinstanceresult.result[0].instance_id }}'
+        state: 'restarted'
+      register: restartresult
+    - debug: var=restartresult
+
+    - pause:
+        seconds: 30
+
+    - name: Terminating ECS instance
+      ecs:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_id: '{{ createinstanceresult.result[0].instance_id }}'
+        state: 'absent'
+      register: deleteresult
+    - debug: var=deleteresult

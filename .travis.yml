@@ -1,0 +1,38 @@
+sudo: required
+dist: trusty
+language: python
+python:
+  - "2.7"
+services:
+  - docker
+env:
+  global:
+    - PATH="/usr/bin:$PATH"
+
+before_install:
+    # Ansible doesn't play well with virtualenv
+  - deactivate
+  - sudo apt-get update -qq
+  - sudo apt-get install -y -o Dpkg::Options::="--force-confnew" docker-engine
+
+install:
+  - sudo pip install docker-py
+  - sudo -H pip install roles/packages/footmark-1.0.8.tar.gz
+  - sudo -H pip install roles/packages/ecsutils-1.0.4.tar.gz
+  - sudo -H pip install roles/packages/ossutils-1.0.0.tar.gz
+    # software-properties-common for ubuntu 14.04
+    # python-software-properties for ubuntu 12.04
+  - sudo apt-get install -y sshpass software-properties-common python-software-properties
+  - sudo apt-add-repository -y ppa:ansible/ansible
+  - sudo apt-get update -qq
+  - sudo apt-get install -y ansible
+  - sudo rm /usr/bin/python && sudo ln -s /usr/bin/python2.7 /usr/bin/python
+  - ansible --version
+
+
+script:
+  - ansible-playbook -i roles/hosts -M module/ roles/test_ecs.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_slb.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_vpc.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_oss.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_rds.yml
