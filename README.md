@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/Click2Cloud/ansible-provider.svg?branch=master)](https://travis-ci.org/Click2Cloud/ansible-provider)
 
 Ansible ECS Module is a new ansible module, and you can manage Alicloud ECS more flexibly and conveniently via it. Next to introduce simply this module.
-## module/
+## lib/ansible/modules/cloud/alicloud
 There are several files in the module directory, and these files describe some function that can operate alicloud products.
 
 - `ecs.py`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
@@ -20,10 +20,10 @@ There are several files in the module directory, and these files describe some f
  Switching between Primary and Standby Database, Create Database, Delete database in RDS.
 - `rds_account.py`: Create and Delete Account, Resetting Instance password, Resetting account, Granting account permission and Revoking account permission.
 
-## utils/ecsutils
+## lib/ansible/module_utils/ecsutils
 In the utils directory, the file ecs.py identifies and gains playbook params, and provides this params to module/*.py. In addition, this file implements connection between ansible and Alicloud ECS api via footmark.
 
-## utils/ossutils
+## lib/ansible/module_utils/ossutils
 In the utils directory, the file oss.py identifies and gains playbook params, and provides this params to module/*.py. In addition, this file implements connection between ansible and Alicloud OSS api via footmark.
 
 ## footmark
