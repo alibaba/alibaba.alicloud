@@ -4,7 +4,7 @@ from os import path
 
 from setuptools import setup, find_packages
 
-PACKAGE = "utils"
+PACKAGE = "module_utils"
 NAME = "ecsutils"
 DESCRIPTION = "Ansible Alicloud ecs utils"
 AUTHOR = "xiaozhu"
