@@ -26,24 +26,27 @@ DOCUMENTATION = '''
 module: ecs_disk
 short_description: Create, Attach, Detach or Delete a disk in ECS
 common options:
-  acs_access_key:
+  alicloud_access_key:
     description:
-      - Aliyun Cloud access key. If not set then the value of the `ACS_ACCESS_KEY_ID`, `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
+      - Aliyun Cloud access key. If not set then the value of the `ALICLOUD_ACCESS_KEY`, `ACS_ACCESS_KEY_ID`, 
+        `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
     required: false
     default: null
-    aliases: ['ecs_access_key','access_key']
-  acs_secret_access_key:
+    aliases: ['acs_access_key', 'ecs_access_key','access_key']
+  alicloud_secret_key:
     description:
-      - Aliyun Cloud secret key. If not set then the value of the `ACS_SECRET_ACCESS_KEY`, `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
+      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_KEY`, `ACS_SECRET_ACCESS_KEY`,
+        `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
-    aliases: ['ecs_secret_key','secret_key']
-  region:
+    aliases: ['acs_secret_access_key', 'ecs_secret_key','secret_key']
+  alicloud_region:
     description:
-      - The Aliyun Cloud region to use. If not specified then the value of the `ACS_REGION`, `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
+      - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`, 
+        `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
     required: false
     default: null
-    aliases: [ 'acs_region', 'ecs_region']
+    aliases: ['acs_region', 'ecs_region', 'region']
   status:
     description: The state of the disk after operation.
     required: false
@@ -54,11 +57,11 @@ common options:
 function: Create a disk in ECS
   description: Create a disk in ECS
   options:
-      zone_id:
+      alicloud_zone:
         description: Aliyun availability zone ID in which to launch the disk
         required: true
         default: null
-        aliases: [ 'acs_zone', 'ecs_zone', 'availability_zone', 'zone' ]
+        aliases: [ 'acs_zone', 'ecs_zone', 'availability_zone', 'zone_id', 'zone' ]
       disk_name:
         description: name of disk to create in ECS
         required: false
@@ -157,19 +160,19 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-beijing
-    zone: cn-beijing-b
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-b
     size: 20
     status: present
   tasks:
     - name: create disk
       ecs_disk:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
-        zone: '{{ zone }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
         size: '{{ size }}'
         status: '{{ status }}'
       register: result
@@ -180,10 +183,10 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: cn-hongkong
-    zone: cn-hongkong-b
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-hongkong
+    alicloud_zone: cn-hongkong-b
     disk_name: disk_1
     description: data disk_1
     size: 20
@@ -193,10 +196,10 @@ EXAMPLES = '''
   tasks:
     - name: create disk
       ecs_disk:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
-        zone: '{{ zone }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
         disk_name: '{{ disk_name }}'
         description: '{{ description }}'
         size: '{{ size }}'
@@ -212,10 +215,10 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
     status: present
-    region: us-west-1
+    alicloud_region: us-west-1
     instance_id: xxxxxxxxxx
     disk_id: xxxxxxxxxx
     device: /dev/xvdb
@@ -223,10 +226,10 @@ EXAMPLES = '''
   tasks:
     - name: Attach Disk to instance
       ecs_disk:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         status: '{{ status }}'
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         instance_id: '{{ instance_id }}'
         disk_id: '{{ disk_id }}'
         device: '{{ device }}'
@@ -240,17 +243,17 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: us-west-1
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: us-west-1
     disk_id: xxxxxxxxxx
     status: present
   tasks:
     - name: detach disk
       ecs_disk:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         id: '{{ disk_id }}'
         status: '{{ status }}'
       register: result
@@ -262,17 +265,17 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
-    region: us-west-1
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: us-west-1
     disk_id: xxxxxxxxxx
     status: absent
   tasks:
     - name: detach disk
       ecs_disk:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
-        region: '{{ region }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         disk_id: '{{ disk_id }}'
         status: '{{ status }}'
       register: result
@@ -459,7 +462,7 @@ def main():
         argument_spec = ecs_argument_spec()
         argument_spec.update(dict(
             group_id=dict(),
-            zone_id=dict(aliases=['acs_zone', 'ecs_zone', 'zone', 'availability_zone']),         
+            alicloud_zone=dict(aliases=['zone_id', 'acs_zone', 'ecs_zone', 'zone', 'availability_zone']),         
             status=dict(default='present', aliases=['state'], choices=['present','absent'] ),
             disk_id=dict(aliases=['vol_id','id']),
             disk_name=dict(aliases=['name']),
@@ -510,7 +513,7 @@ def main():
 
             if operation_flag == 'present':
                 # create disk parameter values
-                zone_id = module.params['zone_id']
+                zone_id = module.params['alicloud_zone']
                 disk_name = module.params['disk_name']
                 description = module.params['description']
                 disk_category = module.params['disk_category']

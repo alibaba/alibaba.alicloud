@@ -6,16 +6,16 @@
   connection: local
   vars:
     # create vpc
-    region: ap-northeast-1
+    alicloud_region: ap-northeast-1
     status: present
     statusDel: absent
     cidr_block: 10.0.0.0/8
-    vpc_name: Travis_VPC
-    description: Demo VPC created
+    vpc_name: travis-ansible-instance
+    description: travis-ansible-instance
     vswitches:
         - cidr: 10.0.13.0/24
           name: Test_Vswitch
-          zone: ap-northeast-1a
+          alicloud_zone: ap-northeast-1a
           description: Test vswitch created
     # Eip Realted interface
     internetChargeType: PayByTraffic
@@ -23,7 +23,7 @@
     new_bandwidth: 7
 
     # create ecs instance connected to the switch
-    zone: ap-northeast-1a
+    alicloud_zone: ap-northeast-1a
     image: ubuntu_14_0405_64_40G_base_20170222.vhd
     type: ecs.n4.small
     instance_name: travis-ansible-vpc-instance
@@ -37,7 +37,7 @@
   tasks:
     - name: Create VPC
       ecs_vpc:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         status: '{{ status }}'
         cidr_block: '{{ cidr_block }}'
         vpc_name: '{{ vpc_name }}'
@@ -51,8 +51,8 @@
 
     - name: Creating an ECS instance
       ecs:
-        region: '{{ region }}'
-        zone: '{{ zone }}'
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
         image: '{{ image }}'
         type: '{{ type }}'
         instance_name: '{{ instance_name }}'
@@ -71,7 +71,7 @@
      # create route entry
     - name: Create route entry
       ecs_vpc:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         status: '{{ status }}'
         vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
         route_entries:
@@ -86,7 +86,7 @@
       # Querying vrouter list with all valid parameters
     - name: Querying vrouter list
       ecs_vpc:
-       region: '{{ region }}'
+       alicloud_region: '{{ alicloud_region }}'
        vrouter_id: '{{ create_vpc.result[0]["VRouterId"] }}'
        pagenumber: '{{ pagenumber }}'
        pagesize: '{{ pagesize }}'
@@ -98,8 +98,8 @@
      # Querying vrouter list
     - name: Querying vswitch list
       ecs_vpc:
-       region: '{{ region }}'
-       zone_id: '{{ zone }}'
+       alicloud_region: '{{ alicloud_region }}'
+       zone_id: '{{ alicloud_zone }}'
        vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
        vswitch_id: '{{ create_vpc.result[1][0]["VSwitchId"] }}'
        pagenumber: '{{ pagenumber }}'
@@ -109,8 +109,8 @@
     - debug: var=query_vswitch_result
 
     - name: Request EIP with all parameters
-      ecs_vpc_net:
-       region: '{{ region }}'
+      ecs_eip:
+       alicloud_region: '{{ alicloud_region }}'
        bandwidth: '{{ bandwidth }}'
        internet_charge_type: '{{ internetChargeType }}'
       register: req_eip_result
@@ -118,16 +118,16 @@
 
 
     - name: Modify EIP with all parameters
-      ecs_vpc_net:
-       region: '{{ region }}'
+      ecs_eip:
+       alicloud_region: '{{ alicloud_region }}'
        bandwidth: '{{ new_bandwidth }}'
        allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
       register: modify_eip
     - debug: var=modify_eip
 
     - name: Binding EIP with all parameters
-      ecs_vpc_net:
-       region: '{{ region }}'
+      ecs_eip:
+       alicloud_region: '{{ alicloud_region }}'
        status: join
        instance_id: '{{ create_instance_result.result[0].instance_id }}'
        allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
@@ -138,8 +138,8 @@
         seconds: 15
 
     - name: Unbinding EIP with all parameters
-      ecs_vpc_net:
-       region: '{{ region }}'
+      ecs_eip:
+       alicloud_region: '{{ alicloud_region }}'
        status: leave
        instance_id: '{{ create_instance_result.result[0].instance_id }}'
        allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
@@ -150,8 +150,8 @@
         seconds: 15
 
     - name: Release EIP with all parameters
-      ecs_vpc_net:
-       region: '{{ region }}'
+      ecs_eip:
+       alicloud_region: '{{ alicloud_region }}'
        status: absent
        allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
       register: release_eip_result
@@ -159,7 +159,7 @@
 
     - name: Delete route entry
       ecs_vpc:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         status: present
         vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
         purge_routes:
@@ -170,23 +170,23 @@
     - debug: var=delete_route_entry
 
     - pause:
-        seconds: 30
+        seconds: 15
 
     - name: Delete ECS Instance
       ecs:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ create_instance_result.result[0].instance_id }}'
         state: absent
       register: delete_instance_result
     - debug: var=delete_instance_result
 
     - pause:
-        seconds: 30
+        seconds: 15
 
     - name: Delete Vswitch
       ecs_vpc:
         status: present
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
         purge_vswitches: '{{ create_vpc.result[1][0]["VSwitchId"] }}'
       register: delete_vswitch
@@ -195,7 +195,7 @@
     - name: Get Security Group Info
       ecs_group:
         status: getinfo
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
       register: security_group_result
     - debug: var=security_group_result
@@ -203,14 +203,14 @@
     - name: Delete Security Group
       ecs_group:
         status: absent
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ security_group_result.result["SecurityGroups"]["SecurityGroup"][0]["SecurityGroupId"] }}'
       register: delete_security_group_result
     - debug: var=delete_security_group_result
 
     - name: Delete VPC
       ecs_vpc:
-        region: '{{ region }}'
+        alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ create_vpc.result[0]["VpcId"] }}'
         status: absent
       register: delete_vpc

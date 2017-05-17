@@ -17,8 +17,9 @@ before_install:
 
 install:
   - sudo pip install docker-py
-  - sudo -H pip install roles/packages/ecsutils-1.0.3.tar.gz
-  - sudo -H pip install roles/packages/footmark-1.0.7.tar.gz
+  - sudo -H pip install roles/packages/footmark-1.0.8.tar.gz
+  - sudo -H pip install roles/packages/ecsutils-1.0.4.tar.gz
+  - sudo -H pip install roles/packages/ossutils-1.0.0.tar.gz
     # software-properties-common for ubuntu 14.04
     # python-software-properties for ubuntu 12.04
   - sudo apt-get install -y sshpass software-properties-common python-software-properties
@@ -33,3 +34,5 @@ script:
   - ansible-playbook -i roles/hosts -M module/ roles/test_ecs.yml
   - ansible-playbook -i roles/hosts -M module/ roles/test_slb.yml
   - ansible-playbook -i roles/hosts -M module/ roles/test_vpc.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_oss.yml
+  - ansible-playbook -i roles/hosts -M module/ roles/test_rds.yml

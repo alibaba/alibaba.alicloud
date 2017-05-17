@@ -1,0 +1,71 @@
+- name: Test bucket Interfaces
+  hosts: localhost
+  connection: local
+  vars:
+    alicloud_region: cn-beijing
+    bucket: c2cbucket
+    folder_name: MeetingDocs
+    permission: public-read-write
+    src: Book1.xlsx
+    file_name: MeetingDocs/Book1.xslx
+    headers:
+      Content-Encoding: md5
+    metadata:
+      x-oss-meta-key: value
+    expiration: 30
+  tasks:
+    - name: create oss bucket
+      oss:
+        alicloud_region: '{{ alicloud_region }}'
+        bucket: '{{ bucket }}'
+        permission: '{{ permission }}'
+        mode: create
+      register: create_bucket_result
+    - debug: var=create_bucket_result
+
+#    - name: simple upload to bucket 
+#      oss:
+#        alicloud_region: '{{ alicloud_region }}'
+#        bucket: '{{ bucket }}'
+#        src: '{{ src }}'
+#        file_name: '{{ file_name }}'
+#        headers: '{{ headers }}'
+#        metadata: '{{ metadata }}'
+#        expiration: '{{ expiration }}'
+#        mode: put
+#      register: s_upload_result
+#    - debug: var=s_upload_result
+
+    - name: create bucket folder
+      oss:
+        alicloud_region: '{{ alicloud_region }}'
+        mode: put_folder
+        bucket: '{{ bucket }}'
+        folder_name: '{{ folder_name }}'
+      register: folder_result
+    - debug: var=folder_result
+
+    - name: list bucket objects
+      oss:
+        alicloud_region: '{{ alicloud_region }}'
+        mode: list
+        bucket: '{{ bucket }}'
+      register: list_result
+    - debug: var=list_result
+
+    - name: delete bucket objects
+      oss:
+        alicloud_region: '{{ alicloud_region }}'
+        mode: delobj
+        bucket: '{{ bucket }}'
+        object_list: '{{ list_result["keys"] }}'
+      register: delete_objects_result
+    - debug: var=delete_objects_result
+
+    - name: delete oss bucket
+      oss:
+        alicloud_region: '{{ alicloud_region }}'
+        bucket: '{{ bucket }}'
+        mode: delete
+      register: delete_bucket_result
+    - debug: var=delete_bucket_result

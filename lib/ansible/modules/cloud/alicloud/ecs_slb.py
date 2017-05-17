@@ -31,16 +31,20 @@ description:
   - Will be marked changed when called only if state is changed.
 short_description: Creates, sets and remove backend servers and describe backend servers health status of SLB
 common options:
-  acs_access_key:
-    description: The access key.
+  alicloud_access_key:
+    description:
+      - Aliyun Cloud access key. If not set then the value of the `ALICLOUD_ACCESS_KEY`, `ACS_ACCESS_KEY_ID`, 
+        `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
     required: false
     default: null
-    aliases: [ 'ecs_access_key', 'access_key' ]
-  acs_secret_access_key:
-    description: The access secret key.
+    aliases: ['acs_access_key', 'ecs_access_key','access_key']
+  alicloud_secret_key:
+    description:
+      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_KEY`, `ACS_SECRET_ACCESS_KEY`,
+        `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
     required: false
     default: null
-    aliases: [ 'ecs_secret_key', 'secret_key' ]
+    aliases: ['acs_secret_access_key', 'ecs_secret_key','secret_key']
   status:
     description: Create, set, remove or describe backend server health status of an slb
     required: false
@@ -105,13 +109,13 @@ Basic example to add backend server to load balancer instance
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
   tasks:
     - name: add backend server
       ecs_slb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         load_balancer_id: 'xxxxxxxxxx'
         backend_servers:
           - server_id: xxxxxxxxxx
@@ -124,13 +128,13 @@ Basic example to set backend server of load balancer instance
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
   tasks:
     - name: set backend server
       ecs_slb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         load_balancer_id: 'xxxxxxxxxx'
         backend_servers:
           - server_id: xxxxxxxxxx
@@ -143,13 +147,13 @@ Basic example to remove backend servers from load balancer instance
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
   tasks:
     - name: remove backend servers
       ecs_slb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         load_balancer_id: 'xxxxxxxxxx'
         status: absent
         backend_servers:
@@ -161,13 +165,13 @@ Basic example to describe backend server health status of load balancer instance
   hosts: localhost
   connection: local
   vars:
-    acs_access_key: xxxxxxxxxx
-    acs_secret_access_key: xxxxxxxxxx
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
   tasks:
     - name: describe backend server health status
       ecs_slb:
-        acs_access_key: '{{ acs_access_key }}'
-        acs_secret_access_key: '{{ acs_secret_access_key }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         status: check
         load_balancer_id: 'xxxxxxxxxx'
         ports:
@@ -443,12 +447,12 @@ def main():
     ))
 
     # handling region parameter which is not required by this module
-    del argument_spec['region']
+    del argument_spec['alicloud_region']
 
     module = AnsibleModule(argument_spec=argument_spec)
 
     # handling region parameter which is required by common utils file to login but not required by this module
-    module.params['region'] = 'cn-hangzhou'
+    module.params['alicloud_region'] = 'cn-hangzhou'
 
     slb = slb_connect(module)
     region, acs_connect_kwargs = get_acs_connection_info(module)
