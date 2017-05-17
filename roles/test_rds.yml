@@ -60,7 +60,7 @@
         instance_network_type: '{{ instance_network_type }}'        
         private_ip_address:
         allocate_public_ip: '{{ allocate_public_ip }}'
-        connection_string_prefix: '{{ ansible_date_time.iso8601_basic }}'
+        connection_string_prefix: '{{"rds"}}{{ ansible_date_time.iso8601_basic_short | replace("T", "t") | replace("Z", "z") }}'
         public_port: '{{ public_port }}'
         maint_window: '{{ maint_window }}'
         preferred_backup_time: '{{ preferred_backup_time }}'
