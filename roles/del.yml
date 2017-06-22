@@ -1,0 +1,19 @@
+# Basic provisioning example to set  SLB Status
+- name: set server load balancer status
+  hosts: localhost
+  connection: local
+  vars:
+    alicloud_region: cn-beijing
+    load_balancer_name_for_change: test_change_name
+    address_type: internet
+    bandwidth: 4
+    internet_charge_type: paybytraffic
+  tasks:
+    - name: delete server load balancer
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: lb-2zesh4o5vpn63ym51p1rs
+  #        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
+        state: absent
+      register: result
+    - debug: var=result

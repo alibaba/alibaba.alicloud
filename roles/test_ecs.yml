@@ -117,7 +117,7 @@
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         instance_ids: '{{ createinstanceresult["instance_ids"] }}'
-        state: 'fetch'
+        state: 'list'
       register: queryinstanceresult
     - debug: var=queryinstanceresult
 
@@ -210,7 +210,7 @@
         alicloud_region: '{{ alicloud_region }}'
 #        group_id: 'sg-2zed4uaa7mzgk7yxahje'
         group_id: '{{ createsgeresult.group_id }}'
-        state: fetch
+        state: list
       register: quetysgeresult
     - debug: var=quetysgeresult
 #

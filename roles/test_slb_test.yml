@@ -1,0 +1,74 @@
+# Basic provisioning example to set  SLB Status
+- name: set server load balancer status
+  hosts: localhost
+  connection: local
+  vars:
+    alicloud_region: cn-beijing
+    load_balancer_name_for_change: test_change_name
+    address_type: internet
+    bandwidth: 4
+    internet_charge_type: paybytraffic
+  tasks:
+    - name: create server load balancer
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+      register: create_result
+    - debug: var=create_result
+    
+    - name: list server load balancer
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+        state: list
+      register: result
+    - debug: var=result
+
+    - name: set server load balancer status
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_status: inactive
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
+#        load_balancer_id: '{{ load_balancer_id }}'
+        state: present
+      register: result
+    - debug: var=result
+
+    - name: set server load balancer status
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_status: active
+#        load_balancer_id: '{{ load_balancer_id }}'
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
+        state: present
+      register: result
+    - debug: var=result
+
+    - name: modify server load balancer internet specification
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
+#        load_balancer_id: '{{ load_balancer_id }}'
+        internet_charge_type: '{{ internet_charge_type }}'
+        bandwidth: '{{ bandwidth }}'
+        state: present
+      register: result
+    - debug: var=result
+
+    - name: set server load balancer name
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
+#        load_balancer_id: '{{ load_balancer_id }}'
+        load_balancer_name: '{{ load_balancer_name_for_change }}'
+        state: present
+      register: result
+    - debug: var=result
+    
+    - name: delete server load balancer
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+#        load_balancer_id: '{{ load_balancer_id }}'
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
+        state: absent
+      register: result
+    - debug: var=result
