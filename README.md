@@ -9,11 +9,11 @@ There are several files in the module directory, and these files describe some f
 - `ecs.py`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
 - `ecs_ami.py`: Create or Delete User-defined Image
 - `ecs_disk.py`: Create, Attach, Detach or Delete a disk in ECS
-- `ecs_group.py`: Create, Query or Delete Security Group
+- `alicloud_security_group.py`: Create, Query or Delete Security Group
 - `ecs_slb.py`: Add, Remove, Set and Describe Backend Servers Health
 - `ecs_slb_lb.py`: Create, Delete SLB and Listener and Add Backend Server
 - `ecs_slb_vsg.py`: Create, Remove, Set VServer Group - Add, Remove and Modify VServer Group Backend Sever
-- `ecs_vpc.py`: Create Delete Vpc and Vswitch, Querying Vswitch and VRouter and Adding Route Entry
+- `alicloud_vpc.py`: Create Delete Vpc and Vswitch, Querying Vswitch and VRouter and Adding Route Entry
 - `ecs_eip.py`: Request, Bind, Unbind, Modify and Release EIP
 - `oss.py`: Create, Delete Bucket and Folder. Upload Files in Bucket, List Bucket objects.
 - `rds.py`: Create, Restart, Release and Modify RDS Instance, Create an RDS Read-only Instance, Changing RDS Instance type,

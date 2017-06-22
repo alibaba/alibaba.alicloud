@@ -1,0 +1,17 @@
+Metadata-Version: 1.1
+Name: ansible-alicloud
+Version: 0.0.3
+Summary: A Python alicloud modules to Ansible
+Home-page: UNKNOWN
+Author: xiaozhu
+Author-email: heguimin36@163.com
+License: MIT
+Description: A Python alicloud modules to Ansible
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7

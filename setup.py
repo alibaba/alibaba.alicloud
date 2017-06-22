@@ -1,17 +1,25 @@
+#!/usr/bin/env python
 # Always prefer setuptools over distutils
 from codecs import open
 from os import path
 
-from setuptools import setup, find_packages
+try:
+    from setuptools import setup
 
-PACKAGE = "module_utils"
-NAME = "ecsutils"
-DESCRIPTION = "Ansible Alicloud ecs utils"
+    extra = dict(test_suite="tests.test.suite", include_package_data=True)
+except ImportError:
+    from distutils.core import setup
+
+    extra = {}
+
+PACKAGE = "ansible-alicloud"
+NAME = "ansible-alicloud"
+DESCRIPTION = "A Python alicloud modules to Ansible"
 AUTHOR = "xiaozhu"
 AUTHOR_EMAIL = "heguimin36@163.com"
 URL = ""
-VERSION = __import__(PACKAGE).__version__
-
+# VERSION = __import__(PACKAGE).__version__
+VERSION = '1.1.0'
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
@@ -55,23 +63,18 @@ setup(
         'License :: OSI Approved :: MIT License',
 
         # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
+        # that you indicate whether you support Python 2.
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
     ],
-
-    # What does your project relate to?
-    keywords='sample ecsutils development',
-
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    # packages=find_packages(exclude=['*.pyc']),
-    packages=["utils"],
+    packages=["ansible-alicloud", "ansible-alicloud.module_utils", "ansible-alicloud.modules", "ansible-alicloud.modules.alicloud"],
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['footmark'],
+    # install_requires=['aliyun-python-sdk-ecs>=2.1.0', 'aliyun-python-sdk-slb>=2.0.21', 'importlib']
 )

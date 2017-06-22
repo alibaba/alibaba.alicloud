@@ -28,7 +28,6 @@ version_added: "2.4"
 short_description: Create, Query or Delete Vpc. Query Vswitch.
 description:
     - Create, Query or Delete Vpc, and Query vswitch which in it.
-    
 options:
   status:
     description:
@@ -402,6 +401,14 @@ from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argum
 
 # import ECSConnection
 from footmark.exception import VPCResponseError
+
+HAS_FOOTMARK = False
+
+try:
+    from footmark.exception import ECSResponseError
+    HAS_FOOTMARK = True
+except ImportError:
+    HAS_FOOTMARK = False
 
 
 def create_vpc(module, vpc, cidr_block, user_cidr, vpc_name, description, vswitches):

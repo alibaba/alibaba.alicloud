@@ -27,8 +27,8 @@ module: ecs
 version_added: "2.4"
 short_description: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group.
 description:
-    - Create, start, stop, restart, retrieval, modify or terminate ecs instances.
-    - Add or remove ecs instances to/from security group.
+    - Creates, starts, stops, restarts or terminates ecs instances.
+    - Adds or removes ecs instances to/from security group.
 options:
     status:
       description:
@@ -36,7 +36,10 @@ options:
       required: false
       default: 'present'
       aliases: ['state']
-      choices: [ 'present', 'pending', 'running', 'stopped', 'restarted', 'absent', 'getinfo', 'getstatus' ]
+      choices:
+        - [ 'present', 'pending', 'running', 'stopped', 'restarted', 'absent', 'getinfo', 'getstatus' ]
+        - map operation ['create', 'start', 'stop', 'restart', 'terminate', 'querying_instance', 'modify_attribute',
+                        'describe_status']
     alicloud_zone:
       description: Aliyun availability zone ID in which to launch the instance
       required: false
@@ -71,41 +74,24 @@ options:
       required: false
       default: null
     instance_name:
-      description:
-        - The name of ECS instance, which is a string of 2 to 128 Chinese or English characters. It must begin with an
-          uppercase/lowercase letter or a Chinese character and can contain numerals, ".", "_", or "-".
-          It cannot begin with http:// or https://.
+      description: Name of the instance to use.
       required: false
       default: null
     description:
-      description:
-        - The description of ECS instance, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
+      description: Description of the instance to use.
       required: false
       default: null
     internet_data:
       description:
-        - A hash/dictionaries of internet to the new instance
+        - A hash/dictionaries of internet to the new instance;
+        - >
+          '{"key":"value"}'; keys allowed:
+          - charge_type ( required:false;default: "PayByBandwidth", choices:["PayByBandwidth", "PayByTraffic"] )
+          - max_bandwidth_in(required:false, default:200)
+          - max_bandwidth_out(required:false, default:0).
+
       required: false
       default: null
-      suboptions:
-          charge_type:
-            description:
-              - Internet charge type, which can be PayByTraffic or PayByBandwidth.
-            required: false
-            default: "PayByBandwidth"
-            choices: ["PayByBandwidth", "PayByTraffic"]
-          max_bandwidth_in:
-            description:
-              - Maximum incoming bandwidth from the public network, measured in Mbps (Mega bit per second).
-            required: false
-            default: 200
-            choices: [1~200]
-          max_bandwidth_out:
-            description:
-              - Maximum outgoing bandwidth to the public network, measured in Mbps (Mega bit per second).
-            required: false
-            default: 0
-            choices: [0~100]
     host_name:
       description: Instance host name.
       required: false
@@ -116,32 +102,30 @@ options:
       default: null
     system_disk:
       description:
-        - A hash/dictionaries of system disk to the new instance
+        - A hash/dictionaries of system disk to the new instance;
+        - >
+          '{"key":"value"}'; keys allowed:
+          - disk_category (required:false; default: "cloud"; choices:["cloud", "cloud_efficiency", "cloud_ssd", "ephemeral_ssd"] )
+          - disk_size (required: false, default: max[40, ImageSize], choice: [40-500])
+          - disk_name (required: false, default: Null)
+          - disk_description (required:false; default:null)
       required: false
       default: null
-      suboptions:
-          disk_category:
-            description:
-              - Category of the system disk.
-            required: false
-            default: "cloud"
-            choices: ["cloud", "cloud_efficiency", "cloud_ssd", "ephemeral_ssd"]
-          disk_size:
-            description:
-              - Size of the system disk, in GB
-            required: false
-            default: max[40, ImageSize]
-            choices: [40~500]
-          disk_name:
-            description:
-              - Name of a system disk.
-            required: false
-            default: null
-          disk_description:
-            description:
-              - Description of a system disk.
-            required: false
-            default: null
+    disks:
+      description:
+        - A list of hash/dictionaries of volumes to add to the new instance;
+        - >
+          '[{"key":"value", "key":"value"}]'; keys allowed:
+          - disk_category (required:false; default: "cloud"; choices:["cloud", "cloud_efficiency", "cloud_ssd", "ephemeral_ssd"] )
+          - disk_size (required:false; default:null; choices:depends on disk_category)
+          - disk_name (required: false; default:null)
+          - disk_description (required: false; default:null)
+          - delete_on_termination (required:false, default:"true")
+          - snapshot_id (required:false; default:null), volume_type (str), iops (int) - device_type is deprecated use
+                    volume_type, iops must be set when volume_type='io1', ephemeral and snapshot are mutually exclusive.
+      required: false
+      default: null
+      aliases: [ 'volumes' ]
     count:
       description: The number of the new instance.
       required: false
@@ -212,34 +196,14 @@ options:
     attributes:
       description:
         - A list of hash/dictionaries of instance attributes. If it's set, the specified instance's attributes would be modified.
+        - keys allowed are
+            - id (required=true; default=null; description=ID of an ECS instance )
+            - name (required=false; default=null; description=Name of the instance to modify)
+            - description (required=false; default=null; description=Description of the instance to use)
+            - password (required=false; default=null; description=The password to login instance)
+            - host_name (required=false; default=null; description=Instance host name)
       required: false
       default: null
-      suboptions:
-          id:
-            description:
-              - ID of an ECS instance
-            required: true
-            default: null
-          name:
-            description:
-              - Name of the instance to modify
-            required: false
-            default: null
-          description:
-            description:
-              - Description of the instance to use
-            required: false
-            default: null
-          password:
-            description:
-              - The password to login instance
-            required: false
-            default: null
-          host_name:
-            description:
-              - Instance host name
-            required: false
-            default: null
     sg_action:
       description: The action of operating security group.
       required: true
@@ -377,6 +341,32 @@ EXAMPLES = '''
             max_bandwidth_in: 200
             max_bandwidth_out: 50
 
+
+# single instance with additional volume from snapshot and volume delete on termination
+- name: advanced provisioning example
+  hosts: localhost
+  vars:
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
+    alicloud_region: cn-beijing
+    image: ubuntu1404_64_40G_cloudinit_20160727.raw
+    instance_type: ecs.n1.small
+  tasks:
+    - name: additional volume
+      ecs:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        image: '{{ image }}'
+        instance_type: '{{ instance_type }}'
+        assign_public_ip: yes
+        volumes:
+          - disk_name: /dev/sdb
+            snapshot_id: xxxxxxxxxx
+            disk_category: cloud_efficiency
+            disk_size: 100
+            delete_on_termination: true
+
 # example with system disk configuration and IO optimized
 - name: advanced provisioning example
   hosts: localhost
@@ -493,7 +483,7 @@ EXAMPLES = '''
     status: running
   tasks:
     - name: start instance
-      ecs:
+      ecs_model:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -518,7 +508,7 @@ EXAMPLES = '''
     status: restarted
   tasks:
     - name: Restart instance
-      ecs:
+      ecs_model:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -540,7 +530,7 @@ EXAMPLES = '''
     sg_action: join
   tasks:
     - name: Add an instance to security group
-      ecs:
+      ecs_model:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -562,7 +552,7 @@ EXAMPLES = '''
     sg_action: leave
   tasks:
     - name: Remove an instance from security group
-      ecs:
+      ecs_model:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -574,7 +564,7 @@ EXAMPLES = '''
 RETURN = '''
 instance_ids:
     description: List all instances's id after operating ecs instance.
-    returned: when success
+    returned: always
     type: list
     sample: ["i-35b333d9","i-ddav***"]
 instance_ips:
@@ -584,7 +574,7 @@ instance_ips:
     sample: ["10.1.1.1","10.1.1.2"]
 instance_statuses:
     description: List all instances's status after operating ecs instance except deleted.
-    returned: when success
+    returned: always
     type: list
     sample: ["running","stopped"]
 instances:
@@ -599,16 +589,8 @@ instances:
                 "volume_id": "d-2ze9mho1vp79mctdoro0"
             }
         },
-        "eip": {
-            "allocation_id": "",
-            "internet_charge_type": "",
-            "ip_address": ""
-        },
-        "group_ids": {
-            "security_group_id": [
-                "sg-2zegcq33l0yz9sknp08o"
-            ]
-        },
+        "eip": "",
+        "group_id": "sg-2zefacu0pduhah3yrhhz",
         "host_name": "myhost",
         "id": "i-2ze9zfjdhtasdrfbgay1",
         "image_id": "ubuntu1404_64_40G_cloudinit_20160727.raw",
@@ -620,22 +602,19 @@ instances:
         "public_ip": "47.94.45.175",
         "region_id": "cn-beijing",
         "status": "running",
+        "subnet_id": "",
         "tags": {
             "create_test": "0.01"
         },
-        "vpc_attributes": {
-            "nat_ip_address": "",
-            "private_ip_address": {
-                "ip_address": []
-            },
-            "vpc_id": "",
-            "vswitch_id": ""
+        "vpc_id": "",
+        "vpc_private_ip": {
+            "ip_address": []
         },
         "zone_id": "cn-beijing-a"
     }
 total_count:
     description: The number of all instances after operating ecs instance.
-    returned: when success
+    returned: always
     type: int
     sample: 3
 failed_instance_ids:
@@ -722,6 +701,8 @@ def get_instances(module, ecs, instance_ids):
     for inst in ecs.get_all_instances(instance_ids=instance_ids):
         instance_dict_array.append(get_instance_info(inst))
         changed = True
+
+    # C2C : Commented printing on to console as it causing error from ansible
 
     return changed, instance_dict_array, instance_ids
 
@@ -940,14 +921,15 @@ def create_instance(module, ecs, image_id, instance_type, group_id, zone_id, ins
     try:
         # call to create_instance method from footmark
         changed, instances, result = ecs.create_instance(image_id=image_id, instance_type=instance_type, group_id=group_id,
-                                                         zone_id=zone_id, instance_name=instance_name, description=description,
-                                                         internet_data=internet_data, host_name=host_name, password=password,
-                                                         io_optimized=io_optimized, system_disk=system_disk, disks=disks,
-                                                         vswitch_id=vswitch_id, private_ip=private_ip, count=count,
-                                                         allocate_public_ip=allocate_public_ip, bind_eip=bind_eip,
-                                                         instance_charge_type=instance_charge_type, period=period,
-                                                         auto_renew=auto_renew, auto_renew_period=auto_renew_period,
-                                                         instance_tags=instance_tags, ids=ids, wait=wait, wait_timeout=wait_timeout)
+                                              zone_id=zone_id, instance_name=instance_name, description=description,
+                                              internet_data=internet_data, host_name=host_name, password=password,
+                                              io_optimized=io_optimized, system_disk=system_disk, disks=disks,
+                                              vswitch_id=vswitch_id, private_ip=private_ip, count=count,
+                                              allocate_public_ip=allocate_public_ip, bind_eip=bind_eip,
+                                              instance_charge_type=instance_charge_type, period=period,
+                                              auto_renew=auto_renew, auto_renew_period=auto_renew_period,
+                                              instance_tags=instance_tags, ids=ids, wait=wait,
+                                              wait_timeout=wait_timeout)
         if 'error' in (''.join(str(result))).lower():
             module.fail_json(changed=changed, msg=result)
 
@@ -1209,15 +1191,17 @@ def main():
                 wait_timeout = module.params['wait_timeout']
 
                 changed, instance_list, result = create_instance(module=module, ecs=ecs, image_id=image_id,
-                                                                 instance_type=instance_type, group_id=group_id, zone_id=zone_id,
-                                                                 instance_name=instance_name, description=description,
-                                                                 internet_data=internet_data, host_name=host_name, password=password,
-                                                                 io_optimized=io_optimized, system_disk=system_disk, disks=disks,
-                                                                 vswitch_id=vswitch_id, private_ip=private_ip, count=count,
-                                                                 allocate_public_ip=allocate_public_ip, bind_eip=bind_eip,
-                                                                 instance_charge_type=instance_charge_type, period=period,
-                                                                 auto_renew=auto_renew, auto_renew_period=auto_renew_period,
-                                                                 instance_tags=instance_tags, ids=ids, wait=wait, wait_timeout=wait_timeout)
+                                                    instance_type=instance_type, group_id=group_id, zone_id=zone_id,
+                                                    instance_name=instance_name, description=description,
+                                                    internet_data=internet_data, host_name=host_name,
+                                                    password=password, io_optimized=io_optimized,
+                                                    system_disk=system_disk, disks=disks, vswitch_id=vswitch_id,
+                                                    private_ip=private_ip, count=count,
+                                                    allocate_public_ip=allocate_public_ip, bind_eip=bind_eip,
+                                                    instance_charge_type=instance_charge_type, period=period,
+                                                    auto_renew=auto_renew, auto_renew_period=auto_renew_period,
+                                                    instance_tags=instance_tags, ids=ids, wait=wait,
+                                                    wait_timeout=wait_timeout)
 
                 instances = []
                 instance_ids = []

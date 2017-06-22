@@ -1,0 +1,14 @@
+README.rst
+setup.cfg
+setup.py
+ansible-alicloud/module_utils/__init__.py
+ansible-alicloud/module_utils/alicloud_ecs.py
+ansible-alicloud/modules/__init__.py
+ansible-alicloud/modules/alicloud/__init__.py
+ansible-alicloud/modules/alicloud/ecs.py
+ansible-alicloud/modules/alicloud/ecs_disk.py
+ansible-alicloud/modules/alicloud/ecs_group.py
+ansible_alicloud.egg-info/PKG-INFO
+ansible_alicloud.egg-info/SOURCES.txt
+ansible_alicloud.egg-info/dependency_links.txt
+ansible_alicloud.egg-info/top_level.txt
