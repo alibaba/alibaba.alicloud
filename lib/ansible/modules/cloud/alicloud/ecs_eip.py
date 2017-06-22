@@ -386,6 +386,7 @@ def release_eip(module, vpc, allocation_id):
 
     return changed, result
 
+
 def verify_eip_region(module, vpc, allocation_id):
     """
     Verify if eip belongs to the provided region

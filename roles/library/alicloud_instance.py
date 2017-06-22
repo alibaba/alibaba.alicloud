@@ -23,7 +23,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 
 DOCUMENTATION = '''
 ---
-module: ecs
+module: alicloud_instance
 version_added: "2.4"
 short_description: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group.
 description:
@@ -36,7 +36,7 @@ options:
       required: false
       default: 'present'
       aliases: ['state']
-      choices: [ 'present', 'pending', 'running', 'stopped', 'restarted', 'absent', 'getinfo', 'getstatus' ]
+      choices: [ 'present', 'running', 'stopped', 'restarted', 'absent', 'fetch', 'current' ]
     alicloud_zone:
       description: Aliyun availability zone ID in which to launch the instance
       required: false
@@ -65,7 +65,7 @@ options:
       description: The subnet ID in which to launch the instance (VPC).
       required: false
       default: null
-      aliases: ['vpc_subnet_id']
+      aliases: ['subnet_id']
     private_ip:
       description: Private IP address of the instance, which cannot be specified separately.
       required: false
@@ -286,7 +286,7 @@ EXAMPLES = '''
     assign_public_ip: yes
   tasks:
     - name: classic network
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -309,7 +309,7 @@ EXAMPLES = '''
     assign_public_ip: no
   tasks:
     - name: vpc network
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -333,7 +333,7 @@ EXAMPLES = '''
     password: mypassword
   tasks:
     - name: tagging and host name password
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -363,7 +363,7 @@ EXAMPLES = '''
     description: my description
   tasks:
     - name: internet data configuration and instance details
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -394,7 +394,7 @@ EXAMPLES = '''
       disk_description: Disk Description
   tasks:
     - name: additional volume
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -414,7 +414,7 @@ EXAMPLES = '''
     instance_type: ecs.n1.small
   tasks:
     - name: prepaid internet charge type configuration
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -437,7 +437,7 @@ EXAMPLES = '''
     alicloud_region: cn-beijing
   tasks:
     - name: modify attribute of multiple instances
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -463,12 +463,12 @@ EXAMPLES = '''
     alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-beijing
     alicloud_zone: cn-beijing-a
-    status: getstatus
+    status: current
     pagenumber: 1
     pagesize: 10
   tasks:
     - name: query instance status from the particular zone
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -493,7 +493,7 @@ EXAMPLES = '''
     status: running
   tasks:
     - name: start instance
-      ecs:
+      alicloud_instance:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -579,7 +579,7 @@ instance_ids:
     sample: ["i-35b333d9","i-ddav***"]
 instance_ips:
     description: List all instances's public ip address after operating ecs instance.
-    returned: 'on create, modify and getinfo'
+    returned: 'on create, modify and fetch'
     type: list
     sample: ["10.1.1.1","10.1.1.2"]
 instance_statuses:
@@ -589,7 +589,7 @@ instance_statuses:
     sample: ["running","stopped"]
 instances:
     description: Details about the ecs instances that were created.
-    returned: 'on create, modify and getinfo'
+    returned: 'on create, modify and fetch'
     type: dict
     sample: {
         "block_device_mapping": {
@@ -722,6 +722,8 @@ def get_instances(module, ecs, instance_ids):
     for inst in ecs.get_all_instances(instance_ids=instance_ids):
         instance_dict_array.append(get_instance_info(inst))
         changed = True
+
+    # C2C : Commented printing on to console as it causing error from ansible
 
     return changed, instance_dict_array, instance_ids
 
@@ -1075,7 +1077,7 @@ def main():
             instance_type=dict(aliases=['type']),
             image_id=dict(aliases=['image']),
             count=dict(type='int', default='1'),
-            vswitch_id=dict(aliases=['vpc_subnet_id']),
+            vswitch_id=dict(aliases=['subnet_id']),
             io_optimized=dict(type='bool', default=False),
             instance_name=dict(),
             internet_data=dict(type='dict'),
@@ -1086,7 +1088,7 @@ def main():
             force=dict(type='bool', default=False),
             instance_tags=dict(type='list', aliases=['tags']),
             status=dict(default='present', aliases=['state'], choices=['present', 'running', 'stopped', 'restarted',
-                                                                       'absent', 'getinfo', 'getstatus']),
+                                                                       'absent', 'fetch', 'current']),
             description=dict(),
             allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
             bind_eip=dict(),
@@ -1231,7 +1233,7 @@ def main():
                 module.exit_json(changed=changed, instance_ids=instance_ids, instance_statuses=statuses,
                                  instance_ips=public_ips, instances=instances, total_count=len(instance_list))
 
-        elif status == 'getinfo':
+        elif status == 'fetch':
             instance_ids = module.params['instance_ids']
 
             (changed, instance_dict_array, new_instance_ids) = get_instances(module, ecs, instance_ids)
@@ -1243,7 +1245,7 @@ def main():
             module.exit_json(changed=changed, instance_ids=new_instance_ids, instance_statuses=statuses,
                              instance_ips=public_ips, instances=instance_dict_array, total_count=len(new_instance_ids))
 
-        elif status == 'getstatus':
+        elif status == 'current':
             pagenumber = module.params['pagenumber']
             pagesize = module.params['pagesize']
             zone_id = module.params['alicloud_zone']
