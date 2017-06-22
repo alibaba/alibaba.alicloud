@@ -1,1 +1,0 @@
-A Python alicloud modules to Ansible
