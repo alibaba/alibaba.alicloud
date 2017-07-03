@@ -36,7 +36,7 @@ options:
       required: false
       default: 'present'
       aliases: ['state']
-      choices: [ 'present', 'running', 'stopped', 'restarted', 'absent', 'fetch', 'current' ]
+      choices: [ 'present', 'running', 'stopped', 'restarted', 'absent', 'list', 'current' ]
     alicloud_zone:
       description: Aliyun availability zone ID in which to launch the instance
       required: false
@@ -579,7 +579,7 @@ instance_ids:
     sample: ["i-35b333d9","i-ddav***"]
 instance_ips:
     description: List all instances's public ip address after operating ecs instance.
-    returned: 'on create, modify and fetch'
+    returned: 'on create, modify and list'
     type: list
     sample: ["10.1.1.1","10.1.1.2"]
 instance_statuses:
@@ -589,7 +589,7 @@ instance_statuses:
     sample: ["running","stopped"]
 instances:
     description: Details about the ecs instances that were created.
-    returned: 'on create, modify and fetch'
+    returned: 'on create, modify and list'
     type: dict
     sample: {
         "block_device_mapping": {
@@ -633,7 +633,7 @@ instances:
         },
         "zone_id": "cn-beijing-a"
     }
-total_count:
+total:
     description: The number of all instances after operating ecs instance.
     returned: when success
     type: int
@@ -1088,7 +1088,7 @@ def main():
             force=dict(type='bool', default=False),
             instance_tags=dict(type='list', aliases=['tags']),
             status=dict(default='present', aliases=['state'], choices=['present', 'running', 'stopped', 'restarted',
-                                                                       'absent', 'fetch', 'current']),
+                                                                       'absent', 'list', 'current']),
             description=dict(),
             allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
             bind_eip=dict(),
@@ -1119,7 +1119,7 @@ def main():
             if not isinstance(instance_ids, list) or len(instance_ids) < 1:
                 module.fail_json(msg='The parameter instance_ids should be a list, aborting')
             result = delete_instances(module=module, ecs=ecs, instance_ids=instance_ids)
-            module.exit_json(changed=True, instance_ids=result, total_count=len(result))
+            module.exit_json(changed=True, instance_ids=result, total=len(result))
 
         elif status in ('running', 'stopped', 'restarted'):
             instance_ids = module.params['instance_ids']
@@ -1135,7 +1135,7 @@ def main():
             for inst in instance_dict_array:
                 statuses.append(str(inst["status"]))
             module.exit_json(changed=changed, instance_ids=new_instance_ids, instance_statuses=statuses,
-                             total_count=len(new_instance_ids))
+                             total=len(new_instance_ids))
 
         elif status == 'present':
             # Join and leave security group is handled in state present
@@ -1169,7 +1169,7 @@ def main():
                     statuses.append(str(inst["status"]))
                 module.exit_json(changed=changed, group_id=security_group_id, instance_ids=success_instance_ids,
                                  failed_instance_ids=failed_instance_ids, instance_statuses=statuses,
-                                 total_count=len(new_instance_ids))
+                                 total=len(new_instance_ids))
             # region Security Group join/leave ends here
 
             elif attributes:
@@ -1181,7 +1181,7 @@ def main():
                 for inst in instance_dict_array:
                     statuses.append(str(inst["status"]))
                 module.exit_json(changed=changed, instance_ids=instance_ids, instance_statuses=statuses,
-                                 instances=instance_dict_array, total_count=len(instance_ids))
+                                 instances=instance_dict_array, total=len(instance_ids))
             else:
                 # Create New Instance
                 zone_id = module.params['alicloud_zone']
@@ -1231,9 +1231,9 @@ def main():
                     statuses.append(str(inst.status))
                     public_ips.append(str(inst.public_ip))
                 module.exit_json(changed=changed, instance_ids=instance_ids, instance_statuses=statuses,
-                                 instance_ips=public_ips, instances=instances, total_count=len(instance_list))
+                                 instance_ips=public_ips, instances=instances, total=len(instance_list))
 
-        elif status == 'fetch':
+        elif status == 'list':
             instance_ids = module.params['instance_ids']
 
             (changed, instance_dict_array, new_instance_ids) = get_instances(module, ecs, instance_ids)
@@ -1243,7 +1243,7 @@ def main():
                 statuses.append(str(inst["status"]))
                 public_ips.append(str(inst["public_ip"]))
             module.exit_json(changed=changed, instance_ids=new_instance_ids, instance_statuses=statuses,
-                             instance_ips=public_ips, instances=instance_dict_array, total_count=len(new_instance_ids))
+                             instance_ips=public_ips, instances=instance_dict_array, total=len(new_instance_ids))
 
         elif status == 'current':
             pagenumber = module.params['pagenumber']
@@ -1258,7 +1258,11 @@ def main():
                 instance_ids.append(str(inst["instance_id"]))
                 instance_statuses.append(str.lower(str(inst["status"])))
             module.exit_json(changed=changed, instance_ids=instance_ids,
-                             instance_statuses=instance_statuses, total_count=result.total_count)
+                             instance_statuses=instance_statuses, total=len(instance_ids))
+
+        else:
+            module.fail_json(msg='The expected state: {0}, {1}, {2}, {3}, {4}, {5} and {6}, but got {7}.'.format(
+                'present', 'running', 'stopped', 'restarted', 'absent', 'list', 'current', status))
 
 
 if __name__ == '__main__':
