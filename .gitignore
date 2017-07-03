@@ -90,3 +90,5 @@ htmlcov/
 # ansible-test coverage results
 test/units/.coverage.*
 
+*~HEAD
+*~reback

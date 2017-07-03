@@ -24,7 +24,7 @@ DOCUMENTATION = """
 ---
 module: ecs_eip
 short_description: Requesting eip address, bind eip, unbind eip, modify eip attributes and release eip
-common options:
+options:
   alicloud_access_key:
     description:
       - Aliyun Cloud access key. If not set then the value of the `ALICLOUD_ACCESS_KEY`, `ACS_ACCESS_KEY_ID`, 
