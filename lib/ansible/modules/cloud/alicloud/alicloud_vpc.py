@@ -321,10 +321,10 @@ def main():
                 module.exit_json(changed=changed, vpc_id=vpc.id)
             except VPCResponseError as ex:
                 module.fail_json(msg='Unable to delete vpc: {0}, error: {1}'.format(vpc.id, ex))
-        
+
         module.exit_json(changed=changed, msg="Please specify a vpc by using 'vpc_id', 'vpc_name' or 'cidr_block',"
                                               "and expected vpcs: %s" % vpcs_basic)
-            
+
     elif status == 'list':
         vpc_ids = []
         vpcs_detail = []

@@ -343,7 +343,7 @@ def main():
 
     if not vswitch and len(vswitches_by_opts) == 1:
         vswitch = vswitches_by_opts[0]
-        
+
     if len(vswitches_by_opts) > 1:
         vswitches = vswitches_by_opts
 
