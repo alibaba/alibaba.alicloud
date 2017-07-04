@@ -224,16 +224,13 @@ def bind_eip(module, vpc, allocation_id, instance_id):
         module.fail_json(msg="instance_id parameter is needed to bind eip")
 
     changed = False
+    result = []
 
     verify_eip_region(module, vpc, allocation_id)
 
     try:
-        result = vpc.bind_eip(allocation_id=allocation_id, instance_id=instance_id)
-
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(msg=result)
-        changed = True
-
+        changed = vpc.bind_eip(allocation_id=allocation_id, instance_id=instance_id)
+        result.append("bind success")
     except VPCResponseError as e:
         module.fail_json(msg='Unable to bind eip, error: {0}'.format(e))
 
@@ -255,14 +252,13 @@ def unbind_eip(module, vpc, allocation_id, instance_id):
         module.fail_json(msg="instance_id parameter is needed to unbind eip")
 
     changed = False
+    result = []
 
     verify_eip_region(module, vpc, allocation_id)
 
     try:
-        changed, result = vpc.unbind_eip(allocation_id=allocation_id, instance_id=instance_id)
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(changed=changed, msg=result)
-
+        changed = vpc.unbind_eip(allocation_id=allocation_id, instance_id=instance_id)
+        result.append("unbind success")
     except VPCResponseError as e:
         module.fail_json(msg='Unable to Unbind eip, error: {0}'.format(e))
     return changed, result
