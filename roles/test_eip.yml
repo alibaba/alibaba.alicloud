@@ -1,0 +1,91 @@
+- name: Testing Classic network type scenarions
+  hosts: localhost
+  connection: local
+  vars:
+    # general
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a
+    # create instance
+    image: centos_6_8_64_40G_base_20170222.vhd
+    type: ecs.n1.tiny
+    instance_name: travis-ansible-instance
+    description: travis-ansible-instance
+    host_name: myhost
+    password: pass@123
+    count: 1
+    internet_data:
+        charge_type: PayByBandwidth
+        max_bandwidth_in: 200
+        max_bandwidth_out: 10
+    instance_tags:
+      - tag_key: create_test_1
+        tag_value: '0.01'
+      - tag_key: create_test_2
+        tag_value: '0.02'
+    internet_charge_type: PayByTraffic
+    bandwidth: 5
+    status: present
+
+  tasks:
+#    - name: Creating an ECS instance
+#      alicloud_instance:
+#        alicloud_region: '{{ alicloud_region }}'
+#        alicloud_zone: '{{ alicloud_zone }}'
+#        image: '{{ image }}'
+#        type: '{{ type }}'
+#        instance_name: '{{ instance_name }}'
+#        description: '{{ description }}'
+#        host_name: '{{ host_name }}'
+#        password: '{{ password }}'
+#        count: '{{ count }}'
+#        instance_tags: '{{ instance_tags }}'
+#        vswitch_id: vsw-2zebyw9buwa77azyokjdp
+#      register: createinstanceresult
+ #   - debug: var=createinstanceresult
+
+#    - name: requesting eip
+#      alicloud_eip:
+#        alicloud_region: '{{ alicloud_region }}'
+#        internet_charge_type: PayByTraffic
+#        bandwidth: 5
+#        status: present
+#      register: results
+#    - debug: var=results
+    
+#    - name: bind eip
+#      alicloud_eip:
+#        alicloud_region: '{{ alicloud_region }}'
+#        allocation_id: '{{ results.result["allocation_id"] }}'
+#        instance_id: i-2zed04ypm5jb1i6uezz3
+#        status: join
+#      register: res
+#    - debug: var=res
+    
+#    - name: unbind eip
+#      alicloud_eip:
+#        alicloud_region: '{{ alicloud_region }}'
+#        allocation_id: '{{ results.result["allocation_id"] }}'
+#        allocation_id: eip-2zelp6dsexn5jayigty72
+#        instance_id: i-2zed04ypm5jb1i6uezz3
+#        state: leave
+#      register: res
+#    - debug: var=res
+
+    - name: release eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+#        allocation_id: '{{ results.result["allocation_id"] }}'
+        allocation_id: eip-2zelhrkqrjx19p2w7gzoz 
+        status: absent
+      register: res
+    - debug: var=res
+  
+#    - name: Terminating ECS instance
+#      alicloud_instance:
+#        alicloud_region: '{{ alicloud_region }}'
+#        instance_id: i-2zed04ypm5jb1i6uezz3 
+#        state: absent
+#      register: deleteresult
+#    - debug: var=deleteresult
+
+
