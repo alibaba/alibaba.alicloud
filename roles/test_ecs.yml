@@ -16,7 +16,6 @@
     host_name: myhost
     password: pass@123
     count: 1
-    allocate_public_ip: yes
     internet_data:
         charge_type: PayByBandwidth
         max_bandwidth_in: 200
@@ -95,7 +94,6 @@
         password: '{{ password }}'
 #        group_id: 'sg-2zegcq33l0yz9sknp08o'
         count: '{{ count }}'
-        internet_data: '{{ internet_data }}'
         instance_tags: '{{ instance_tags }}'
         vswitch_id: vsw-2zebyw9buwa77azyokjdp
       register: createinstanceresult
