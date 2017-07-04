@@ -72,7 +72,7 @@ EXAMPLES = """
     status: present
   tasks:
     - name: requesting eip
-      ecs_eip:
+      alicloud_eip:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -85,7 +85,7 @@ EXAMPLES = """
 
 
 # basic provisioning example to bind eip
-- name: create disk
+- name: bind eip
   hosts: localhost
   connection: local
   vars:
@@ -96,8 +96,8 @@ EXAMPLES = """
     instance_id: xxxxxxxxxx
     status: join
   tasks:
-    - name: Bind eip
-      ecs_eip:
+    - name: bind eip
+      alicloud_eip:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -122,7 +122,7 @@ EXAMPLES = """
     state: leave
   tasks:
     - name: unbind eip
-      ecs_eip:
+      alicloud_eip:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -147,7 +147,7 @@ EXAMPLES = """
     status: present
   tasks:
     - name: Modify eip
-      ecs_eip:
+      alicloud_eip:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -171,7 +171,7 @@ EXAMPLES = """
     status: absent
   tasks:
     - name: release eip
-      ecs_eip:
+      alicloud_eip:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
