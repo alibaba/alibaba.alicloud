@@ -22,23 +22,9 @@ ANSIBLE_METADATA = {'status': ['stableinterface'],
                     'version': '1.0'}
 DOCUMENTATION = """
 ---
-module: ecs_eip
+module: alicloud_eip
 short_description: Requesting eip address, bind eip, unbind eip, modify eip attributes and release eip
 options:
-  alicloud_access_key:
-    description:
-      - Aliyun Cloud access key. If not set then the value of the `ALICLOUD_ACCESS_KEY`, `ACS_ACCESS_KEY_ID`, 
-        `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
-    required: false
-    default: null
-    aliases: ['acs_access_key', 'ecs_access_key','access_key']
-  alicloud_secret_key:
-    description:
-      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_KEY`, `ACS_SECRET_ACCESS_KEY`,
-        `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
-    required: false
-    default: null
-    aliases: ['acs_secret_access_key', 'ecs_secret_key','secret_key']
   status:
     description:
       -  status for requesting eip addresses, bind eip, unbind eip, modify eip attributes and release eip
@@ -46,77 +32,26 @@ options:
     required: false
     default: present
     aliases: [ 'state' ]
-
-function requesting eip addresses in EIP
-    description: Requesting eip addresses
-    status: present
-    options:
-      bandwidth:
-        description:
-          - The rate limit of the EIP.
-        required: false
-        default: 5Mbps
-      internet_charge_type:
-        description:
-          - PayByBandwidth and PayByTraffic.
-        required: false
-        default: PayByBandwidth
-
-function bind eip in EIP
-    description: Bind eip addresses
-    status: join
-    options:
-      allocation_id:
-        description:
-          - The allocation ID of the EIP to be bound. The allocation ID uniquely identifies the EIP
-        required: True
-        default: null
-      instance_id:
-        description:
-          - The ID of the ECS instance to be bound
-        required: True
-        default: null
-
-function unbind eip in EIP
-    description: Unbind eip addresses
-    status: leave
-    options:
-      allocation_id:
-        description:
-          - The allocation ID of the EIP to be unbound. The allocation ID uniquely identifies the EIP.
-        required: True
-        default: null
-      instance_id:
-        description:
-          - The ID of the ECS instance to be unbound
-        required: True
-        default: null
-
-function modifying eip attributes in EIP
-    description: Modifying eip attributes
-    status: present
-    options:
-      allocation_id:
-        description:
-          - The allocation ID of the EIP to be bound. The allocation ID uniquely identifies the EIP.
-        required: True
-        default: null
-      bandwidth:
-        description:
-          - The rate limit of the EIP. If not specified.
-        required: True
-        default: 5Mbps
-
-function modifying eip attributes in EIP
-    description: Modifying eip attributes
-    status: absent
-    options:
-      allocation_id:
-        description:
-          - The allocation ID of the EIP to be remove. The allocation ID uniquely identifies the EIP.
-        required: True
-        default: null
-
+  bandwidth:
+    description:
+      - The rate limit of the EIP.
+    required: false
+    default: 5Mbps
+  internet_charge_type:
+    description:
+      - PayByBandwidth and PayByTraffic.
+    required: false
+    default: PayByBandwidth
+  allocation_id:
+    description:
+      - The allocation ID of the EIP to be bound or unbound. The allocation ID uniquely identifies the EIP
+    required: True
+    default: null
+  instance_id:
+    description:
+      - The ID of the ECS instance to be bound or unbound.
+    required: True
+    default: null
 """
 
 EXAMPLES = """
