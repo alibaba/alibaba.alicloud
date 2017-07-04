@@ -186,6 +186,7 @@ import time
 from ast import literal_eval
 from footmark.exception import VPCResponseError
 from ansible.module_utils.basic import *
+from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect
 
 
 def requesting_eip_addresses(module, vpc, bandwidth, internet_charge_type):
