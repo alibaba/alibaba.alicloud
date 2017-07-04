@@ -64,8 +64,6 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     internet_charge_type: PayByTraffic
     bandwidth: 5
@@ -73,8 +71,6 @@ EXAMPLES = """
   tasks:
     - name: requesting eip
       alicloud_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         internet_charge_type: '{{ internet_charge_type }}'
         bandwidth: '{{ bandwidth }}'
@@ -89,8 +85,6 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     allocation_id: xxxxxxxxxx
     instance_id: xxxxxxxxxx
@@ -98,8 +92,6 @@ EXAMPLES = """
   tasks:
     - name: bind eip
       alicloud_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ allocation_id }}'
         instance_id: '{{ instance_id }}'
@@ -114,8 +106,6 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     allocation_id: exxxxxxxxxx
     instance_id: xxxxxxxxxx
@@ -123,8 +113,6 @@ EXAMPLES = """
   tasks:
     - name: unbind eip
       alicloud_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ allocation_id }}'
         instance_id: '{{ instance_id }}'
@@ -139,8 +127,6 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     allocation_id: xxxxxxxxxx
     bandwidth: 3
@@ -148,8 +134,6 @@ EXAMPLES = """
   tasks:
     - name: Modify eip
       alicloud_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ allocation_id }}'
         bandwidth: '{{ bandwidth }}'
@@ -164,16 +148,12 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     allocation_id: xxxxxxxxxx
     status: absent
   tasks:
     - name: release eip
       alicloud_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ allocation_id }}'
         status: '{{ status }}'
@@ -398,5 +378,6 @@ def main():
         (changed, result) = unbind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
         module.exit_json(changed=changed, result=result)
 
-
-main()
+if __name__ == "__main__":
+    main()
+    
