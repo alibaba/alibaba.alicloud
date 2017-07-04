@@ -185,6 +185,7 @@ EXAMPLES = """
 import time
 from ast import literal_eval
 from footmark.exception import VPCResponseError
+from ansible.module_utils.basic import *
 
 
 def requesting_eip_addresses(module, vpc, bandwidth, internet_charge_type):
@@ -400,10 +401,4 @@ def main():
         module.exit_json(changed=changed, result=result)
 
 
-# import module snippets
-from ansible.module_utils.basic import *
-# from ansible.module_utils.ecs import *
-from ecsutils.ecs import *
-
-# import ECSConnection
 main()
