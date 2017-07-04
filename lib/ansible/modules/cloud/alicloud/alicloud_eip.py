@@ -308,6 +308,7 @@ def release_eip(module, vpc, allocation_id):
         module.fail_json(msg="allocation_id parameter is needed to release eip")
 
     changed = False
+    result = []
 
     verify_eip_region(module, vpc, allocation_id)
 
