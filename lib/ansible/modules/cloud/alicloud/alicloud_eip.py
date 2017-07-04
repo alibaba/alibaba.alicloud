@@ -310,11 +310,8 @@ def release_eip(module, vpc, allocation_id):
     verify_eip_region(module, vpc, allocation_id)
 
     try:
-        result = vpc.releasing_eip(allocation_id=allocation_id)
-
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(msg=result)
-        changed = True
+        changed = vpc.releasing_eip(allocation_id=allocation_id)
+        result.append("release success")
 
     except VPCResponseError as e:
         module.fail_json(msg='Unable to release eip, error: {0}'.format(e))
