@@ -173,7 +173,7 @@ allocation_id:
     returned: when request eip 
     type: list
     sample: "eip-25877c70x"
-eipobj:
+eip:
     description: Details about the ecs instances that were created.
     returned: Query the flexible public IP list
     type: dict
