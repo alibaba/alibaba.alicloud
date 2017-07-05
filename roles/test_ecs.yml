@@ -16,7 +16,6 @@
     host_name: myhost
     password: pass@123
     count: 1
-    allocate_public_ip: yes
     internet_data:
         charge_type: PayByBandwidth
         max_bandwidth_in: 200
@@ -95,11 +94,28 @@
         password: '{{ password }}'
 #        group_id: 'sg-2zegcq33l0yz9sknp08o'
         count: '{{ count }}'
-        allocate_public_ip: '{{ allocate_public_ip }}'
-        internet_data: '{{ internet_data }}'
         instance_tags: '{{ instance_tags }}'
+        vswitch_id: vsw-2zebyw9buwa77azyokjdp
       register: createinstanceresult
     - debug: var=createinstanceresult
+
+    - name: requesting eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        internet_charge_type: PayByTraffic
+        bandwidth: 5
+        status: present
+      register: results
+    - debug: var=results
+    
+    - name: bind eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ results.result["allocation_id"] }}'
+        instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
+        status: join
+      register: res
+    - debug: var=res
 
     - name: Modifying instance attribute
       alicloud_instance:
@@ -244,6 +260,24 @@
         state: absent
       register: deletesggeresult
     - debug: var=deletesggeresult
+
+    - name: unbind eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ results.result["allocation_id"] }}'
+#        allocation_id: eip-2zelp6dsexn5jayigty72
+        instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
+        state: leave
+      register: res
+    - debug: var=res
+
+    - name: release eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ results.result["allocation_id"] }}'
+        status: absent
+      register: res
+    - debug: var=res
 
     - name: Restarting ECS instance
       alicloud_instance:
