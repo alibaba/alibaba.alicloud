@@ -25,31 +25,31 @@ DOCUMENTATION = """
 module: alicloud_eip
 short_description: Requesting eip address, bind eip, unbind eip, modify eip attributes and release eip
 options:
-  status:
+  state:
     description:
       -  status for requesting eip addresses, bind eip, unbind eip, modify eip attributes and release eip
     choices: ['present', 'join', 'absent', 'leave']
     required: false
     default: present
-    aliases: [ 'state' ]
   bandwidth:
     description:
-      - The rate limit of the EIP.
+      - The rate limit of the EIP, measured in Mbps (Mega bit per second)
     required: false
     default: 5Mbps
   internet_charge_type:
     description:
       - PayByBandwidth and PayByTraffic.
+    choices: [ 'PayByBandwidth', 'PayByTraffic']
     required: false
     default: PayByBandwidth
   allocation_id:
     description:
-      - The allocation ID of the EIP to be bound or unbound. The allocation ID uniquely identifies the EIP
+      - The allocation ID of the EIP to be bound, unbound, modify, release.In this condition, allocation_id is reqired. The allocation ID uniquely identifies the EIP
     required: True
     default: null
   instance_id:
     description:
-      - The ID of the ECS instance to be bound or unbound.
+      - The ID of the ECS instance to be bound or unbound. In this condition , instance_id is required.
     required: True
     default: null
 """
@@ -162,10 +162,51 @@ EXAMPLES = """
     - debug: var=result
 
 """
+RETURN = '''
+eip_address:
+    description: Assign the flexible public network IP
+    returned: when request eip
+    type: string
+    sample: "123.56.0.206"
+allocation_id:
+    description: Example of a flexible public network IP
+    returned: when request eip 
+    type: list
+    sample: "eip-25877c70x"
+eipobj:
+    description: Details about the ecs instances that were created.
+    returned: Query the flexible public IP list
+    type: dict
+    sample: {
+    "EipAddresses": {
+        "EipAddress": [
+          {
+            "AllocationId": "eip-2578g5v5a",
+            "AllocationTime": "2014-05-28T03:03:16Z ",
+            "Bandwidth": "1",
+            "InstanceId": "",
+            "InternetChargeType": " PayByBandwidth ",
+            "IpAddress": "123.56.0.36",
+            "OperationLocks": {
+              "LockReason": []
+            },
+            "RegionId": "cn-beijing",
+            "Status": "Available"
+          }
+        ]
+    },
+    "PageNumber": 1,
+    "PageSize": 10,
+    "RequestId": "51BE7822-4121-428A-88F3-262AE4FD868D",
+    "TotalCount": 1
+    }
+'''
+
+
 import time
 from ast import literal_eval
 from footmark.exception import VPCResponseError
-from ansible.module_utils.basic import *
+from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect, vpc_connect
 
 
