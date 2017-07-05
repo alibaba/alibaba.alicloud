@@ -310,10 +310,10 @@ def verify_eip_region(module, vpc, allocation_id):
         module.fail_json("allocation_id is mandatory to verify eip region")
 
     try:
-        eips, result = vpc.describe_eip_address(allocation_id=allocation_id)
+        eips = vpc.describe_eip_address(allocation_id=allocation_id)
 
         if eips is None:
-            module.fail_json(msg=result)
+            module.fail_json(msg="opration failed")
 
         if len(eips) != 1:
             module.fail_json(msg="eip with allocation_id " + allocation_id + " does not exist in the provided region")
