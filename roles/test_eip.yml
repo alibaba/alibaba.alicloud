@@ -25,7 +25,7 @@
     internet_charge_type: PayByTraffic
     bandwidth: 5
     instance_id: i-2zee62nhthx7m0zr763s
-    allocation_id: eip-2zeh16atit1jb61jdl7vb
+    allocation_id: eip-2zey3n84fx43gwmemgw59
     status: present
 
   tasks:
@@ -51,43 +51,44 @@
         internet_charge_type: PayByTraffic
         bandwidth: 5
         status: present
-      register: results
-    - debug: var=results
+      register: eipresults
+    - debug: var=eipresults
 
     - name: Modify eip
       alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
-        allocation_id: '{{ results.result["allocation_id"] }}'
+        allocation_id: '{{ eipresults.result["allocation_id"] }}'
         bandwidth: 6
         status: present
       register: result
 
     - debug: var=result    
-#    - name: bind eip
-#      alicloud_eip:
-#        alicloud_region: '{{ alicloud_region }}'
-#        allocation_id: '{{ results.result["allocation_id"] }}'
+    - name: bind eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ eipresults.result["allocation_id"] }}'
+#        allocation_id: '{{ allocation_id }}'
 ##        instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
-#        instance_id: '{{ instance_id }}'
-#        status: join
-#      register: res
-#    - debug: var=res
+        instance_id: '{{ instance_id }}'
+        status: join
+      register: res
+    - debug: var=res
     
-#    - name: unbind eip
-#      alicloud_eip:
-#        alicloud_region: '{{ alicloud_region }}'
-#        allocation_id: '{{ results.result["allocation_id"] }}'
+    - name: unbind eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ eipresults.result["allocation_id"] }}'
 #        allocation_id: '{{ allocation_id }}'
 #        instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
-#        instance_id: '{{ instance_id }}'
-#        state: leave
-#      register: res
-#    - debug: var=res
-#
+        instance_id: '{{ instance_id }}'
+        state: leave
+      register: res
+    - debug: var=res
+
     - name: release eip
       alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
-        allocation_id: '{{ results.result["allocation_id"] }}'
+        allocation_id: '{{ eipresults.result["allocation_id"] }}'
 #        allocation_id: '{{ allocation_id }}'
         status: absent
       register: res
