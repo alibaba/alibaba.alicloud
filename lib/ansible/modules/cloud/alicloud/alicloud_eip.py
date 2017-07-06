@@ -402,7 +402,8 @@ def main():
         else:
             (changed, result) = requesting_eip_addresses(module=module, vpc=vpc,
                                                          bandwidth=bandwidth, internet_charge_type=internet_charge_type)
-            module.exit_json(changed=changed, result=result)
+            result_dict = dict(allocation_id = result.allocation_id, eip_address = result.eip_address)
+            module.exit_json(changed=changed, result=result_dict)
 
     elif status == 'join':
 
