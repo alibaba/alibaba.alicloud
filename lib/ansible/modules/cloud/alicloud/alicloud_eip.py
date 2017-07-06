@@ -210,7 +210,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect, vpc_connect
 
 
-def requesting_eip_addresses(module, vpc, bandwidth, internet_charge_type):
+def allocate_eip_addresses(module, vpc, bandwidth, internet_charge_type):
     """
     requesting for eip address
     :param module: Ansible module object
@@ -221,7 +221,7 @@ def requesting_eip_addresses(module, vpc, bandwidth, internet_charge_type):
     """
     changed = False
     try:
-        changed, result = vpc.requesting_eip_addresses(bandwidth=bandwidth, internet_charge_type=internet_charge_type)
+        changed, result = vpc.allocate_eip_addresses(bandwidth=bandwidth, internet_charge_type=internet_charge_type)
         if 'error' in (''.join(str(result))).lower():
             module.fail_json(msg=result)
 
@@ -400,7 +400,7 @@ def main():
             module.exit_json(changed=changed, result=result)
 
         else:
-            (changed, result) = requesting_eip_addresses(module=module, vpc=vpc,
+            (changed, result) = allocate_eip_addresses(module=module, vpc=vpc,
                                                          bandwidth=bandwidth, internet_charge_type=internet_charge_type)
             result_dict = dict(allocation_id = result.allocation_id, eip_address = result.eip_address)
             module.exit_json(changed=changed, result=result_dict)
