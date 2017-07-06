@@ -44,6 +44,7 @@
 #        vswitch_id: vsw-2zebyw9buwa77azyokjdp
 #      register: createinstanceresult
 #    - debug: var=createinstanceresult
+
     - name: requesting eip
       alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
@@ -101,5 +102,3 @@
 #        state: absent
 #      register: deleteresult
 #    - debug: var=deleteresult
-
-
