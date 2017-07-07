@@ -28,7 +28,7 @@ options:
   state:
     description:
       -  status for requesting eip addresses, bind eip, unbind eip, modify eip attributes and release eip
-    choices: ['present', 'join', 'absent', 'leave']
+    choices: ['present', 'absent']
     required: false
     default: present
   bandwidth:
@@ -339,6 +339,22 @@ def release_eip(module, vpc, allocation_id):
     return changed, result
 
 
+def get_available_allocation_id(module, vpc):
+    """
+    Verify if eip belongs to the provided region
+    :param module: Ansible module object
+    :param vpc: authenticated vpc connection object
+    :return:
+    """
+    allocation_id = None
+    eips = vpc.describe_eip_address()
+    for item in eips.eip_addresses["eip_address"]:
+        if item["status"] == "Available":
+            allocation_id = item["allocation_id"]
+
+    return allocation_id
+    
+
 def verify_eip_region(module, vpc, allocation_id):
     """
     Verify if eip belongs to the provided region
@@ -392,32 +408,37 @@ def main():
                 int(bandwidth)
             except Exception as ex:
                 module.fail_json(msg="provide valid bandwidth value")
-
-        if (allocation_id and bandwidth) is not None:
-
-            (changed, result) = modifying_eip_attributes(module=module, vpc=vpc, allocation_id=allocation_id,
-                                                         bandwidth=bandwidth)
-            module.exit_json(changed=changed, result=result)
-
+                
+        if instance_id is None:
+            if (allocation_id and bandwidth) is not None:
+                #modify    
+                (changed, result) = modifying_eip_attributes(module=module, vpc=vpc, allocation_id=allocation_id,
+                                                             bandwidth=bandwidth)
+                module.exit_json(changed=changed, result=result)
+    
+            elif allocation_id is None:
+                #allocate
+                (changed, result) = allocate_eip_addresses(module=module, vpc=vpc,
+                                                             bandwidth=bandwidth, internet_charge_type=internet_charge_type)
+                module.exit_json(changed=changed, result=result)
         else:
-            (changed, result) = allocate_eip_addresses(module=module, vpc=vpc,
-                                                         bandwidth=bandwidth, internet_charge_type=internet_charge_type)
-            result_dict = dict(allocation_id = result.allocation_id, eip_address = result.eip_address)
-            module.exit_json(changed=changed, result=result_dict)
-
-    elif status == 'join':
-
-        (changed, result) = bind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
-        module.exit_json(changed=changed, result=result)
+            #bind, if allcation_id is none, get available, if still none, allocate one
+            if not allocation_id:
+                allocation_id = get_available_allocation_id(module, vpc)
+                if not allocation_id:
+                    (changed, result) = allocate_eip_addresses(module=module, vpc=vpc,
+                                                             bandwidth=bandwidth, internet_charge_type=internet_charge_type)
+                    allocation_id = result.allocation_id
+            (changed, result) = bind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
+            module.exit_json(changed=changed, result=result)
+                
 
     elif status == 'absent':
-
+        if instance_id:
+            #unbind
+            (changed, result) = unbind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
+        #release
         (changed, result) = release_eip(module, vpc, allocation_id=allocation_id)
-        module.exit_json(changed=changed, result=result)
-
-    elif status == 'leave':
-
-        (changed, result) = unbind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
         module.exit_json(changed=changed, result=result)
 
 if __name__ == "__main__":
