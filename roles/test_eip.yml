@@ -101,5 +101,3 @@
 #        state: absent
 #      register: deleteresult
 #    - debug: var=deleteresult
-
-
