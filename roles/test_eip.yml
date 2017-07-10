@@ -31,44 +31,44 @@
     status: present
 
   tasks:
-    - name: Create VPC
-      alicloud_vpc:
-        alicloud_region: '{{ alicloud_region }}'
-        status: present
-        cidr_block: '{{ cidr_block }}'
-        vpc_name: '{{ vpc_name }}'
-        description: '{{ description }}'
-      register: create_vpc
-    - debug: var=create_vpc
+#    - name: Create VPC
+#      alicloud_vpc:
+#        alicloud_region: '{{ alicloud_region }}'
+#        status: present
+#        cidr_block: '{{ cidr_block }}'
+#        vpc_name: '{{ vpc_name }}'
+#        description: '{{ description }}'
+#      register: create_vpc
+#    - debug: var=create_vpc
 
-    - name: Create VSwitch
-      alicloud_vswitch:
-        alicloud_region: '{{ alicloud_region }}'
-        alicloud_zone: '{{ alicloud_zone }}'
-        status: present
-        cidr_block: '{{ vsw_cidr }}'
-        vswitch_name: '{{ vsw_name }}'
-        description: '{{ description }}'
-        vpc_id: '{{ create_vpc["vpc_id"] }}'
-      register: create_vsw
-    - debug: var=create_vsw
+#    - name: Create VSwitch
+#      alicloud_vswitch:
+#        alicloud_region: '{{ alicloud_region }}'
+#        alicloud_zone: '{{ alicloud_zone }}'
+#        status: present
+#        cidr_block: '{{ vsw_cidr }}'
+#        vswitch_name: '{{ vsw_name }}'
+#        description: '{{ description }}'
+#        vpc_id: '{{ create_vpc["vpc_id"] }}'
+#      register: create_vsw
+#    - debug: var=create_vsw
 
 
-    - name: Creating an ECS instance
-      alicloud_instance:
-        alicloud_region: '{{ alicloud_region }}'
-        alicloud_zone: '{{ alicloud_zone }}'
-        image: '{{ image }}'
-        type: '{{ type }}'
-        instance_name: '{{ instance_name }}'
-        description: '{{ description }}'
-        host_name: '{{ host_name }}'
-        password: '{{ password }}'
-        count: '{{ count }}'
-        instance_tags: '{{ instance_tags }}'
-        vswitch_id: '{{ create_vsw["vswitch_id"] }}'
-      register: createinstanceresult
-    - debug: var=createinstanceresult
+#    - name: Creating an ECS instance
+#      alicloud_instance:
+#        alicloud_region: '{{ alicloud_region }}'
+#        alicloud_zone: '{{ alicloud_zone }}'
+#        image: '{{ image }}'
+#        type: '{{ type }}'
+#        instance_name: '{{ instance_name }}'
+#        description: '{{ description }}'
+#        host_name: '{{ host_name }}'
+#        password: '{{ password }}'
+#        count: '{{ count }}'
+#        instance_tags: '{{ instance_tags }}'
+#        vswitch_id: vsw-2zes5qj77anvdmbcn6o1i 
+#      register: createinstanceresult
+#    - debug: var=createinstanceresult
     - name: requesting eip
       alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
@@ -92,7 +92,7 @@
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ eipresults.result["allocation_id"] }}'
 #        allocation_id: '{{ allocation_id }}'
-        instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
+        instance_id: i-2ze83efh3tg9n6ex6bxa
 #        instance_id: '{{ instance_id }}'
         status: present
       register: res
@@ -103,7 +103,7 @@
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ eipresults.result["allocation_id"] }}'
 #        allocation_id: '{{ allocation_id }}'
-        instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
+        instance_id: i-2ze83efh3tg9n6ex6bxa
 #        instance_id: '{{ instance_id }}'
         state: absent
       register: res
@@ -118,31 +118,31 @@
       register: res
     - debug: var=res
 #  
-    - name: Terminating ECS instance
-      alicloud_instance:
-        alicloud_region: '{{ alicloud_region }}'
-        instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
+#    - name: Terminating ECS instance
+#      alicloud_instance:
+#        alicloud_region: '{{ alicloud_region }}'
+#        instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
 #        instance_id: '{{ instance_id }}' 
-        state: absent
-      register: deleteresult
-    - debug: var=deleteresult
+#        state: absent
+#      register: deleteresult
+#    - debug: var=deleteresult
 
-    - name: Delete Vswitch
-      alicloud_vswitch:
-        status: absent
-        alicloud_region: '{{ alicloud_region }}'
-        vpc_id: '{{ create_vpc["vpc_id"] }}'
+#    - name: Delete Vswitch
+#      alicloud_vswitch:
+#        status: absent
+#        alicloud_region: '{{ alicloud_region }}'
+#        vpc_id: '{{ create_vpc["vpc_id"] }}'
 #        vpc_id: vpc-2zeitfidm1pqeqmorqaeg
-        vswitch_id: '{{ create_vsw["vswitch_id"] }}'
-      register: delete_vswitch_result
-    - debug: var=delete_vswitch_result
+#        vswitch_id: '{{ create_vsw["vswitch_id"] }}'
+#      register: delete_vswitch_result
+#    - debug: var=delete_vswitch_result
 
-    - name: Delete VPC
-      alicloud_vpc:
-        alicloud_region: '{{ alicloud_region }}'
-        vpc_id: '{{ create_vpc["vpc_id"] }}'
+#    - name: Delete VPC
+#      alicloud_vpc:
+#        alicloud_region: '{{ alicloud_region }}'
+#        vpc_id: '{{ create_vpc["vpc_id"] }}'
 #        vpc_id: vpc-2zeitfidm1pqeqmorqaeg
-        status: absent
-      register: delete_vpc
-    - debug: var=delete_vpc
+#        status: absent
+#      register: delete_vpc
+#    - debug: var=delete_vpc
 
