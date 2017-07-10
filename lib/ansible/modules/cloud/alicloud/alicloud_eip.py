@@ -22,101 +22,36 @@ ANSIBLE_METADATA = {'status': ['stableinterface'],
                     'version': '1.0'}
 DOCUMENTATION = """
 ---
-module: ecs_eip
+module: alicloud_eip
 short_description: Requesting eip address, bind eip, unbind eip, modify eip attributes and release eip
 options:
-  alicloud_access_key:
-    description:
-      - Aliyun Cloud access key. If not set then the value of the `ALICLOUD_ACCESS_KEY`, `ACS_ACCESS_KEY_ID`, 
-        `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
-    required: false
-    default: null
-    aliases: ['acs_access_key', 'ecs_access_key','access_key']
-  alicloud_secret_key:
-    description:
-      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_KEY`, `ACS_SECRET_ACCESS_KEY`,
-        `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
-    required: false
-    default: null
-    aliases: ['acs_secret_access_key', 'ecs_secret_key','secret_key']
-  status:
+  state:
     description:
       -  status for requesting eip addresses, bind eip, unbind eip, modify eip attributes and release eip
-    choices: ['present', 'join', 'absent', 'leave']
+    choices: ['present', 'absent']
     required: false
     default: present
-    aliases: [ 'state' ]
-
-function requesting eip addresses in EIP
-    description: Requesting eip addresses
-    status: present
-    options:
-      bandwidth:
-        description:
-          - The rate limit of the EIP.
-        required: false
-        default: 5Mbps
-      internet_charge_type:
-        description:
-          - PayByBandwidth and PayByTraffic.
-        required: false
-        default: PayByBandwidth
-
-function bind eip in EIP
-    description: Bind eip addresses
-    status: join
-    options:
-      allocation_id:
-        description:
-          - The allocation ID of the EIP to be bound. The allocation ID uniquely identifies the EIP
-        required: True
-        default: null
-      instance_id:
-        description:
-          - The ID of the ECS instance to be bound
-        required: True
-        default: null
-
-function unbind eip in EIP
-    description: Unbind eip addresses
-    status: leave
-    options:
-      allocation_id:
-        description:
-          - The allocation ID of the EIP to be unbound. The allocation ID uniquely identifies the EIP.
-        required: True
-        default: null
-      instance_id:
-        description:
-          - The ID of the ECS instance to be unbound
-        required: True
-        default: null
-
-function modifying eip attributes in EIP
-    description: Modifying eip attributes
-    status: present
-    options:
-      allocation_id:
-        description:
-          - The allocation ID of the EIP to be bound. The allocation ID uniquely identifies the EIP.
-        required: True
-        default: null
-      bandwidth:
-        description:
-          - The rate limit of the EIP. If not specified.
-        required: True
-        default: 5Mbps
-
-function modifying eip attributes in EIP
-    description: Modifying eip attributes
-    status: absent
-    options:
-      allocation_id:
-        description:
-          - The allocation ID of the EIP to be remove. The allocation ID uniquely identifies the EIP.
-        required: True
-        default: null
-
+  bandwidth:
+    description:
+      - The rate limit of the EIP, measured in Mbps (Mega bit per second)
+    required: false
+    default: 5Mbps
+  internet_charge_type:
+    description:
+      - PayByBandwidth and PayByTraffic.
+    choices: [ 'PayByBandwidth', 'PayByTraffic']
+    required: false
+    default: PayByBandwidth
+  allocation_id:
+    description:
+      - The allocation ID of the EIP to be bound, unbound, modify, release.In this condition, allocation_id is reqired. The allocation ID uniquely identifies the EIP
+    required: True
+    default: null
+  instance_id:
+    description:
+      - The ID of the ECS instance to be bound or unbound. In this condition , instance_id is required.
+    required: True
+    default: null
 """
 
 EXAMPLES = """
@@ -129,17 +64,13 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     internet_charge_type: PayByTraffic
     bandwidth: 5
     status: present
   tasks:
     - name: requesting eip
-      ecs_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
+      alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
         internet_charge_type: '{{ internet_charge_type }}'
         bandwidth: '{{ bandwidth }}'
@@ -150,21 +81,17 @@ EXAMPLES = """
 
 
 # basic provisioning example to bind eip
-- name: create disk
+- name: bind eip
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     allocation_id: xxxxxxxxxx
     instance_id: xxxxxxxxxx
     status: join
   tasks:
-    - name: Bind eip
-      ecs_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
+    - name: bind eip
+      alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ allocation_id }}'
         instance_id: '{{ instance_id }}'
@@ -179,17 +106,13 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     allocation_id: exxxxxxxxxx
     instance_id: xxxxxxxxxx
     state: leave
   tasks:
     - name: unbind eip
-      ecs_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
+      alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ allocation_id }}'
         instance_id: '{{ instance_id }}'
@@ -204,17 +127,13 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     allocation_id: xxxxxxxxxx
     bandwidth: 3
     status: present
   tasks:
     - name: Modify eip
-      ecs_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
+      alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ allocation_id }}'
         bandwidth: '{{ bandwidth }}'
@@ -229,16 +148,12 @@ EXAMPLES = """
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     allocation_id: xxxxxxxxxx
     status: absent
   tasks:
     - name: release eip
-      ecs_eip:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
+      alicloud_eip:
         alicloud_region: '{{ alicloud_region }}'
         allocation_id: '{{ allocation_id }}'
         status: '{{ status }}'
@@ -247,12 +162,55 @@ EXAMPLES = """
     - debug: var=result
 
 """
+RETURN = '''
+eip_address:
+    description: Assign the flexible public network IP
+    returned: when request eip
+    type: string
+    sample: "123.56.0.206"
+allocation_id:
+    description: Example of a flexible public network IP
+    returned: when request eip 
+    type: list
+    sample: "eip-25877c70x"
+eip:
+    description: Details about the ecs instances that were created.
+    returned: Query the flexible public IP list
+    type: dict
+    sample: {
+    "EipAddresses": {
+        "EipAddress": [
+          {
+            "AllocationId": "eip-2578g5v5a",
+            "AllocationTime": "2014-05-28T03:03:16Z ",
+            "Bandwidth": "1",
+            "InstanceId": "",
+            "InternetChargeType": " PayByBandwidth ",
+            "IpAddress": "123.56.0.36",
+            "OperationLocks": {
+              "LockReason": []
+            },
+            "RegionId": "cn-beijing",
+            "Status": "Available"
+          }
+        ]
+    },
+    "PageNumber": 1,
+    "PageSize": 10,
+    "RequestId": "51BE7822-4121-428A-88F3-262AE4FD868D",
+    "TotalCount": 1
+    }
+'''
+
+
 import time
 from ast import literal_eval
 from footmark.exception import VPCResponseError
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect, vpc_connect
 
 
-def requesting_eip_addresses(module, vpc, bandwidth, internet_charge_type):
+def allocate_eip_addresses(module, vpc, bandwidth, internet_charge_type):
     """
     requesting for eip address
     :param module: Ansible module object
@@ -263,7 +221,7 @@ def requesting_eip_addresses(module, vpc, bandwidth, internet_charge_type):
     """
     changed = False
     try:
-        changed, result = vpc.requesting_eip_addresses(bandwidth=bandwidth, internet_charge_type=internet_charge_type)
+        changed, result = vpc.allocate_eip_addresses(bandwidth=bandwidth, internet_charge_type=internet_charge_type)
         if 'error' in (''.join(str(result))).lower():
             module.fail_json(msg=result)
 
@@ -287,16 +245,13 @@ def bind_eip(module, vpc, allocation_id, instance_id):
         module.fail_json(msg="instance_id parameter is needed to bind eip")
 
     changed = False
+    result = []
 
     verify_eip_region(module, vpc, allocation_id)
 
     try:
-        result = vpc.bind_eip(allocation_id=allocation_id, instance_id=instance_id)
-
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(msg=result)
-        changed = True
-
+        changed = vpc.bind_eip(allocation_id=allocation_id, instance_id=instance_id)
+        result.append("bind success")
     except VPCResponseError as e:
         module.fail_json(msg='Unable to bind eip, error: {0}'.format(e))
 
@@ -318,14 +273,13 @@ def unbind_eip(module, vpc, allocation_id, instance_id):
         module.fail_json(msg="instance_id parameter is needed to unbind eip")
 
     changed = False
+    result = []
 
     verify_eip_region(module, vpc, allocation_id)
 
     try:
-        changed, result = vpc.unbind_eip(allocation_id=allocation_id, instance_id=instance_id)
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(changed=changed, msg=result)
-
+        changed = vpc.unbind_eip(allocation_id=allocation_id, instance_id=instance_id)
+        result.append("unbind success")
     except VPCResponseError as e:
         module.fail_json(msg='Unable to Unbind eip, error: {0}'.format(e))
     return changed, result
@@ -371,21 +325,35 @@ def release_eip(module, vpc, allocation_id):
         module.fail_json(msg="allocation_id parameter is needed to release eip")
 
     changed = False
+    result = []
 
     verify_eip_region(module, vpc, allocation_id)
 
     try:
-        result = vpc.releasing_eip(allocation_id=allocation_id)
-
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(msg=result)
-        changed = True
+        changed = vpc.releasing_eip(allocation_id=allocation_id)
+        result.append("release success")
 
     except VPCResponseError as e:
         module.fail_json(msg='Unable to release eip, error: {0}'.format(e))
 
     return changed, result
 
+
+def get_available_allocation_id(module, vpc):
+    """
+    Verify if eip belongs to the provided region
+    :param module: Ansible module object
+    :param vpc: authenticated vpc connection object
+    :return:
+    """
+    allocation_id = None
+    eips = vpc.describe_eip_address()
+    for item in eips.eip_addresses["eip_address"]:
+        if item["status"] == "Available":
+            allocation_id = item["allocation_id"]
+
+    return allocation_id
+    
 
 def verify_eip_region(module, vpc, allocation_id):
     """
@@ -399,12 +367,12 @@ def verify_eip_region(module, vpc, allocation_id):
         module.fail_json("allocation_id is mandatory to verify eip region")
 
     try:
-        eips, result = vpc.describe_eip_address(allocation_id=allocation_id)
+        eips = vpc.describe_eip_address(allocation_id=allocation_id)
 
-        if eips is None:
-            module.fail_json(msg=result)
+        if eips.eip_addresses is None:
+            module.fail_json(msg="opration failed")
 
-        if len(eips) != 1:
+        if len(eips.eip_addresses) != 1:
             module.fail_json(msg="eip with allocation_id " + allocation_id + " does not exist in the provided region")
 
     except VPCResponseError as e:
@@ -440,38 +408,39 @@ def main():
                 int(bandwidth)
             except Exception as ex:
                 module.fail_json(msg="provide valid bandwidth value")
-
-        if (allocation_id and bandwidth) is not None:
-
-            (changed, result) = modifying_eip_attributes(module=module, vpc=vpc, allocation_id=allocation_id,
-                                                         bandwidth=bandwidth)
-            module.exit_json(changed=changed, result=result)
-
+                
+        if instance_id is None:
+            if (allocation_id and bandwidth) is not None:
+                #modify    
+                (changed, result) = modifying_eip_attributes(module=module, vpc=vpc, allocation_id=allocation_id,
+                                                             bandwidth=bandwidth)
+                module.exit_json(changed=changed, result=result)
+    
+            elif allocation_id is None:
+                #allocate
+                (changed, result) = allocate_eip_addresses(module=module, vpc=vpc,
+                                                             bandwidth=bandwidth, internet_charge_type=internet_charge_type)
+                module.exit_json(changed=changed, result=result)
         else:
-            (changed, result) = requesting_eip_addresses(module=module, vpc=vpc,
-                                                         bandwidth=bandwidth, internet_charge_type=internet_charge_type)
+            #bind, if allcation_id is none, get available, if still none, allocate one
+            if not allocation_id:
+                allocation_id = get_available_allocation_id(module, vpc)
+                if not allocation_id:
+                    (changed, result) = allocate_eip_addresses(module=module, vpc=vpc,
+                                                             bandwidth=bandwidth, internet_charge_type=internet_charge_type)
+                    allocation_id = result.allocation_id
+            (changed, result) = bind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
             module.exit_json(changed=changed, result=result)
-
-    elif status == 'join':
-
-        (changed, result) = bind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
-        module.exit_json(changed=changed, result=result)
+                
 
     elif status == 'absent':
-
+        if instance_id:
+            #unbind
+            (changed, result) = unbind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
+        #release
         (changed, result) = release_eip(module, vpc, allocation_id=allocation_id)
         module.exit_json(changed=changed, result=result)
 
-    elif status == 'leave':
-
-        (changed, result) = unbind_eip(module=module, vpc=vpc, allocation_id=allocation_id, instance_id=instance_id)
-        module.exit_json(changed=changed, result=result)
-
-
-# import module snippets
-from ansible.module_utils.basic import *
-# from ansible.module_utils.ecs import *
-from ecsutils.ecs import *
-
-# import ECSConnection
-main()
+if __name__ == "__main__":
+    main()
+    
