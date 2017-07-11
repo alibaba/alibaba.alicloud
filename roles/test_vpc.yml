@@ -31,6 +31,15 @@
     password: pass@123
     count: 1
     allocate_public_ip: False
+    internet_data:
+        charge_type: PayByBandwidth
+        max_bandwidth_in: 200
+        max_bandwidth_out: 10
+    instance_tags:
+      - tag_key: create_test_1
+        tag_value: '0.01'
+      - tag_key: create_test_2
+        tag_value: '0.02'
     pagenumber: 1
     pagesize: 10
 
@@ -89,7 +98,7 @@
     - debug: var=query_vsw_2
 
     - name: Creating an ECS instance
-      ecs:
+      alicloud_instance:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         image: '{{ image }}'
@@ -100,6 +109,8 @@
         password: '{{ password }}'
         count: '{{ count }}'
         allocate_public_ip: '{{ allocate_public_ip }}'
+        internet_data: '{{ internet_data }}'
+        instance_tags: '{{ instance_tags }}'
         vswitch_id: '{{ create_vsw["vswitch_id"] }}'
       register: create_instance_result
     - debug: var=create_instance_result
@@ -124,6 +135,49 @@
       register: query_vrouter_result
     - debug: var=query_vrouter_result
 
+    - name: requesting eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        internet_charge_type: PayByTraffic
+        bandwidth: 5
+        status: present
+      register: eipresults
+    - debug: var=eipresults
+    
+    - name: Modify eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ eipresults.result["allocation_id"] }}'
+        bandwidth: 6
+        status: present
+      register: result
+    - debug: var=result    
+    
+    - name: bind eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ eipresults.result["allocation_id"] }}'
+        instance_id: '{{ create_instance_result["instance_ids"][0] }}'
+        status: present
+      register: res
+    - debug: var=res
+    
+    - name: unbind eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ eipresults.result["allocation_id"] }}'
+        instance_id: '{{ create_instance_result["instance_ids"][0] }}'
+        state: absent
+      register: res
+    - debug: var=res
+    
+    - name: release eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        allocation_id: '{{ eipresults.result["allocation_id"] }}'
+        status: absent
+      register: res
+    - debug: var=res
 #    - name: Request EIP with all parameters
 #      ecs_eip:
 #       alicloud_region: '{{ alicloud_region }}'
