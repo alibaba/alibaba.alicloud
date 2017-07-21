@@ -13,7 +13,7 @@
     - name: create server load balancer
       alicloud_slb_lb:
         alicloud_region: '{{ alicloud_region }}'
-        state: present
+        status: present
       register: create_result
     - debug: var=create_result
 
@@ -44,6 +44,7 @@
 #        load_balancer_id: '{{ load_balancer_id }}'
         internet_charge_type: '{{ internet_charge_type }}'
         bandwidth: '{{ bandwidth }}'
+        status: present
       register: result
     - debug: var=result
 

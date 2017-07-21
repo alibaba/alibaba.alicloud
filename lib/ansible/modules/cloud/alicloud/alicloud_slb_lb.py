@@ -51,7 +51,6 @@ options:
         - This parameter is required when user wants to perform edit operation in Load Balancer
     default: null
     required: false
-    aliases: [ 'ecs_slb' ]
   load_balancer_status:
     description:
         - The lb instance status.
@@ -194,19 +193,24 @@ EXAMPLES = """
     - debug: var=result
 """
 RETURN = '''
-LoadBalancer:
-    description: The slb obj
-    return: when create success
-    type:dict
-    sample:{
-        "changed": true, 
-        "result": {
-            "address": "101.201.178.24", 
-            "load_balancer_id": "lb-2ze55q82qclajj6pc2kpt",  
-            "network_type": "classic"
-        }
-    }
-
+load_balancer_id:
+    description:
+        - This parameter is required when user wants to perform edit operation in Load Balancer
+    returned: when create lb success
+    type: string
+    sample: lb-2zeczyhrxnm2d4rf8o4zg
+address:
+    description:
+        - Service address assigned by the system
+    returned: when create lb success
+    type: string
+    sample: 182.92.244.58
+network_type:
+    description:
+        - The type of network
+    returned: when create lb success
+    type: string
+    sample: classic
 '''
 
 import time
@@ -226,36 +230,18 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def create_load_balancer(module, slb, load_balancer_name=None, address_type=None, vswitch_id=None,
-                         internet_charge_type=None, master_zone_id=None, slave_zone_id=None, bandwidth=None):
+def get_info(lb_obj):
     """
-    Create LoadBalancer; generate Server Load Balancer instances, and allocate service addresses and LoadBalancerIds
-     according to parameters
-    :param module: Ansible module object
-    :param slb: Authenticated slb connection object
-    :param load_balancer_name: The name of the LoadBalancer
-    :param address_type: The AddressType of the LoadBalancer, It allows 'internet' or 'intranet'
-        Default: internet
-    :param vswitch_id: The vswitch id of VPC instance
-    :param internet_charge_type: Charging mode for the public network instance, It allows 'paybybandwidth'
-        or 'paybytraffic'. Default: paybytraffic
-    :param master_zone_id: Name of master availability zones to enable on this LoadBalancer
-    :param  slave_zone_id: Name of slave availability zones to enable on this load balancer
-    :param bandwidth: Bandwidth peak of the public network instance charged per fixed bandwidth
-        value ranges from 1 to 1000 and default is 1
-    :return: Retrun created LoadBalancer details
+    get info from lb object 
+    :param lb_obj: lb obj 
+    :return: result: info of lb 
     """
-    changed = False
-
-    if (master_zone_id is None) and (slave_zone_id is not None):
-        module.fail_json(msg="provide master_zone_id first")
-
-    result = slb.create_load_balancer(load_balancer_name=load_balancer_name, address_type=address_type,
-                                                   vswitch_id=vswitch_id, internet_charge_type=internet_charge_type,
-                                                   master_zone_id=master_zone_id, slave_zone_id=slave_zone_id,
-                                                   bandwidth=bandwidth)
-   
-    return  result
+    result = {}
+    
+    result = dict(load_balancer_id=lb_obj.load_balancer_id,\
+                  address=lb_obj.address,\
+                  network_type=lb_obj.network_type)
+    return result
 
 def get_load_balancer_objs(slb, load_balancer_id = None, load_balancer_name = None):
     """
@@ -277,7 +263,7 @@ def main():
         argument_spec.update(dict(
             internet_charge_type=dict(choices=['paybybandwidth', 'paybytraffic'], default='paybytraffic'),
             zone_id=dict(aliases=['acs_zone', 'ecs_zone']),
-            status=dict(default='present', aliases=['state'], choices=['present', 'absent']),
+            state=dict(default='present', aliases=['status'], choices=['present', 'absent']),
             load_balancer_name=dict(aliases=['name']),
             load_balancer_id=dict(aliases=['ecs_slb']),
             address_type=dict(default='internet', aliases=['scheme']),
@@ -290,7 +276,7 @@ def main():
 
         module = AnsibleModule(argument_spec=argument_spec)
         slb = slb_connect(module)
-        status = module.params['status']
+        state = module.params['status']
         load_balancer_id = module.params['load_balancer_id']
         load_balancer_name = module.params['load_balancer_name']
         address_type = module.params['address_type']
@@ -315,31 +301,35 @@ def main():
         if len(res_objs)==1:
             cur_slb = res_objs[0]            
 
-        if status == "absent" and cur_slb:
+        if state == "absent" and cur_slb:
             result = cur_slb.delete()
-            changed = True    
-        elif status == "present" :
+            changed = True
+            module.exit_json(changed=changed, result=result)    
+        elif state == "present" :
             if load_balancer_status and cur_slb:
                 #set status
                 result = cur_slb.set_status(load_balancer_status)
+                changed = True
             elif  load_balancer_name and cur_slb:
                 #set name  
                 result = cur_slb.modify_name(load_balancer_name)
+                changed = True
             elif (internet_charge_type or bandwidth) and cur_slb:
                 #set spec
                 result = cur_slb.modify_spec(internet_charge_type=internet_charge_type, bandwidth=bandwidth)
+                changed = True
             elif len(res_objs) != 1:
-                result = create_load_balancer(module=module, slb=slb, load_balancer_name=load_balancer_name,
+                res_obj = slb.create_load_balancer(load_balancer_name=load_balancer_name,
                                                  address_type=address_type, vswitch_id=vswitch_id,
                                                  internet_charge_type=internet_charge_type,
                                                  master_zone_id=master_zone_id, slave_zone_id=slave_zone_id,
                                                  bandwidth=bandwidth)
-            changed = True
-            
-        else:
-            result[0] = ("opration not support")         
-        module.exit_json(changed=changed, result=result)   
+                result = get_info(res_obj)
+                changed = True
+                
+            module.exit_json(changed=changed, result=result)   
 
 
 if __name__ == "__main__":
     main()
+    
