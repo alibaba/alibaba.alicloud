@@ -234,9 +234,9 @@ except ImportError:
 
 def get_info(lb_obj):
     """
-    get info from lb object 
-    :param lb_obj: lb obj 
-    :return: result: info of lb 
+    get info from lb object
+    :param lb_obj: lb obj
+    :return: result: info of lb
     """
     result = {}
     
@@ -254,9 +254,9 @@ def get_load_balancer_objs(slb, load_balancer_id = None, load_balancer_name = No
     Add Listeners and Backend Servers to Load Balancer
     :param module: Ansible module object
     :param slb: Authenticated slb connection object
-    :param load_balancer_id: Id of LoadBalancer    
-    :param load_balancer_name: name of LoadBalancer 
-    :return: load balancer obj: Ids of LoadBalancers 
+    :param load_balancer_id: Id of LoadBalancer
+    :param load_balancer_name: name of LoadBalancer
+    :return: load balancer obj: Ids of LoadBalancers
     """
     return slb.describe_load_balancers(load_balancer_id = load_balancer_id, load_balancer_name = load_balancer_name)
 
