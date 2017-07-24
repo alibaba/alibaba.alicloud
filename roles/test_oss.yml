@@ -3,69 +3,95 @@
   connection: local
   vars:
     alicloud_region: cn-beijing
-    bucket: c2cbucket
+    bucket: bucketcomesfromansible
+    object: newobject-2
     folder_name: MeetingDocs
-    permission: public-read-write
-    src: Book1.xlsx
-    file_name: MeetingDocs/Book1.xslx
+    permission: public-read
+    content: "Hello word!"
+    file_name: 'test_oss.yml'
+    overwrite: true
     headers:
       Content-Encoding: md5
-    metadata:
-      x-oss-meta-key: value
-    expiration: 30
+
+    # download
+    byte_range: 0-200
+    download_file: file_comes_from_oss.json
+
   tasks:
     - name: create oss bucket
-      oss:
+      alicloud_bucket:
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         permission: '{{ permission }}'
-        mode: create
+        state: present
       register: create_bucket_result
     - debug: var=create_bucket_result
 
-#    - name: simple upload to bucket 
-#      oss:
-#        alicloud_region: '{{ alicloud_region }}'
-#        bucket: '{{ bucket }}'
-#        src: '{{ src }}'
-#        file_name: '{{ file_name }}'
-#        headers: '{{ headers }}'
-#        metadata: '{{ metadata }}'
-#        expiration: '{{ expiration }}'
-#        mode: put
-#      register: s_upload_result
-#    - debug: var=s_upload_result
-
-    - name: create bucket folder
-      oss:
+    - name: list oss buckets
+      alicloud_bucket:
         alicloud_region: '{{ alicloud_region }}'
-        mode: put_folder
         bucket: '{{ bucket }}'
-        folder_name: '{{ folder_name }}'
-      register: folder_result
-    - debug: var=folder_result
+        permission: '{{ permission }}'
+        state: list
+      register: list_buckets
+    - debug: var=list_buckets
+
+    - name: upload content to bucket
+      alicloud_bucket_object:
+        alicloud_region: '{{ alicloud_region }}'
+        bucket: '{{ bucket }}'
+        content: '{{ content }}'
+        headers: '{{ headers }}'
+        object: '{{ object }}'
+        mode: put
+      register: upload_result
+    - debug: var=upload_result
+
+    - name: upload object via file
+      alicloud_bucket_object:
+        alicloud_region: '{{ alicloud_region }}'
+        bucket: '{{ bucket }}'
+        file_name: '{{ file_name }}'
+        headers: '{{ headers }}'
+        object: '{{ object }}'
+#        overwrite: '{{ overwrite }}'
+        mode: put
+      register: file_upload_result
+    - debug: var=file_upload_result
+
+    - name: download object
+      alicloud_bucket_object:
+        alicloud_region: '{{ alicloud_region }}'
+        bucket: '{{ bucket }}'
+        file_name: '{{ download_file }}'
+        headers: '{{ headers }}'
+        range: '{{ byte_range }}'
+        object: '{{ object }}'
+        mode: get
+      register: download_result
+    - debug: var=download_result
 
     - name: list bucket objects
-      oss:
+      alicloud_bucket_object:
         alicloud_region: '{{ alicloud_region }}'
         mode: list
         bucket: '{{ bucket }}'
       register: list_result
     - debug: var=list_result
 
-    - name: delete bucket objects
-      oss:
+    - name: delete bucket object
+      alicloud_bucket_object:
         alicloud_region: '{{ alicloud_region }}'
-        mode: delobj
+        mode: delete
         bucket: '{{ bucket }}'
-        object_list: '{{ list_result["keys"] }}'
+        object: '{{ object }}'
       register: delete_objects_result
     - debug: var=delete_objects_result
 
     - name: delete oss bucket
-      oss:
+      alicloud_bucket:
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
-        mode: delete
+        state: absent
       register: delete_bucket_result
     - debug: var=delete_bucket_result
