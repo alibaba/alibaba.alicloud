@@ -5,7 +5,6 @@
   vars:
     alicloud_region: cn-beijing
     load_balancer_name_for_change: test_change_name
-    load_balancer_id: lb-2zejlj3wa3rq3xe4omrek 
     address_type: internet
     bandwidth: 4
     internet_charge_type: paybytraffic
@@ -21,7 +20,7 @@
       alicloud_slb_lb:
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_status: inactive
-        load_balancer_id: '{{ create_result["result"]["load_balancer_id" ] }}'  
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
 #        load_balancer_id: '{{ load_balancer_id }}'
         status: present
       register: result
@@ -32,7 +31,7 @@
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_status: active
 #        load_balancer_id: '{{ load_balancer_id }}'
-        load_balancer_id: '{{ create_result["result"]["load_balancer_id" ] }}'  
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
         status: present
       register: result
     - debug: var=result
@@ -40,7 +39,7 @@
     - name: modify server load balancer internet specification
       alicloud_slb_lb:
         alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ create_result["result"]["load_balancer_id" ] }}'  
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
 #        load_balancer_id: '{{ load_balancer_id }}'
         internet_charge_type: '{{ internet_charge_type }}'
         bandwidth: '{{ bandwidth }}'
@@ -51,7 +50,7 @@
     - name: set server load balancer name
       alicloud_slb_lb:
         alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ create_result["result"]["load_balancer_id" ] }}'  
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
 #        load_balancer_id: '{{ load_balancer_id }}'
         load_balancer_name: '{{ load_balancer_name_for_change }}'
         status: present
@@ -62,7 +61,7 @@
       alicloud_slb_lb:
         alicloud_region: '{{ alicloud_region }}'
 #        load_balancer_id: '{{ load_balancer_id }}'
-        load_balancer_id: '{{ create_result["result"]["load_balancer_id" ] }}'  
+        load_balancer_id: '{{ create_result["load_balancer"]["load_balancer_id" ] }}'  
         status: absent
       register: result
     - debug: var=result
