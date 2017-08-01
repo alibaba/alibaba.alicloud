@@ -1,0 +1,106 @@
+# This Playbook contains test scenario for Create SLB, Listener and add Backend Server
+# Playbook created by : Shrutika M
+
+- name: Create listener
+  hosts: localhost
+  connection: local
+  vars:
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a
+
+  tasks:
+    - name: Creating listener
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        listener_type: https
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        backend_server_port: 80
+        bandwidth: 4
+        server_certificate_id: 1307087942598154_15d9be73dc3_1698816079_2014691590
+        sticky_session: off
+        health_check: off
+        state: present
+      register: create_instance_result
+    - debug: var=create_instance_result
+    
+    - name: stop listener
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        state: stop
+      register: create_instance_result
+    - debug: var=create_instance_result
+    
+    - name: start listener
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        state: start
+      register: create_instance_result
+    - debug: var=create_instance_result
+    
+    - name: set access control status
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        access_control_status: open_white_list
+        state: present
+      register: create_instance_result
+    - debug: var=create_instance_result
+    
+    - name: add white list item
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        source_items: 100.22.3.4 
+        state: present
+      register: create_instance_result
+    - debug: var=create_instance_result
+    
+    - name: remove white list item
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        source_items: 100.22.3.4
+        state: absent
+      register: create_instance_result
+    - debug: var=create_instance_result
+    
+    - name: set attribute
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        listener_type: https
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        bandwidth: 4
+        scheduler: wlc
+        sticky_session: off
+        health_check: off
+        state: present
+      register: create_instance_result
+    - debug: var=create_instance_result
+    
+    - name: list
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        listener_type: https
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        state: list
+      register: create_instance_result
+    - debug: var=create_instance_result
+    
+    - name: delete listener
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        listener_port: 80
+        state: absent
+      register: create_instance_result
+    - debug: var=create_instance_result
