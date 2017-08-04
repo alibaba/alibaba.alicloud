@@ -1,0 +1,86 @@
+# This Playbook contains test scenario for Create SLB, Listener and add Backend Server
+# Playbook created by : Shrutika M
+
+- name: Create listener
+  hosts: localhost
+  connection: local
+  vars:
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a
+
+  tasks:
+    - name: Creating an vsg
+      alicloud_slb_vsg:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
+        vserver_group_name: Group123
+        backend_servers:
+            - server_id: i-2ze3ajpeq3y80w4lt4jr
+              port: 80
+              weight: 100
+        state: present
+      register: create_vsg_result
+    - debug: var=create_vsg_result
+    
+    - name: set vsg attribute
+      alicloud_slb_vsg:
+        alicloud_region: '{{ alicloud_region }}'
+        vserver_group_id: '{{ create_vsg_result["vserver_group"]["vserver_group_id"] }}'
+        vserver_group_name: test_set
+        state: present
+      register: del_vsg_result
+    - debug: var=del_vsg_result
+    
+    - name: modify 
+      alicloud_slb_vsg:
+        alicloud_region: '{{ alicloud_region }}'
+        vserver_group_id: '{{ create_vsg_result["vserver_group"]["vserver_group_id"] }}'
+        old_backend_servers:
+            - server_id: i-2ze3ajpeq3y80w4lt4jr
+              port: 80
+        new_backend_servers:
+            - server_id: i-2ze3ajpeq3y80w4lt4jr
+              port: 82
+              weight: 100
+        state: present
+      register: del_vsg_result
+    - debug: var=del_vsg_result
+    
+    - name: add backend server
+      alicloud_slb_vsg:
+        alicloud_region: '{{ alicloud_region }}'
+        vserver_group_id: '{{ create_vsg_result["vserver_group"]["vserver_group_id"] }}'
+        backend_servers:
+            - server_id: i-2ze3ajpeq3y80w4lt4jr
+              port: 90
+              weight: 100
+        state: present
+      register: del_vsg_result
+    - debug: var=del_vsg_result
+    
+    - name: remove backend server
+      alicloud_slb_vsg:
+        alicloud_region: '{{ alicloud_region }}'
+        vserver_group_id: '{{ create_vsg_result["vserver_group"]["vserver_group_id"] }}'
+        backend_servers:
+            - server_id: i-2ze3ajpeq3y80w4lt4jr
+              port: 90
+        state: absent
+      register: del_vsg_result
+    - debug: var=del_vsg_result
+    
+    - name: list vsg
+      alicloud_slb_vsg:
+        alicloud_region: '{{ alicloud_region }}'
+        vserver_group_id: '{{ create_vsg_result["vserver_group"]["vserver_group_id"] }}'
+        state: list
+      register: del_vsg_result
+    - debug: var=del_vsg_result
+    
+    - name: delete vsg
+      alicloud_slb_vsg:
+        alicloud_region: '{{ alicloud_region }}'
+        vserver_group_id: '{{ create_vsg_result["vserver_group"]["vserver_group_id"] }}'
+        state: absent
+      register: del_vsg_result
+    - debug: var=del_vsg_result
