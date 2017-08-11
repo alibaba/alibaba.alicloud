@@ -27,10 +27,15 @@
 #
 
 import os
-from ansible.release import __version__
-import footmark.ecs
-import footmark.slb
-import footmark.vpc
+
+try:
+    import footmark
+    import footmark.ecs
+    import footmark.slb
+    import footmark.vpc
+    HAS_FOOTMARK = True
+except ImportError:
+    HAS_FOOTMARK = False
 
 
 class AnsibleACSError(Exception):
@@ -40,7 +45,7 @@ class AnsibleACSError(Exception):
 def acs_common_argument_spec():
     return dict(
         alicloud_access_key=dict(aliases=['acs_access_key', 'ecs_access_key', 'access_key']),
-        alicloud_secret_key=dict(aliases=['acs_secret_access_key', 'ecs_secret_key', 'secret_key']),
+        alicloud_secret_key=dict(no_log=True, aliases=['acs_secret_access_key', 'ecs_secret_key', 'secret_key']),
         alicloud_security_token=dict(aliases=['security_token', 'access_token'], no_log=True),
     )
 
@@ -114,7 +119,7 @@ def get_acs_connection_info(module):
             security_token = None
 
     ecs_params = dict(acs_access_key_id=access_key, acs_secret_access_key=secret_key, security_token=security_token,
-                      user_agent='Ansible-v' + __version__)
+                      user_agent='Ansible-Provider-Alicloud')
 
     return region, ecs_params
 
