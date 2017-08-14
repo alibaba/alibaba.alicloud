@@ -93,8 +93,8 @@ instance_ids:
 instances:
     description: Details about the ecs instances that were created.
     returned: when success
-    type: dict
-    sample: {
+    type: list
+    sample: [{
         "block_device_mapping": {
             "d-2ze9mho1vp79mctdoro0": {
                 "delete_on_termination": true,
@@ -135,7 +135,7 @@ instances:
             "vswitch_id": ""
         },
         "zone_id": "cn-beijing-a"
-    }
+    }]
 total:
     description: The number of all instances after operating ecs instance.
     returned: when success
