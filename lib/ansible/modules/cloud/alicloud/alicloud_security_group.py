@@ -29,12 +29,11 @@ short_description: Create, Query or Delete Security Group.
 description:
   - Create, Query or Delete Security Group, and it contains security group rules management.
 options:
-  status:
-    description: Create, delete or get information of a security group
+  state:
+    description: Create, delete a security group
     required: false
     default: 'present'
-    aliases: ['state']
-    choices: ['present', 'absent', 'list']
+    choices: ['present', 'absent']
   group_name:
     description: Name of the security group.
     required: false
@@ -600,7 +599,7 @@ def main():
 
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        status=dict(default='present', type='str', aliases=['state'], choices=['present', 'absent', 'list']),
+        state=dict(default='present', type='str', aliases=['state'], choices=['present', 'absent']),
         group_name=dict(type='str', required=False, aliases=['name']),
         description=dict(type='str', required=False),
         vpc_id=dict(type='str'),
@@ -614,7 +613,7 @@ def main():
 
     ecs = ecs_connect(module)
 
-    state = module.params['status']
+    state = module.params['state']
     group_name = module.params['group_name']
     description = module.params['description']
     vpc_id = module.params['vpc_id']
@@ -623,8 +622,6 @@ def main():
 
     changed = False
     group = None
-    groups = []
-    groups_basic = []
     groups_by_name = []
 
     try:
@@ -635,77 +632,64 @@ def main():
     except ECSResponseError as e:
         module.fail_json(msg='Error in get_all_security_groups: %s' % str(e))
 
-    for curGroup in security_groups:
-        groups.append(curGroup)
-        groups_basic.append(get_group_basic(curGroup))
+    if security_groups and len(security_groups) == 1:
+        group = security_groups[0]
 
-        if curGroup.id == group_id:
-            group = curGroup
-        if group_name and curGroup.name == group_name:
-            groups_by_name.append(curGroup)
+    group_ids_by_name = []
+    group_ids = []
+    if not group and group_name and security_groups:
+        for cur in security_groups:
+            if cur.name == group_name:
+                group_ids_by_name.append(cur.id)
+                groups_by_name.append(cur)
+
+            group_ids.append(cur.id)
+
+        if len(groups_by_name) == 1:
+            group = groups_by_name[0]
+        elif len(groups_by_name) > 1:
+            module.fail_json(msg="There is too many security groups match name '{0}', "
+                                 "please use group_id or a new group_name and vpc_id to specify a unique group."
+                                 "Matched group ids are: {1}".format(group_name, group_ids_by_name))
 
     if state == 'absent':
-        if not group and len(groups_by_name) == 1:
-            group = groups_by_name[0]
         if group:
             try:
-                group.delete()
-                module.exit_json(changed=True, group_id=group.id)
+                changed = group.delete()
+                module.exit_json(changed=changed)
             except ECSResponseError as e:
-                module.fail_json(msg="Unable to delete security group '%s' - %s" % (group, e.message))
+                module.fail_json(msg="Deleting security group {0} is failed. Error: {1}".format(group.id, e))
 
-        module.exit_json(changed=changed, msg="Please specify a security group by using 'group_id' or 'group_name',"
-                                              "and expected security groups: %s" % groups_basic)
+        module.fail_json(changed=changed, msg="Please specify a security group by using 'group_id' or 'group_name' "
+                                              "and 'vpc_id', and expected group ids: {0}".format(group_ids))
 
-    elif state == 'list':
-        group_ids = []
-        vpc_ids = []
-        groups_detail = []
+    if not group:
+        try:
+            group = ecs.create_security_group(group_name=group_name, description=description, vpc_id=vpc_id, group_tags=group_tags)
+            changed = True
 
-        if group:
-            module.exit_json(changed=False, group_ids=[group.id], groups=[get_group_detail(group)],
-                             vpc_ids=[group.vpc_id], total=1)
+        except ECSResponseError as e:
+            module.fail_json(changed=changed, msg='Creating a security group is failed. Error: {0}'.format(e))
 
-        if len(groups_by_name) > 0:
-            groups = groups_by_name
+    # validating rules if provided
+    total_rules_count = 0
+    inbound_rules = module.params['rules']
+    if inbound_rules:
+        total_rules_count = len(inbound_rules)
 
-        for gp in groups:
-            group_ids.append(gp.id)
-            vpc_ids.append(gp.vpc_id)
-            groups_detail.append(get_group_detail(gp))
-        module.exit_json(changed=False, group_ids=group_ids, groups=groups_detail, vpc_ids=vpc_ids, total=len(groups))
+    outbound_rules = module.params['rules_egress']
+    if outbound_rules:
+        total_rules_count += len(outbound_rules)
 
-    elif state == 'present':
-        if not group:
-            try:
-                group = ecs.create_security_group(group_name=group_name, description=description, vpc_id=vpc_id, group_tags=group_tags)
-                changed = True
+    if total_rules_count > 100:
+        module.fail_json(msg='more than 100 rules for authorization are not allowed')
 
-            except ECSResponseError as e:
-                module.fail_json(changed=changed, msg='Unable to create SecurityGroup, error: {0}'.format(e))
+    validate_format_sg_rules(module, inbound_rules, outbound_rules)
 
-        # validating rules if provided
-        total_rules_count = 0
-        inbound_rules = module.params['rules']
-        if inbound_rules:
-            total_rules_count = len(inbound_rules)
+    if inbound_rules or outbound_rules:
+        changed = authorize_security_group(module, ecs, group_id=group.id, inbound_rules=inbound_rules, outbound_rules=outbound_rules)
 
-        outbound_rules = module.params['rules_egress']
-        if outbound_rules:
-            total_rules_count += len(outbound_rules)
-
-        if total_rules_count > 100:
-            module.fail_json(msg='more than 100 rules for authorization are not allowed')
-
-        validate_format_sg_rules(module, inbound_rules, outbound_rules)
-
-        if inbound_rules or outbound_rules:
-            changed = authorize_security_group(module, ecs, group_id=group.id, inbound_rules=inbound_rules, outbound_rules=outbound_rules)
-
-        module.exit_json(changed=changed, group_id=group.id, group=get_group_detail(group), vpc_id=group.vpc_id)
-
-    else:
-        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", state))
+    module.exit_json(changed=changed, group_id=group.id, group=get_group_detail(group), vpc_id=group.vpc_id)
 
 
 if __name__ == '__main__':

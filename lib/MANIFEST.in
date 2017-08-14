@@ -1,0 +1,8 @@
+prune ticket_stubs
+prune hacking
+
+exclude ansible/setup.py
+exclude ansible/__init__.py
+exclude ansible/module_utils/__init__.py*
+exclude *.egg-info
+exclude ansible/dist

@@ -1,21 +1,15 @@
 prune ticket_stubs
 prune hacking
-include README.md COPYING
-include SYMLINK_CACHE.json
-include requirements.txt
-include .coveragerc
-include .yamllint
-include examples/hosts
-include examples/ansible.cfg
-recursive-include lib/ansible/module_utils/powershell *
-recursive-include lib/ansible/modules *
-recursive-include lib/ansible/galaxy/data *
-recursive-include docs *
-recursive-include packaging *
-recursive-include test *
-include Makefile
-include VERSION
-include MANIFEST.in
-include CHANGELOG.md
-include contrib/README.md
-recursive-include contrib/inventory *
+
+exclude lib/ansible/modules
+exclude lib/ansible/utils
+
+exclude lib/ansible/setup.py
+exclude lib/ansible/__init__.py
+exclude lib/ansible/module_utils/__init__.py*
+exclude lib/ansible/modules/__init__.py
+exclude lib/ansible/modules/cloud/__init__.py
+exclude lib/ansible/utils/__init__.py
+exclude lib/ansible/utils/module_docs_fragments/__init__.py
+exclude *.egg-info
+exclude lib/ansible/dist

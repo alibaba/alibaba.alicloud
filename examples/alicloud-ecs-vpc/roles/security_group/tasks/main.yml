@@ -1,0 +1,11 @@
+---
+- name: Creating security group
+  alicloud_security_group:
+    alicloud_region: '{{ alicloud_region }}'
+    state: 'present'
+    name: '{{ group_name }}'
+    description: '{{ group_description }}'
+    vpc_id: '{{ vpc_details.vpc_id }}'
+    rules: '{{ group_inboundRules }}'
+    rules_egress: '{{ group_outboundRules }}'
+  register: group_details

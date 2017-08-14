@@ -357,7 +357,7 @@ def main():
                     for d in disks:
                         disk_ids.append(d.id)
                     module.fail_json(msg="There is too many disks match name '{0}', "
-                                         "please use disk_id or a new disk_name to specify."
+                                         "please use disk_id or a new disk_name to specify a unique disk."
                                          "Matched disk ids are: {1}".format(disk_name, disk_ids))
     except ECSResponseError as e:
         module.fail_json(msg='Error in get_all_volumes: %s' % str(e))
@@ -375,8 +375,7 @@ def main():
 
         try:
             changed = current_disk.delete()
-            module.exit_json(changed=changed, disk_id=current_disk.id, disk_category=current_disk.category,
-                             disk_status=current_disk.status, instance_id=instance_id, disk=get_disk_detail(current_disk))
+            module.exit_json(changed=changed)
         except Exception as e:
             module.fail_json(msg='Deleting disk {0} is failed, error: {1}'.format(current_disk.id, e))
 
