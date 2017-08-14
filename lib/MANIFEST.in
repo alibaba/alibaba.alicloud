@@ -1,0 +1,15 @@
+prune ticket_stubs
+prune hacking
+
+exclude lib/ansible/modules
+exclude lib/ansible/utils
+
+exclude lib/ansible/setup.py
+exclude lib/ansible/__init__.py
+exclude lib/ansible/module_utils/__init__.py*
+exclude lib/ansible/modules/__init__.py
+exclude lib/ansible/modules/cloud/__init__.py
+exclude lib/ansible/utils/__init__.py
+exclude lib/ansible/utils/module_docs_fragments/__init__.py
+exclude *.egg-info
+exclude lib/ansible/dist

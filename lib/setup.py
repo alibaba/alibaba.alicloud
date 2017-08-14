@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # Always prefer setuptools over distutils
-from codecs import open
-from os import path
 
 try:
-    from setuptools import setup, find_packages
+    from setuptools import setup
     extra = dict(test_suite="tests.test.suite", include_package_data=True)
 except ImportError:
     from distutils.core import setup
@@ -25,7 +23,7 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version=VERSION,
-    description="Ansible provider for Alicloud.",
+    description=DESCRIPTION,
 
     # Author details
     author=AUTHOR,
