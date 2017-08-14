@@ -1,0 +1,27 @@
+---
+- name: Creating an ECS instance
+  alicloud_instance:
+    alicloud_region: '{{ alicloud_region }}'
+    alicloud_zone: '{{ alicloud_zone }}'
+    image: '{{ image_id }}'
+    type: '{{ instance_type }}'
+    instance_name: '{{ instance_name }}'
+    description: '{{ instance_description }}'
+    host_name: '{{ host_name }}'
+    password: '{{ password }}'
+
+    allocate_public_ip: '{{ allocate_public_ip }}'
+    internet_charge_type: '{{ internet_charge_type }}'
+    max_bandwidth_in: '{{ max_bandwidth_in }}'
+    max_bandwidth_out: '{{ max_bandwidth_out }}'
+    instance_tags: '{{ instance_tags }}'
+
+    group_id: '{{ group_details.group_id }}'
+    vswitch_id: '{{ vswitch_details.vswitch_id }}'
+
+    disk_category: '{{ system_disk_category }}'
+    disk_size: '{{ system_disk_size }}'
+
+    state: 'present'
+    count: '{{ number_of_instances }}'
+  register: instance_details

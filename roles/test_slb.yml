@@ -1,0 +1,72 @@
+# This Playbook contains test scenario for Create SLB, Listener and add Backend Server
+# Playbook created by : Shrutika M
+
+- name: Testing Create SLB, Listener, Add Backend Server, Create, Set and Delete VServer Group
+  hosts: localhost
+  connection: local
+  vars:
+    alicloud_region: cn-beijing
+    load_balancer_id: lb-2zeyfm5a14c9ffxvxmvco
+
+    # create instance
+    alicloud_zone: cn-beijing-a
+    image: ubuntu_140405_64_40G_cloudinit_20161115.vhd
+    type: ecs.n4.small
+    instance_name: travis-ansible-instance
+    description: travis-ansible-instance
+    host_name: myhost
+    password: pass@123
+    count: 2
+    allocate_public_ip: yes
+
+  tasks:
+    - name: Creating an ECS instance for Backend Server
+      alicloud_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        image: '{{ image }}'
+        type: '{{ type }}'
+        instance_name: '{{ instance_name }}'
+        description: '{{ description }}'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+        count: '{{ count }}'
+        allocate_public_ip: '{{ allocate_public_ip }}'
+      register: create_instance_result
+    - debug: var=create_instance_result
+
+    - name: Set Backend Servers of SLB
+      alicloud_slb_server:
+        load_balancer_id: lb-2zeyfm5a14c9ffxvxmvco
+        state: present
+        backend_servers:
+          - server_id: '{{ create_instance_result.instance_ids[0] }}'
+            weight: 15
+          - server_id: '{{ create_instance_result.instance_ids[1] }}'
+            weight: 20
+      register: set_backend_server_result
+    - debug: var=set_backend_server_result
+
+    - name: Describe Backend Servers of SLB
+      alicloud_slb_server:
+        load_balancer_id: lb-2zeyfm5a14c9ffxvxmvco
+        state: current
+        ports: 80
+      register: describe_backend_server_result
+    - debug: var=describe_backend_server_result
+
+    - name: Remove Backend Servers of SLB
+      alicloud_slb_server:
+        load_balancer_id: '{{ load_balancer_id }}'
+        state: absent
+        backend_servers: '{{ create_instance_result.instance_ids[0] }}'
+      register: remove_backend_server_result
+    - debug: var=remove_backend_server_result
+#
+    - name: Deleting ECS instance
+      alicloud_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ create_instance_result.instance_ids }}'
+        state: 'absent'
+      register: delete_ecs_instance_result
+    - debug: var=delete_ecs_instance_result

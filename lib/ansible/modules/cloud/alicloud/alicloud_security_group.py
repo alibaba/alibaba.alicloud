@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright 2017 Alibaba Group Holding Limited.
+# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 #
 # This file is part of Ansible
 #
@@ -29,12 +29,11 @@ short_description: Create, Query or Delete Security Group.
 description:
   - Create, Query or Delete Security Group, and it contains security group rules management.
 options:
-  status:
-    description: Create, delete or get information of a security group
+  state:
+    description: Create, delete a security group
     required: false
     default: 'present'
-    aliases: ['state']
-    choices: ['present', 'absent', 'fetch']
+    choices: ['present', 'absent']
   group_name:
     description: Name of the security group.
     required: false
@@ -49,12 +48,6 @@ options:
       - ID of the VPC to which the security group belongs.
     required: false
     default: null
-  group_tags:
-    description:
-      - A list of hash/dictionaries of group tags, ['{"tag_key":"value", "tag_value":"value"}'], tag_key must be not null when tag_value isn't null.
-    required: false
-    default: null
-    aliases: [tags]
   rules:
     description:
       - List of hash/dictionaries firewall inbound rules to enforce in this group.
@@ -141,8 +134,8 @@ options:
           choices: ["internet", "intranet"]
   group_id:
     description:
-      - Ssecurity group ID is used to perform rules authorization.
-    required: true
+      - Security group ID. It is required when deleting or querying security group or performing rules authorization.
+    required: false
     default: null
 author:
   - "He Guimin (@xiaozhu36)"
@@ -258,7 +251,7 @@ EXAMPLES = '''
     alicloud_access_key: xxxxxxxxxx
     alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-beijing
-    status: fetch
+    status: list
   tasks:
     - name: Querying Security group list
       alicloud_security_group:
@@ -271,103 +264,24 @@ EXAMPLES = '''
 RETURN = '''
 group_id:
     description: security group ID
-    returned: when success
+    returned: when present and absent
     type: string
     sample: "sd-safhi3gsv"
+group_ids:
+    description: list IDs of security groups
+    returned: when list
+    type: list
+    sample: ["sg-3de1hhyn7tac4p85gh23", "sg-2ze1hhyn7tac4p85gh45"]
 group:
     description: Details about the security group that was created
-    returned: except on delete
+    returned: when present
     type: dict
     sample: {
         "description": "travis-ansible-instance",
         "id": "sg-2ze1hhyn7tac4p85gh13",
         "name": "travis-ansible-instance",
         "region_id": "cn-beijing",
-        "rules": {
-            "permission": [
-                {
-                    "create_time": "2017-06-19T02:43:29Z",
-                    "description": "",
-                    "dest_cidr_ip": "",
-                    "dest_group_id": "",
-                    "dest_group_name": "",
-                    "dest_group_owner_account": "",
-                    "direction": "ingress",
-                    "ip_protocol": "TCP",
-                    "nic_type": "internet",
-                    "policy": "Accept",
-                    "port_range": "80/86",
-                    "priority": 1,
-                    "source_cidr_ip": "192.168.0.54/32",
-                    "source_group_id": "",
-                    "source_group_name": "",
-                    "source_group_owner_account": ""
-                },
-                {
-                    "create_time": "2017-06-19T02:43:29Z",
-                    "description": "",
-                    "dest_cidr_ip": "",
-                    "dest_group_id": "",
-                    "dest_group_name": "",
-                    "dest_group_owner_account": "",
-                    "direction": "ingress",
-                    "ip_protocol": "TCP",
-                    "nic_type": "internet",
-                    "policy": "Accept",
-                    "port_range": "8080/8088",
-                    "priority": 1,
-                    "source_cidr_ip": "47.89.23.33/32",
-                    "source_group_id": "",
-                    "source_group_name": "",
-                    "source_group_owner_account": ""
-                },
-                {
-                    "create_time": "2017-06-19T02:43:30Z",
-                    "description": "",
-                    "dest_cidr_ip": "47.89.23.33/32",
-                    "dest_group_id": "",
-                    "dest_group_name": "",
-                    "dest_group_owner_account": "",
-                    "direction": "egress",
-                    "ip_protocol": "TCP",
-                    "nic_type": "internet",
-                    "policy": "Accept",
-                    "port_range": "8080/8085",
-                    "priority": 1,
-                    "source_cidr_ip": "",
-                    "source_group_id": "",
-                    "source_group_name": "",
-                    "source_group_owner_account": ""
-                },
-                {
-                    "create_time": "2017-06-19T02:43:29Z",
-                    "description": "",
-                    "dest_cidr_ip": "192.168.0.54/32",
-                    "dest_group_id": "",
-                    "dest_group_name": "",
-                    "dest_group_owner_account": "",
-                    "direction": "egress",
-                    "ip_protocol": "TCP",
-                    "nic_type": "internet",
-                    "policy": "Accept",
-                    "port_range": "80/80",
-                    "priority": 1,
-                    "source_cidr_ip": "",
-                    "source_group_id": "",
-                    "source_group_name": "",
-                    "source_group_owner_account": ""
-                }
-            ]
-        },
-        "tags": {},
-        "vpc_id": ""
-    }
-group_rules:
-    description: Details about the security group rules that were created
-    returned: except on delete
-    type: dict
-    sample: {
-        "permission": [
+        "rules": [
             {
                 "create_time": "2017-06-19T02:43:29Z",
                 "description": "",
@@ -394,23 +308,87 @@ group_rules:
                 "dest_group_name": "",
                 "dest_group_owner_account": "",
                 "direction": "egress",
-                "ip_protocol": "UDP",
+                "ip_protocol": "TCP",
                 "nic_type": "internet",
                 "policy": "Accept",
-                "port_range": "10989/10997",
-                "priority": 2,
+                "port_range": "8080/8085",
+                "priority": 1,
                 "source_cidr_ip": "",
                 "source_group_id": "",
                 "source_group_name": "",
                 "source_group_owner_account": ""
             }
-        ]
+        ],
+        "tags": {},
+        "vpc_id": ""
     }
+groups:
+    description: Details about the security group that was created
+    returned: when list
+    type: list
+    sample: [
+        {
+            "description": "travis-ansible-instance",
+            "id": "sg-2ze1hhyn7tac4p85gh13",
+            "name": "travis-ansible-instance",
+            "region_id": "cn-beijing",
+            "rules": [
+                {
+                    "create_time": "2017-06-19T02:43:29Z",
+                    "description": "",
+                    "dest_cidr_ip": "",
+                    "dest_group_id": "",
+                    "dest_group_name": "",
+                    "dest_group_owner_account": "",
+                    "direction": "ingress",
+                    "ip_protocol": "TCP",
+                    "nic_type": "internet",
+                    "policy": "Accept",
+                    "port_range": "80/86",
+                    "priority": 1,
+                    "source_cidr_ip": "192.168.0.54/32",
+                    "source_group_id": "",
+                    "source_group_name": "",
+                    "source_group_owner_account": ""
+                },
+                {
+                    "create_time": "2017-06-19T02:43:30Z",
+                    "description": "",
+                    "dest_cidr_ip": "47.89.23.33/32",
+                    "dest_group_id": "",
+                    "dest_group_name": "",
+                    "dest_group_owner_account": "",
+                    "direction": "egress",
+                    "ip_protocol": "TCP",
+                    "nic_type": "internet",
+                    "policy": "Accept",
+                    "port_range": "8080/8085",
+                    "priority": 1,
+                    "source_cidr_ip": "",
+                    "source_group_id": "",
+                    "source_group_name": "",
+                    "source_group_owner_account": ""
+                }
+            ],
+            "tags": {},
+            "vpc_id": ""
+        }
+    ]
 vpc_id:
     description: ID of the VPC to which the security group belongs
-    returned: when success
+    returned: when present
     type: string
     sample: "vpc-snif3g3iv"
+vpc_ids:
+    description: list IDs of the VPC to which the list security groups belong
+    returned: when list
+    type: list
+    sample: ["vpc-12snif3g3iv", "vpc-s324vif3g3iv"]
+total:
+    description: The number of all security groups after list.
+    returned: when list
+    type: int
+    sample: 3
 '''
 # import module snippets
 from ansible.module_utils.basic import AnsibleModule
@@ -425,36 +403,7 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def create_security_group(module, ecs, group_name, group_description, vpc_id, group_tags):
-    """
-    create security group in ecs
-    :param module: Ansible module object
-    :param ecs: authenticated ecs connection object
-    :param group_name: Name of the security group create
-    :param group_description: Description of the security group
-    :param vpc_id: ID of a vpc to which the security group belongs.
-    :param group_tags:  A list of hash/dictionaries of group
-            tags, '[{tag_key:"value", tag_value:"value"}]', tag_key
-            must be not null when tag_value isn't null
-    :return: Returns changed state, newly created security group id and custom message.
-    """
-
-    try:
-        changed = False
-        changed, group_id, result = ecs.create_security_group(group_name=group_name, group_description=group_description,
-                                                              vpc_id=vpc_id, group_tags=group_tags)
-
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(changed=changed, msg='Creating SecurityGroup is failed, error: %s ; group_id: %s.'
-                                                  % (str(result), group_id))
-
-    except ECSResponseError as e:
-        module.fail_json(changed=changed, msg='Unable to create SecurityGroup, error: {0}'.format(e))
-
-    return changed, group_id, result
-
-
-def authorize_security_group(module, ecs, group_id, inbound_rules, outbound_rules, add_to_fail_result=""):
+def authorize_security_group(module, ecs, group_id, inbound_rules, outbound_rules):
     """
     authorize security group in ecs
     :param module: Ansible module object
@@ -465,24 +414,22 @@ def authorize_security_group(module, ecs, group_id, inbound_rules, outbound_rule
     :param add_to_fail_result: message to add to failed message at the beginning, if two tasks are performed
     :return: Returns changed state, security group id and custom message.
     """
-    inbound_failed_rules = None
-    outbound_failed_rules = None
+
     try:
         changed = False
-
-        changed, inbound_failed_rules, outbound_failed_rules, result = ecs.authorize_security_group(
+        inbound_failed_rules, outbound_failed_rules, result = ecs.authorize_security_group(
             group_id, inbound_rules, outbound_rules)
 
         if 'error' in (''.join(str(result))).lower():
-            result.insert(0, add_to_fail_result)
             module.fail_json(changed=changed, msg="Authorizing SecurityGroup is failed, error: %s ; group_id: %s ; "
                                                   "failed inbound rules: %s ; failed outbound rules: %s."
                                                   % (str(result), group_id, inbound_failed_rules, outbound_failed_rules))
+        changed = True
 
     except ECSResponseError as e:
         module.fail_json(msg='Unable to authorize security group, error: {0}'.format(e))
 
-    return changed, group_id, result
+    return changed
 
 
 def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
@@ -629,93 +576,21 @@ def get_alias_value(dictionary, aliases):
         return None
 
 
-def get_group_info(group):
+def get_group_basic(group):
     """
-    Retrieves instance information from a security group
+    Parse security group basic information.
     returns it as a dictionary
     """
-    group_info = {'id': group.id, 'name': group.name, 'description': group.description, 'region_id': group.region_id,
-                  'tags': group.tags, 'vpc_id': group.vpc_id, 'rules': group.permissions}
-
-    return group_info
+    return {'id': group.id, 'name': group.name, 'vpc_id': group.vpc_id}
 
 
-def get_groups(module, ecs, vpc_id=None, group_ids=None):
+def get_group_detail(group):
     """
-    Querying Security Group List returns the basic information about all user-defined security groups.
-    :param module: Ansible module object
-    :param ecs: authenticated ecs connection object
-    :param vpc_id: ID of a vpc to which an security group belongs. If it is
-            null, a vpc is selected by the system
-    :param group_ids: Provides a list of security groups ids.
-    :return: A list of the total number of security groups,
-                 the ID of the VPC to which the security group belongs
+    Parse security group detail information.
+    returns it as a dictionary
     """
-
-    try:
-        changed = False
-        if not isinstance(group_ids, list) or len(group_ids) < 1:
-            module.fail_json(msg='SecurityGroup Id is required to retrieval and it should be a list, aborting')
-
-        changed, result = ecs.get_security_status(vpc_id=vpc_id, group_ids=group_ids)
-
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(changed=changed, msg=result)
-
-        groups = []
-        if result and len(result) > 0:
-            groups.append(get_group_info(result[0]))
-    except ECSResponseError as e:
-        module.fail_json(msg='Unable to get info of SecurityGroup(s), error: %s ; group_ids: %s.'
-                             % (str(e), str(group_ids)))
-
-    return changed, groups
-
-
-def get_group(module, ecs, group_id=None):
-    """
-    Querying Security Group List returns the basic information about all user-defined security groups.
-    :param module: Ansible module object
-    :param ecs: authenticated ecs connection object.
-    :param group_id: The ID of security group.
-    :return: A dict of the security group.
-    """
-
-    try:
-        changed, group, result = ecs.get_security_group_attribute(group_id=group_id)
-
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(msg="Retrieving security group {0} attribute got an error: {1}".format(group_id, result))
-
-        if group:
-            return changed, get_group_info(group)
-    except ECSResponseError as e:
-        module.fail_json(msg='Unable to get info of SecurityGroup {0}, error: {1}.'.format(group_id, e))
-
-
-def del_security_group(module, ecs, group_ids):
-    """
-    Delete Security Group , delete security group inside particular region.
-    :param module: Ansible module object
-    :param ecs: authenticated ecs connection object
-    :param group_ids: The Security Group ID
-    :return: result of after successfully deletion of security group
-    """
-    changed = False
-    if not isinstance(group_ids, list) or len(group_ids) < 1:
-        module.fail_json(msg='SecurityGroup Id is required to delete and it should be a list, aborting')
-
-    try:
-        changed, result = ecs.delete_security_group(group_ids=group_ids)
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(changed=changed, msg='Deleting SecurityGroup(s) is failed, error: %s ; group_ids: %s'
-                                                  % (str(result), str(group_ids)))
-
-    except ECSResponseError as e:
-        module.fail_json(changed=changed, msg='Unable to delete SecurityGroup(s), error: %s ; group_ids: %s'
-                                              % (str(e), str(group_ids)))
-
-    return changed, result
+    return {'id': group.id, 'name': group.name, 'description': group.description, 'region_id': group.region_id,
+            'tags': group.tags, 'vpc_id': group.vpc_id, 'rules': group.rules}
 
 
 def main():
@@ -724,9 +599,9 @@ def main():
 
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        status=dict(default='present', aliases=['state'], choices=['present', 'absent', 'fetch'], type='str'),
-        group_name=dict(type='str', aliases=['name']),
-        description=dict(type='str'),
+        state=dict(default='present', type='str', aliases=['state'], choices=['present', 'absent']),
+        group_name=dict(type='str', required=False, aliases=['name']),
+        description=dict(type='str', required=False),
         vpc_id=dict(type='str'),
         group_tags=dict(type='list', aliases=['tags']),
         rules=dict(type='list'),
@@ -738,56 +613,83 @@ def main():
 
     ecs = ecs_connect(module)
 
-    state = module.params['status']
+    state = module.params['state']
+    group_name = module.params['group_name']
+    description = module.params['description']
+    vpc_id = module.params['vpc_id']
+    group_id = module.params['group_id']
+    group_tags = module.params['group_tags']
 
-    if state == 'present':
+    changed = False
+    group = None
+    groups_by_name = []
 
-        group_name = module.params['group_name']
-        description = module.params['description']
-        vpc_id = module.params['vpc_id']
-        group_tags = module.params['group_tags']
-        group_id = module.params['group_id']
+    try:
+        if group_id:
+            security_groups = ecs.get_all_security_groups(group_ids=[group_id], vpc_id=vpc_id)
+        else:
+            security_groups = ecs.get_all_security_groups(vpc_id=vpc_id)
+    except ECSResponseError as e:
+        module.fail_json(msg='Error in get_all_security_groups: %s' % str(e))
 
-        # validating rules if provided
-        total_rules_count = 0
-        inbound_rules = module.params['rules']
-        if inbound_rules:
-            total_rules_count = len(inbound_rules)
+    if security_groups and len(security_groups) == 1:
+        group = security_groups[0]
 
-        outbound_rules = module.params['rules_egress']
-        if outbound_rules:
-            total_rules_count += len(outbound_rules)
+    group_ids_by_name = []
+    group_ids = []
+    if not group and group_name and security_groups:
+        for cur in security_groups:
+            if cur.name == group_name:
+                group_ids_by_name.append(cur.id)
+                groups_by_name.append(cur)
 
-        validate_format_sg_rules(module, inbound_rules, outbound_rules)
+            group_ids.append(cur.id)
 
-        if total_rules_count > 100:
-            module.fail_json(msg='more than 100 rules for authorization are not allowed')
+        if len(groups_by_name) == 1:
+            group = groups_by_name[0]
+        elif len(groups_by_name) > 1:
+            module.fail_json(msg="There is too many security groups match name '{0}', "
+                                 "please use group_id or a new group_name and vpc_id to specify a unique group."
+                                 "Matched group ids are: {1}".format(group_name, group_ids_by_name))
 
-        # Verifying if rules are provided for group_id to authorize security group
-        if not group_id:
-            changed, group_id, result = create_security_group(module, ecs, group_name=group_name,
-                                                              group_description=description,
-                                                              vpc_id=vpc_id, group_tags=group_tags)
+    if state == 'absent':
+        if group:
+            try:
+                changed = group.delete()
+                module.exit_json(changed=changed)
+            except ECSResponseError as e:
+                module.fail_json(msg="Deleting security group {0} is failed. Error: {1}".format(group.id, e))
 
-        if group_id and (inbound_rules or outbound_rules):
-            changed, sg_id, _ = authorize_security_group(module, ecs, group_id=group_id, inbound_rules=inbound_rules,
-                                                         outbound_rules=outbound_rules, add_to_fail_result=result)
+        module.fail_json(changed=changed, msg="Please specify a security group by using 'group_id' or 'group_name' "
+                                              "and 'vpc_id', and expected group ids: {0}".format(group_ids))
 
-        changed, group = get_group(module, ecs, group_id)
+    if not group:
+        try:
+            group = ecs.create_security_group(group_name=group_name, description=description, vpc_id=vpc_id, group_tags=group_tags)
+            changed = True
 
-        module.exit_json(changed=changed, group_id=group['id'], group=group, group_rules=group['rules'], vpc_id=group['vpc_id'])
+        except ECSResponseError as e:
+            module.fail_json(changed=changed, msg='Creating a security group is failed. Error: {0}'.format(e))
 
-    elif state == 'fetch':
-        group_id = module.params['group_id']
+    # validating rules if provided
+    total_rules_count = 0
+    inbound_rules = module.params['rules']
+    if inbound_rules:
+        total_rules_count = len(inbound_rules)
 
-        (changed, group) = get_group(module, ecs, group_id)
-        module.exit_json(changed=changed, group_id=group['id'], group=group, group_rules=group['rules'], vpc_id=group['vpc_id'])
+    outbound_rules = module.params['rules_egress']
+    if outbound_rules:
+        total_rules_count += len(outbound_rules)
 
-    elif state == 'absent':
-        group_ids = [module.params['group_id']]
+    if total_rules_count > 100:
+        module.fail_json(msg='more than 100 rules for authorization are not allowed')
 
-        (changed, result) = del_security_group(module, ecs, group_ids)
-        module.exit_json(changed=changed, group_id=group_ids[0])
+    validate_format_sg_rules(module, inbound_rules, outbound_rules)
+
+    if inbound_rules or outbound_rules:
+        changed = authorize_security_group(module, ecs, group_id=group.id, inbound_rules=inbound_rules, outbound_rules=outbound_rules)
+
+    module.exit_json(changed=changed, group_id=group.id, group=get_group_detail(group), vpc_id=group.vpc_id)
 
 
 if __name__ == '__main__':
