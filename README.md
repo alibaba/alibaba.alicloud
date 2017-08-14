@@ -1,48 +1,52 @@
 # Ansible ECS Module
 
-[![Build Status](https://travis-ci.org/Click2Cloud/ansible-provider.svg?branch=master)](https://travis-ci.org/Click2Cloud/ansible-provider)
-
 Ansible Alicloud Module is a new ansible module, and you can manage Alicloud ECS and other services more flexibly and conveniently via it. Next to introduce simply this module.
 ## lib/ansible/modules/cloud/alicloud
 There are several files in the module directory, and these files describe some function that can operate alicloud products.
 
-- `alicloud_instance.py`: Create, Start, Stop, Query, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
+- `alicloud_instance.py`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
 - `alicloud_disk.py`: Create, Attach, Detach or Delete a disk in ECS
-- `alicloud_security_group.py`: Create, Query or Delete Security Group
-- `alicloud_vpc.py`: Create Delete and Query Vpc.
-- `alicloud_vswitch.py`: Create Delete and Query VSwitch.
+- `alicloud_security_group.py`: Create or Delete a Security Group
+- `alicloud_vpc.py`: Create or Delete a Vpc.
+- `alicloud_vswitch.py`: Create or Delete a VSwitch.
+- `alicloud_route_entry.py`: Create or Delete a route entry.
+- `alicloud_slb_lb.py`: Create or Delete a Load balancer.
+- `alicloud_slb_listener.py`: Create or Delete a listener for one Load balancer.
+- `alicloud_slb_server.py`: Add or Remove backend server to/from Load balancer.
+
+- `alicloud_bucket.py`: Create or Delete an OSS bucket.
+- `alicloud_bucket_object.py`: Upload or Download an object to/from an OSS bucket.
 
 ## lib/ansible/module_utils
 In the module utils directory, the file alicloud_ecs.py identifies and gains playbook params, and provides this params to modules/*.py. In addition, this file implements connection between ansible and Alicloud API via footmark.
 
-## footmark
-footmark is a Python package that provides interfaces to Alicloud Web Services, which allows Python developers to write software that makes use of Alicloud ECS.
+## examples
+There are some playbooks to create some alicloud resource or build infrastructure architecture.
 
-## roles
-There are some playbook that can be used to operate some alicloud services in the roles directory. In every playbook, you need to input some params, and you can view every param description in the modules/*.py.
-There are some alicloud modules in the directory library, and some module utils in the module_utils. It can help you use alicloud modules when executing playbook.
+### Install
+There are two ways to install alicloud provider. However, before installing it. you should ensure `Ansible` has existed in your server.
+If not, please install it using the following command:
 
+    sudo pip install ansible -y
 
-### Install Alicloud Modules
-Download roles directory in anywhere, and if you want to use new alicloud module, please copy it to the library. The final folder structure after install ecs module:
+* First one
 
-	- roles
-	  - library
-	    - alicloud_instance.py
-	    - alicloud_disk.py
-	    - alicloud_security_group.py
-	    - alicloud_vpc.py
-	    - alicloud_vswitch.py
-	  - module_utils
-	    - alicloud_ecs.py
-	  - test_ecs.yml
-	  - test_vpc.yml
+    Ansible provider has been released, and you can install it easily using the following command:
+
+      sudo pip install ansible_alicloud -y
+
+* Second one
+
+    Ansible provider's modules support to install independently. That means you can download one or more modules from lib/ansible/modules/cloud/alicloud and then run them independently.
+    However, before running them, you should ensure `ansible_alicloud_module_utils` has existed in your server. If not, please install it using the following command:
+
+      sudo pip install ansible_alicloud_module_utils -y
 
 ### Execute playbook
 
-* Input your alicloud access-key pairs in the playbook or set environment variable:`ALICLOUD_ACCESS_KEY` and `ALICLOUD_SECRET_KEY`).
+* Input your alicloud access key in the playbook or set environment variable:`ALICLOUD_ACCESS_KEY` and `ALICLOUD_SECRET_KEY`).
 * Input others resource params in the playbook.
-* Move the playbook to roles and execute ansible-playbook command as follows:
+* execute ansible-playbook command as follows:
 
-	  $ ansible-playbook test_ecs.yml
+	  $ ansible-playbook xxx.yml
 	   
