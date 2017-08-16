@@ -60,5 +60,5 @@ setup(
     package_dir={'': 'lib'},
     packages=find_packages('lib'),
     include_package_data=True,
-    install_requires=['footmark>=1.1.6', 'importlib']
+    install_requires=['ansible', 'footmark>=1.1.6', 'importlib']
 )

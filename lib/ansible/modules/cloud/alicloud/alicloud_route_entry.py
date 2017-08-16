@@ -66,6 +66,11 @@ notes:
   - The destination_cidrblock can't have the same cidr block as vswitch and can't belong to its in the same vpc.
   - The destination_cidrblock can't be 100.64.0.0/10 and can't belong to it.
   - When state is 'list', the parameters 'route_table_id', 'destination_cidrblock' and 'nexthop_id' are optional.
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 """

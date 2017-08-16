@@ -91,7 +91,11 @@ options:
     required: false
     default: 1
     choices: [ 1-1000 Mbps ]
-
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 """
 
 

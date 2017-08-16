@@ -64,6 +64,11 @@ options:
       - list ports used by the Server Load Balancer instance frontend to describe health status for
     required: false
     default: null
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 """
 
 EXAMPLES = '''

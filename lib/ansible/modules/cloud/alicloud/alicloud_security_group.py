@@ -137,6 +137,11 @@ options:
       - Security group ID. It is required when deleting or querying security group or performing rules authorization.
     required: false
     default: null
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 '''
