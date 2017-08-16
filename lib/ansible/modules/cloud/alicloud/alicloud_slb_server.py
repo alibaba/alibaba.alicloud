@@ -396,11 +396,6 @@ def get_verify_listener_ports(module, listener_ports=None):
 
 
 def main():
-
-    if HAS_FOOTMARK is False:
-        module.fail_json(msg="footmark required for this module")
-
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(choices=['present', 'absent', 'list'], default='present'),
@@ -413,6 +408,9 @@ def main():
     del argument_spec['alicloud_region']
 
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg='footmark required for the module alicloud_slb_server.')
 
     # handling region parameter which is required by common utils file to login but not required by this module
     module.params['alicloud_region'] = 'cn-hangzhou'

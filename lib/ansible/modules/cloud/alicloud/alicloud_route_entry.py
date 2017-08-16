@@ -266,6 +266,10 @@ def main():
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg='footmark required for the module alicloud_route_entry.')
+
     vpc = vpc_connect(module)
 
     # Get values of variable

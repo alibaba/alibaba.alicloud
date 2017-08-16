@@ -280,6 +280,14 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_oss import oss_bucket_argument_spec, oss_bucket_connect
 import time
 
+HAS_FOOTMARK = False
+
+try:
+    from footmark.exception import ECSResponseError, OSSResponseError
+    HAS_FOOTMARK = True
+except ImportError:
+    HAS_FOOTMARK = False
+
 
 def get_object_info(obj):
     result = {'key': obj.key, 'last_modified': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(obj.last_modified)),
@@ -306,6 +314,9 @@ def main():
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg="Package 'footmark' required for the module alicloud_bucket_object.")
 
     oss_bucket = oss_bucket_connect(module)
     mode = module.params['mode']

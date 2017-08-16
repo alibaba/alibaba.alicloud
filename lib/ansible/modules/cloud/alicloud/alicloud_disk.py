@@ -149,6 +149,8 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-hongkong
     alicloud_zone: cn-hongkong-b
     disk_name: disk_1
@@ -160,6 +162,8 @@ EXAMPLES = '''
   tasks:
     - name: create disk
       alicloud_disk:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         disk_name: '{{ disk_name }}'
@@ -178,6 +182,8 @@ EXAMPLES = '''
   connection: local
   vars:
     state: present
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: us-west-1
     instance_id: xxxxxxxxxx
     disk_id: xxxxxxxxxx
@@ -186,6 +192,8 @@ EXAMPLES = '''
     - name: Attach Disk to instance
       alicloud_disk:
         state: '{{ state }}'
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         instance_id: '{{ instance_id }}'
         disk_id: '{{ disk_id }}'
@@ -199,12 +207,16 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: us-west-1
     disk_id: xxxxxxxxxx
     state: present
   tasks:
     - name: detach disk
       alicloud_disk:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         id: '{{ disk_id }}'
         state: '{{ state }}'
@@ -217,12 +229,16 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
+    alicloud_access_key: xxxxxxxxxx
+    alicloud_secret_key: xxxxxxxxxx
     alicloud_region: us-west-1
     disk_id: xxxxxxxxxx
     state: absent
   tasks:
     - name: detach disk
       alicloud_disk:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         disk_id: '{{ disk_id }}'
         state: '{{ state }}'
@@ -313,9 +329,6 @@ def get_disk_detail(disk):
 
 
 def main():
-    if not HAS_FOOTMARK:
-        module.fail_json(msg="footmark required for this module")
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         group_id=dict(),
@@ -333,6 +346,10 @@ def main():
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if not HAS_FOOTMARK:
+        module.fail_json(msg="footmark required for the module alicloud_disk.")
+
     ecs = ecs_connect(module)
     state = module.params['state']
 
