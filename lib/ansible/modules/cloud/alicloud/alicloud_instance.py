@@ -150,7 +150,7 @@ options:
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
+    - "python >= 2.7"
     - "footmark"
 extends_documentation_fragment:
     - alicloud

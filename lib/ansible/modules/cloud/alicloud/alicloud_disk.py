@@ -106,6 +106,11 @@ options:
     choices: ['yes/true', 'no/false']
 notes:
   - At present, when attach disk, system allocates automatically disk device according to default order from /dev/xvdb to /dev/xvdz.
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 

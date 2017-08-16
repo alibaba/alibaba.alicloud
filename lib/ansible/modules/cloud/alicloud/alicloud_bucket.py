@@ -48,6 +48,11 @@ options:
     default: private
     choices: [ 'private', 'public-read', 'public-read-write' ]
     aliases: [ 'acl' ]
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 '''

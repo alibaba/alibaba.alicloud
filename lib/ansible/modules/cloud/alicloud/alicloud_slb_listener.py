@@ -171,6 +171,11 @@ options:
         - Whether the main standby server group is used, VserverGroup and MasterSlaveServerGroup only allow one value to be on
     default: off
     choice: ['on', 'off']
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 """
 
 EXAMPLES = """

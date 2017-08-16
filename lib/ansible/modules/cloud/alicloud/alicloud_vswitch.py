@@ -78,6 +78,11 @@ options:
     required: false
     default: null
     type: bool
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 
