@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# from __future__ import absolute_import, division, print_function
+# __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['preview'],
@@ -143,8 +143,8 @@ total:
     sample: 1
 '''
 
-import time
-import sys
+# import time
+# import sys
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect
 
@@ -196,43 +196,43 @@ def get_instance_info(inst):
 
 
 def main():
+    argument_spec = ecs_argument_spec()
+    argument_spec.update(dict(
+        alicloud_zone=dict(aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
+        instance_ids=dict(type='list', aliases=['ids']),
+        instance_names=dict(type='list', aliases=['names']),
+        instance_tags=dict(type='list', aliases=['tags']),
+    )
+    )
+    module = AnsibleModule(argument_spec=argument_spec)
+
     if HAS_FOOTMARK is False:
-        module.fail_json(msg='footmark required for this module')
-    else:
-        argument_spec = ecs_argument_spec()
-        argument_spec.update(dict(
-            alicloud_zone=dict(aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
-            instance_ids=dict(type='list', aliases=['ids']),
-            instance_names=dict(type='list', aliases=['names']),
-            instance_tags=dict(type='list', aliases=['tags']),
-        )
-        )
-        module = AnsibleModule(argument_spec=argument_spec)
+        module.fail_json(msg='footmark required for the module alicloud_instance_facts')
 
-        ecs = ecs_connect(module)
+    ecs = ecs_connect(module)
 
-        instances = []
-        instance_ids = []
-        ids = module.params['instance_ids']
-        names = module.params['instance_names']
-        zone_id = module.params['alicloud_zone']
-        if ids and (not isinstance(ids, list) or len(ids)) < 1:
-            module.fail_json(msg='instance_ids should be a list of instances, aborting')
+    instances = []
+    instance_ids = []
+    ids = module.params['instance_ids']
+    names = module.params['instance_names']
+    zone_id = module.params['alicloud_zone']
+    if ids and (not isinstance(ids, list) or len(ids)) < 1:
+        module.fail_json(msg='instance_ids should be a list of instances, aborting')
 
-        if names and (not isinstance(names, list) or len(names)) < 1:
-            module.fail_json(msg='instance_ids should be a list of instances, aborting')
+    if names and (not isinstance(names, list) or len(names)) < 1:
+        module.fail_json(msg='instance_ids should be a list of instances, aborting')
 
-        if names:
-            for name in names:
-                for inst in ecs.get_all_instances(zone_id=zone_id, instance_ids=ids, instance_name=name):
-                    instances.append(get_instance_info(inst))
-                    instance_ids.append(inst.id)
-        else:
-            for inst in ecs.get_all_instances(zone_id=zone_id, instance_ids=ids):
+    if names:
+        for name in names:
+            for inst in ecs.get_all_instances(zone_id=zone_id, instance_ids=ids, instance_name=name):
                 instances.append(get_instance_info(inst))
                 instance_ids.append(inst.id)
+    else:
+        for inst in ecs.get_all_instances(zone_id=zone_id, instance_ids=ids):
+            instances.append(get_instance_info(inst))
+            instance_ids.append(inst.id)
 
-        module.exit_json(changed=False, instance_ids=instance_ids, instances=instances, total=len(instances))
+    module.exit_json(changed=False, instance_ids=instance_ids, instances=instances, total=len(instances))
 
 
 if __name__ == '__main__':

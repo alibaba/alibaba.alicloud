@@ -329,9 +329,6 @@ def get_disk_detail(disk):
 
 
 def main():
-    if not HAS_FOOTMARK:
-        module.fail_json(msg="footmark required for this module")
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         group_id=dict(),
@@ -349,6 +346,10 @@ def main():
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if not HAS_FOOTMARK:
+        module.fail_json(msg="footmark required for the module alicloud_disk.")
+
     ecs = ecs_connect(module)
     state = module.params['state']
 

@@ -171,6 +171,9 @@ def main():
     )
     module = AnsibleModule(argument_spec=argument_spec)
 
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg="Package 'footmark' required for the module alicloud_bucket.")
+
     oss_bucket = oss_bucket_connect(module)
     state = module.params['state']
     permission = module.params['permission']

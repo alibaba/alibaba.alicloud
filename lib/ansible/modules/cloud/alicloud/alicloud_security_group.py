@@ -599,9 +599,6 @@ def get_group_detail(group):
 
 
 def main():
-    if HAS_FOOTMARK is False:
-        module.fail_json("Footmark required for this module")
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', type='str', choices=['present', 'absent']),
@@ -615,6 +612,9 @@ def main():
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg='footmark required for the module alicloud_security_group.')
 
     ecs = ecs_connect(module)
 

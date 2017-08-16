@@ -280,9 +280,6 @@ def convert_to_utf8(obj):
 
 
 def main():
-    if HAS_FOOTMARK is False:
-        module.fail_json("Footmark required for this module")
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(type='str', default='present', choices=['present', 'absent', 'list']),
@@ -295,6 +292,10 @@ def main():
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg='footmark required for the module alicloud_slb_vsg.')
+
     slb = slb_connect(module)
     state = module.params['state']
     load_balancer_id = module.params['load_balancer_id']
