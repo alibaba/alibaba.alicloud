@@ -166,7 +166,7 @@ EXAMPLES = '''
     alicloud_region: cn-beijing
     image: ubuntu1404_64_40G_cloudinit_20160727.raw
     instance_type: ecs.n4.small
-    vswitch_id: xxxxxxxxxx
+    vswitch_id: vsw-abcd1234
     assign_public_ip: True
   tasks:
     - name: vpc network
@@ -191,7 +191,7 @@ EXAMPLES = '''
     alicloud_region: cn-beijing
     image: ubuntu1404_64_40G_cloudinit_20160727.raw
     instance_type: ecs.n4.small
-    group_id: xxxxxxxxxx
+    group_id: sg-abcd1234
     host_name: myhost
     password: mypassword
   tasks:
@@ -242,10 +242,10 @@ EXAMPLES = '''
 - name: modify attribute example
   hosts: localhost
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-beijing
-    instance_ids: [XXXXXXXX, XXXXXXX]
+    instance_ids: ["i-abcd12346", "i-abcd12345"]
     instance_name: new_name
     password: Passnew123
   tasks:
@@ -263,10 +263,10 @@ EXAMPLES = '''
 - name: start or terminate instance
   hosts: localhost
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-shenzhen
-    instance_ids: [xxxxxxxxxx]
+    instance_ids: ["i-abcd12346", "i-abcd12345"]
     state: running
   tasks:
     - name: start instance
@@ -282,10 +282,10 @@ EXAMPLES = '''
 - name: start stop restart instance
   hosts: localhost
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-shenzhen
-    instance_ids: [xxxxxxxxxx]
+    instance_ids: ["i-abcd12346", "i-abcd12345"]
     force: False
     state: restarted
   tasks:
@@ -303,11 +303,11 @@ EXAMPLES = '''
 - name: Add an instance to security group
   hosts: localhost
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-shenzhen
-    instance_ids: [xxxxxxxxxx]
-    group_id: xxxxxxxxxx
+    instance_ids: ["i-abcd12346", "i-abcd12345"]
+    group_id: sg-abcd1234
     sg_action: join
   tasks:
     - name: Add an instance to security group
@@ -324,11 +324,11 @@ EXAMPLES = '''
 - name: Remove an instance from security group
   hosts: localhost
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-shenzhen
-    instance_ids: [xxxxxxxxxx]
-    group_id: xxxxxxxxxx
+    instance_ids: ["i-abcd12346", "i-abcd12345"]
+    group_id: sg-abcd1234
     sg_action: leave
   tasks:
     - name: Remove an instance from security group
@@ -346,7 +346,7 @@ instance_ids:
     description: List all instances's id after operating ecs instance.
     returned: expect absent
     type: list
-    sample: ["i-35b333d9","i-ddav***"]
+    sample: ["i-35b333d9","i-ddavdaeb3"]
 instance_ips:
     description: List all instances's public ip address after operating ecs instance.
     returned: expect absent
@@ -356,7 +356,7 @@ total:
     description: The number of all instances after operating ecs instance.
     returned: expect absent
     type: int
-    sample: 3
+    sample: 2
 '''
 
 from ansible.module_utils.basic import AnsibleModule

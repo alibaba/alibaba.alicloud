@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from future import absolute_import, division, print_function
+from __future__ import absolute_import, division, print_function
 metaclass = type
 
 ANSIBLE_METADATA = {
@@ -166,7 +166,7 @@ options:
         - Whether to use the virtual server group, VserverGroup and MasterSlaveServerGroup only allow one value to be on.
     default: off
     choice: ['on', 'off']
-  master_slave_server_group
+  master_slave_server_group:
     description: 
         - Whether the main standby server group is used, VserverGroup and MasterSlaveServerGroup only allow one value to be on
     default: off
@@ -417,7 +417,7 @@ listener:
         "status": "running",
         "sticky_session": "off",
         "xforwarded_for": null
-    },
+    }
 '''
 
 import time

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # Always prefer setuptools over distutils
+from codecs import open
+from os import path
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 
     extra = dict(test_suite="tests.test.suite", include_package_data=True)
 except ImportError:
@@ -10,18 +12,25 @@ except ImportError:
 
     extra = {}
 
-NAME = "ansible_alicloud_module_utils"
-DESCRIPTION = "The dependence of Ansible Provider Alicloud modules."
+NAME = "ansible_alicloud"
+DESCRIPTION = "Ansible provider for Alicloud."
 AUTHOR = "xiaozhu"
 AUTHOR_EMAIL = "heguimin36@163.com"
+URL = "https://github.com/alibaba/ansible-provider/tree/master/lib/ansible"
 
-VERSION = '1.0.3'
+VERSION = "1.0.3"
 
 setup(
     name=NAME,
 
+    # Versions should comply with PEP440.  For a discussion on single-sourcing
+    # the version across setup.py and the project code, see
+    # https://packaging.python.org/en/latest/single_source_version.html
+    # version=PROVIDER_VERSION,
     version=VERSION,
     description=DESCRIPTION,
+
+    url=URL,
 
     # Author details
     author=AUTHOR,
@@ -48,7 +57,8 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
 
-    packages=['ansible.module_utils'],
+    package_dir={'': 'lib'},
+    packages=find_packages('lib'),
     include_package_data=True,
-    install_requires=['ansible']
+    install_requires=['footmark>=1.1.6', 'importlib']
 )

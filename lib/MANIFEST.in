@@ -4,9 +4,5 @@ prune hacking
 exclude ansible/setup.py
 exclude ansible/__init__.py
 exclude ansible/module_utils/__init__.py*
-#exclude ansible/modules/__init__.py
-#exclude ansible/modules/cloud/__init__.py
-#exclude ansible/utils/__init__.py
-#exclude ansible/utils/module_docs_fragments/__init__.py
 exclude *.egg-info
 exclude ansible/dist

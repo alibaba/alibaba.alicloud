@@ -30,11 +30,10 @@ description:
   - Creates and delete a ECS disk.starts, stops, restarts or terminates ecs instances.
   - Attach a disk to an ecs instance or detach a disk from it.
 options:
-  status:
+  state:
     description: The state of operating ecs disk.
     required: false
     default: 'present'
-    aliases: [ 'state' ]
     choices:
       - ['present', 'absent']
       - map operation ['create', 'attach', 'detach', 'delete']
@@ -127,7 +126,7 @@ EXAMPLES = '''
     alicloud_region: cn-beijing
     alicloud_zone: cn-beijing-b
     size: 20
-    status: present
+    state: present
   tasks:
     - name: create disk
       alicloud_disk:
@@ -136,7 +135,7 @@ EXAMPLES = '''
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         size: '{{ size }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 
@@ -152,7 +151,7 @@ EXAMPLES = '''
     size: 20
     snapshot_id: xxxxxxxxxx
     disk_category: cloud_ssd
-    status: present
+    state: present
   tasks:
     - name: create disk
       alicloud_disk:
@@ -163,7 +162,7 @@ EXAMPLES = '''
         size: '{{ size }}'
         snapshot_id: '{{ snapshot_id }}'
         disk_category: '{{ disk_category }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 
@@ -173,7 +172,7 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
-    status: present
+    state: present
     alicloud_region: us-west-1
     instance_id: xxxxxxxxxx
     disk_id: xxxxxxxxxx
@@ -181,7 +180,7 @@ EXAMPLES = '''
   tasks:
     - name: Attach Disk to instance
       alicloud_disk:
-        status: '{{ status }}'
+        state: '{{ state }}'
         alicloud_region: '{{ alicloud_region }}'
         instance_id: '{{ instance_id }}'
         disk_id: '{{ disk_id }}'
@@ -197,13 +196,13 @@ EXAMPLES = '''
   vars:
     alicloud_region: us-west-1
     disk_id: xxxxxxxxxx
-    status: present
+    state: present
   tasks:
     - name: detach disk
       alicloud_disk:
         alicloud_region: '{{ alicloud_region }}'
         id: '{{ disk_id }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 
@@ -215,13 +214,13 @@ EXAMPLES = '''
   vars:
     alicloud_region: us-west-1
     disk_id: xxxxxxxxxx
-    status: absent
+    state: absent
   tasks:
     - name: detach disk
       alicloud_disk:
         alicloud_region: '{{ alicloud_region }}'
         disk_id: '{{ disk_id }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 '''
@@ -316,7 +315,7 @@ def main():
     argument_spec.update(dict(
         group_id=dict(),
         alicloud_zone=dict(aliases=['zone_id', 'acs_zone', 'ecs_zone', 'zone', 'availability_zone']),
-        status=dict(default='present', aliases=['state'], choices=['present', 'absent']),
+        state=dict(default='present', choices=['present', 'absent']),
         disk_id=dict(aliases=['vol_id', 'id']),
         disk_name=dict(aliases=['name']),
         disk_category=dict(aliases=['disk_type', 'volume_type']),
@@ -330,7 +329,7 @@ def main():
     )
     module = AnsibleModule(argument_spec=argument_spec)
     ecs = ecs_connect(module)
-    status = module.params['status']
+    state = module.params['state']
 
     instance_id = module.params['instance_id']
     disk_id = module.params['disk_id']
@@ -362,7 +361,7 @@ def main():
     except ECSResponseError as e:
         module.fail_json(msg='Error in get_all_volumes: %s' % str(e))
 
-    if status == 'absent':
+    if state == 'absent':
         if not current_disk:
             module.fail_json(msg="Please use disk_id or disk_name to specify one disk for detaching or deleting.")
         if instance_id:
