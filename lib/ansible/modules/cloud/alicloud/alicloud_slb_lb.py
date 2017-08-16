@@ -153,7 +153,7 @@ EXAMPLES = """
     alicloud_access_key: <your-alicloud-access-key-id>
     alicloud_secret_key: <your-alicloud-access-secret-key>
     load_balancer_id: <your-specified-load-balancer>
-    status : absent
+    state : absent
   tasks:
     - name: delete server load balancer
       alicloud_slb_lb:
@@ -161,7 +161,7 @@ EXAMPLES = """
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ load_balancer_id }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 
@@ -174,7 +174,7 @@ EXAMPLES = """
     alicloud_access_key: <your-alicloud-access-key-id>
     alicloud_secret_key: <your-alicloud-access-secret-key>
     load_balancer_id: <your-specified-load-balancer>
-    status: present
+    state: present
     load_balancer_status: active
   tasks:
     - name: set server load balancer
@@ -183,7 +183,7 @@ EXAMPLES = """
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         load_balancer_id: '{{ load_balancer_id }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
         load_balancer_status: '{{ 'load_balancer_status' }}'
       register: result
     - debug: var=result
@@ -198,7 +198,7 @@ EXAMPLES = """
     alicloud_secret_key: <your-alicloud-access-secret-key>
     load_balancer_id: <your-specified-load-balancer>
     load_balancer_name: slb_new_name
-    status : present
+    state : present
   tasks:
     - name: set server load balancer name
       alicloud_slb_lb:
@@ -207,7 +207,7 @@ EXAMPLES = """
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ load_balancer_id }}'
         load_balancer_name: '{{ load_balancer_name }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 """

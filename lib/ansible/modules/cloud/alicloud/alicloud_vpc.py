@@ -29,13 +29,12 @@ short_description: Create, Query or Delete Vpc. Query Vswitch.
 description:
     - Create, Query or Delete Vpc, and Query vswitch which in it.
 options:
-  status:
+  state:
     description:
       -  Whether or not to create, delete or query VPC.
     choices: ['present', 'absent', 'list']
     required: false
     default: present
-    aliases: [ 'state' ]
   vpc_name:
     description:
       - The name of VPC, which is a string of 2 to 128 Chinese or English characters. It must begin with an
@@ -91,7 +90,7 @@ EXAMPLES = """
   connection: local
   vars:
     alicloud_region: cn-hongkong
-    status: present
+    state: present
     cidr_block: 192.168.0.0/16
     vpc_name: Demo_VPC
     description: Demo VPC
@@ -99,7 +98,7 @@ EXAMPLES = """
     - name: create vpc
       alicloud_vpc:
         alicloud_region: '{{ alicloud_region }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
         cidr_block: '{{ cidr_block }}'
         vpc_name: '{{ vpc_name }}'
         description: '{{ description }}'
@@ -237,7 +236,7 @@ def get_vpc_detail(vpc):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        status=dict(default='present', aliases=['state'], choices=['present', 'absent', 'list']),
+        state=dict(default='present', choices=['present', 'absent', 'list']),
         cidr_block=dict(default='172.16.0.0/16', aliases=['cidr']),
         user_cidr=dict(),
         vpc_name=dict(aliases=['name']),
@@ -250,7 +249,7 @@ def main():
     vpc_conn = vpc_connect(module)
 
     # Get values of variable
-    status = module.params['status']
+    state = module.params['state']
     vpc_id = module.params['vpc_id']
     is_default = module.params['is_default']
     vpc_name = module.params['vpc_name']
@@ -302,7 +301,7 @@ def main():
     if len(vpcs_by_opts) > 1:
         vpcs = vpcs_by_opts
 
-    if status == 'present':
+    if state == 'present':
         try:
             if not vpc:
                 vpc = vpc_conn.create_vpc(cidr_block=cidr_block, user_cidr=user_cidr, vpc_name=vpc_name, description=description)
@@ -314,7 +313,7 @@ def main():
 
         module.exit_json(changed=changed, vpc_id=vpc.id, vpc=get_vpc_detail(vpc))
 
-    elif status == 'absent':
+    elif state == 'absent':
         if vpc:
             try:
                 changed = vpc.delete()
@@ -325,7 +324,7 @@ def main():
         module.exit_json(changed=changed, msg="Please specify a vpc by using 'vpc_id', 'vpc_name' or 'cidr_block',"
                                               "and expected vpcs: %s" % vpcs_basic)
 
-    elif status == 'list':
+    elif state == 'list':
         vpc_ids = []
         vpcs_detail = []
         if vpc:
@@ -337,7 +336,7 @@ def main():
         module.exit_json(changed=False, vpcs=vpcs_detail, vpc_ids=vpc_ids, total=len(vpcs))
 
     else:
-        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", status))
+        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", state))
 
 
 if __name__ == '__main__':

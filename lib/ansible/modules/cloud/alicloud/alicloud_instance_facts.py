@@ -89,7 +89,7 @@ instance_ids:
     description: List all instances's id after operating ecs instance.
     returned: when success
     type: list
-    sample: ["i-35b333d9","i-ddav***"]
+    sample: ["i-2ze9zfjdhtasdrfbgay1"]
 instances:
     description: Details about the ecs instances that were created.
     returned: when success
@@ -140,7 +140,7 @@ total:
     description: The number of all instances after operating ecs instance.
     returned: when success
     type: int
-    sample: 3
+    sample: 1
 '''
 
 import time

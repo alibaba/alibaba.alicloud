@@ -29,13 +29,12 @@ short_description: Create, Query or Delete Vswitch.
 description:
     - Create, Query or Delete vswitch which in the vpc.
 options:
-  status:
+  state:
     description:
       -  Whether or not to create, delete or query vswitch.
     choices: ['present', 'absent', 'list']
     required: false
     default: present
-    aliases: [ 'state' ]
   alicloud_zone:
     description:
       - Aliyun availability zone ID which to launch the vswitch or list vswitches.
@@ -282,7 +281,7 @@ def create_vswitch(module, vpc):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        status=dict(default='present', aliases=['state'], choices=['present', 'absent', 'list']),
+        state=dict(default='present', choices=['present', 'absent', 'list']),
         cidr_block=dict(aliases=['cidr']),
         description=dict(),
         alicloud_zone=dict(aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
@@ -296,7 +295,7 @@ def main():
     vpc = vpc_connect(module)
 
     # Get values of variable
-    status = module.params['status']
+    state = module.params['state']
     vpc_id = module.params['vpc_id']
     vswitch_id = module.params['vswitch_id']
     vswitch_name = module.params['vswitch_name']
@@ -347,7 +346,7 @@ def main():
     if len(vswitches_by_opts) > 1:
         vswitches = vswitches_by_opts
 
-    if status == 'present':
+    if state == 'present':
         if not vswitch:
             changed, vswitch = create_vswitch(module, vpc)
         elif vswitch_name or description:
@@ -359,7 +358,7 @@ def main():
 
         module.exit_json(changed=changed, vpc_id=vswitch.vpc_id, vswitch=get_vswitch_detail(vswitch), vswitch_id=vswitch.id)
 
-    elif status == 'absent':
+    elif state == 'absent':
         if vswitch:
             try:
                 changed = vswitch.delete()
@@ -370,7 +369,7 @@ def main():
         module.exit_json(changed=changed, msg="Please specify a vswitch by using 'vswitch_id', 'vswitch_name' or "
                                               "'cidr_block', and expected vpcs: %s" % vswitches_basic)
 
-    elif status == 'list':
+    elif state == 'list':
         vswitch_ids = []
         vpc_ids = []
         vswitches_detail = []
@@ -384,7 +383,7 @@ def main():
         module.exit_json(changed=False, vpc_id=vpc_ids, vswitches=vswitches_detail, vswitch_ids=vswitch_ids, total=len(vswitches))
 
     else:
-        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", status))
+        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", state))
 
 
 if __name__ == '__main__':

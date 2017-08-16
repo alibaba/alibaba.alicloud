@@ -232,7 +232,7 @@ EXAMPLES = '''
     alicloud_region: us-west-1
     group_ids:
      - xxxxxxxxxx
-    status: absent
+    state: absent
   tasks:
     - name: delete security grp
       alicloud_security_group:
@@ -240,7 +240,7 @@ EXAMPLES = '''
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         group_ids: '{{ group_ids }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
 
 
 # Provisioning example to querying security group list
@@ -251,14 +251,14 @@ EXAMPLES = '''
     alicloud_access_key: xxxxxxxxxx
     alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-beijing
-    status: list
+    state: list
   tasks:
     - name: Querying Security group list
       alicloud_security_group:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
 '''
 
 RETURN = '''
@@ -599,7 +599,7 @@ def main():
 
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(default='present', type='str', aliases=['state'], choices=['present', 'absent']),
+        state=dict(default='present', type='str', choices=['present', 'absent']),
         group_name=dict(type='str', required=False, aliases=['name']),
         description=dict(type='str', required=False),
         vpc_id=dict(type='str'),

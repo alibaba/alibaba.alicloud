@@ -17,9 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
 ANSIBLE_METADATA = {'metadata_version': '1.0',
-                    'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+                    'status': ['preview'],
+                    'supported_by': 'community'}
 
 DOCUMENTATION = """
 ---
@@ -55,7 +58,6 @@ options:
       weight:
         description:
           - The weight of backend server in the load balancer.
-        required:false
         default: 100
   ports:
     description:
@@ -110,7 +112,7 @@ Basic example to remove backend servers from load balancer instance
     - name: remove backend servers
       alicloud_slb_server:
         load_balancer_id: 'xxxxxxxxxx'
-        status: absent
+        state: absent
         backend_servers:
           - xxxxxxxxxx
           - xxxxxxxxxx
@@ -122,7 +124,7 @@ Basic example to describe backend server health status of load balancer instance
   tasks:
     - name: describe backend server health status
       alicloud_slb_server:
-        status: list
+        state: list
         load_balancer_id: 'xxxxxxxxxx'
         ports:
           - '80'
