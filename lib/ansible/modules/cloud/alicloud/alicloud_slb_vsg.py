@@ -227,7 +227,7 @@ vserver_group:
             "backend_server": [
                 {
                     "port": 80,
-                    "server_id": "i-2ze3ajpeq3y80w4lt4jr", 
+                    "server_id": "i-2ze3ajpeq3y80w4lt4jr",
                     "weight": 100
                 }
             ]
@@ -304,7 +304,7 @@ def main():
     vserver_group_id = module.params['vserver_group_id']
     changed = False
     current_vserver_group = None
-    
+
     if vserver_group_id:
         try:
             current_vserver_group = slb.describe_vserver_group_attribute(vserver_group_id)
