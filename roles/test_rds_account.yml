@@ -1,0 +1,81 @@
+# This Playbook contains test scenario for  Create, modify, restart, release RDS instance and change rds instance type, create and delete database , grant account permission and revoke acccount permission
+# Playbook created by : 
+
+- name: Testing
+  hosts: localhost
+  connection: local
+  vars:
+#create rds instance     
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a 
+#create database
+    db_name: testtest
+#create account
+    account_name: testdemoaccount
+    account_password: test@123
+    description: 
+    account_type: Normal
+    account_privilege: ReadOnly
+
+  tasks:
+    - name: create account
+      alicloud_rds_account:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+        db_instance_id: rm-2zey7ir50261bmg42
+        account_name: '{{ account_name }}'
+        account_password: '{{ account_password }}'
+        description: '{{ description }}'
+        account_type: '{{ account_type }}'
+      register: result_create_account
+    - debug: var=result_create_account
+
+    - name: grant account permission
+      alicloud_rds_account:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+        db_instance_id: rm-2zey7ir50261bmg42
+        db_name: '{{ db_name }}'
+        account_name: '{{ account_name }}'
+        account_privilege: '{{ account_privilege }}'
+      register: result_grant_permission
+    - debug: var=result_grant_permission
+
+
+    - name: revoke account permission
+      alicloud_rds_account:
+        alicloud_region: '{{ alicloud_region }}'
+        state: absent
+        db_instance_id: rm-2zey7ir50261bmg42
+        db_name: '{{ db_name }}'
+        account_name: '{{ account_name }}'
+      register: result_revoke_permission
+    - debug: var=result_revoke_permission 
+
+    - name: Reset Instance Password
+      alicloud_rds_account:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+        db_instance_id: rm-2zey7ir50261bmg42
+        account_name: '{{ account_name }}'
+        account_password: "testasdasd"  
+      register: resetting_instance_password
+    - debug: var=resetting_instance_password
+    
+    - name: Modify account description
+      alicloud_rds_account:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+        db_instance_id: rm-2zey7ir50261bmg42
+        account_name: '{{ account_name }}'
+        description: testmodify     
+      register: resetting_instance_password
+    
+    - name: delete account
+      alicloud_rds_account:
+        alicloud_region: '{{ alicloud_region }}'
+        state: absent
+        db_instance_id: rm-2zey7ir50261bmg42
+        account_name: '{{ account_name }}'
+      register: result_delete_account
+    - debug: var=result_delete_account
