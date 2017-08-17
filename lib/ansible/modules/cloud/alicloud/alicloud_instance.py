@@ -438,9 +438,6 @@ def create_instance(module, ecs):
 
 
 def main():
-    if HAS_FOOTMARK is False:
-        module.fail_json(msg="Package 'footmark' required for the module alicloud_instance.")
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         group_id=dict(type='str', aliases=['security_group_id']),
@@ -473,6 +470,9 @@ def main():
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+    
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg="Package 'footmark' required for the module alicloud_instance.")
 
     ecs = ecs_connect(module)
     state = module.params['state']
