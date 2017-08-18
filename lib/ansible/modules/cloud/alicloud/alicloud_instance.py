@@ -470,6 +470,9 @@ def main():
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+    
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg="Package 'footmark' required for the module alicloud_instance.")
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for the module alicloud_instance.")
