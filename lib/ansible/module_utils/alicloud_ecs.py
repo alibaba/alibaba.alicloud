@@ -33,6 +33,7 @@ try:
     import footmark.ecs
     import footmark.slb
     import footmark.vpc
+    import footmark.rds
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
