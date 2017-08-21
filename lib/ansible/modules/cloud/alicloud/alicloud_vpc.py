@@ -33,43 +33,31 @@ options:
     description:
       -  Whether or not to create, delete or query VPC.
     choices: ['present', 'absent', 'list']
-    required: false
-    default: present
+    default: 'present'
   vpc_name:
     description:
       - The name of VPC, which is a string of 2 to 128 Chinese or English characters. It must begin with an
-        uppercase/lowercase letter or a Chinese character and can contain numerals, "_", or "-".
+        uppercase/lowercase letter or a Chinese character and can contain numerals, "_" or "-".
         It cannot begin with http:// or https://.
-    required: false
-    default: null
     aliases: [ 'name' ]
   description:
     description:
       - The description of VPC, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
-    required: false
-    default: null
   cidr_block:
     description:
       - The CIDR block representing the vpc. The value can be subnet block of its choices. It is required when creating a vpc.
-    required: false
     default: '172.16.0.0/12'
     choices: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']
     aliases: [ 'cidr' ]
   user_cidr:
     description:
       - User custom cidr in the VPC. Multiple cidr should be separated by comma, and no more than three.
-    required: false
-    default: null
   vpc_id:
     description:
       - The ID of a VPC. It required when managing an existing VPC. Such as deleting vpc and querying vpc attribute.
-    required: false
-    default: null
   is_default:
     description:
       - When retrieving vpc, it can mark the VPC is created by system.
-    required: false
-    default: null
     type: bool
 notes:
   - There will be launch a virtual router along with creating a vpc successfully.

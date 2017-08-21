@@ -31,64 +31,47 @@ options:
     description:
       - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`, 
         `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
-    required: false
-    default: null
     aliases: ['acs_region', 'ecs_region', 'region']
   state:
     description: The state of the instance after operating.
-    required: false
     default: 'present'
     choices: [ 'present', 'absent']
   load_balancer_name:
     description:
-        - The name of the server load balancer
-    default: null
-    required: false
+        - The name of the server load balancer, which is a string of 1 to 80 characters.
+        - It can contain numerals, "_", "/", "." or "-".
     aliases: [ 'name' ]
   load_balancer_id:
     description:
         - This parameter is required when user wants to perform edit operation in Load Balancer
-    default: null
-    required: false
   load_balancer_status:
     description:
         - The lb instance status.
-    default: null
-    required: false
     choices: ['inactive', 'active']
   address_type:
     description:
         - The address type of the SLB.
-    default: internet
-    required: false
+    default: 'internet'
     aliases: [ 'scheme' ]
     choices: ['internet', 'intranet']
   vswitch_id:
     description:
         - The vswitch id of the VPC instance.
-    default: null
-    required: false
     aliases: ['subnet_id', 'subnet']
   internet_charge_type:
     description:
         - The charge type of internet.
     default: 'paybytraffic'
-    required: false
     choices: ['paybybandwidth', 'paybytraffic']
   master_zone_id:
     description:
         - The main usable area ID of the created Load Balancer can be found by the DescribeZone interface
-    default: null
-    required: false
   slave_zone_id:
     description:
         - The ID of the standby zone of the created Load Balancer can be found on the DescribeZone interface
-    default: null
-    required: false
   bandwidth:
     description:
         - Bandwidth peak of the public network instance charged per fixed bandwidth
-    required: false
     default: 1
     choices: [ 1-1000 Mbps ]
 requirements:
@@ -96,8 +79,9 @@ requirements:
     - "footmark"
 extends_documentation_fragment:
     - alicloud
+author:
+  - "He Guimin (@xiaozhu36)"
 """
-
 
 EXAMPLES = """
 # Basic provisioning example to create Load Balancer
@@ -275,6 +259,7 @@ HAS_FOOTMARK = False
 
 try:
     from footmark.exception import SLBResponseError
+
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -286,14 +271,16 @@ def get_info(lb_obj):
     :param lb_obj: lb obj
     :return: info of lb
     """
-    
-    return dict(load_balancer_id=lb_obj.load_balancer_id,\
-                  load_balancer_name=lb_obj.load_balancer_name,\
-                  address=lb_obj.address,\
-                  internet_charge_type=lb_obj.internet_charge_type,\
-                  bandwidth=lb_obj.bandwidth,\
-                  load_balancer_status=lb_obj.load_balancer_status,\
-                  network_type=lb_obj.network_type)
+
+    return dict(
+        load_balancer_id=lb_obj.load_balancer_id,
+        load_balancer_name=lb_obj.load_balancer_name,
+        address=lb_obj.address,
+        internet_charge_type=lb_obj.internet_charge_type,
+        bandwidth=lb_obj.bandwidth,
+        load_balancer_status=lb_obj.load_balancer_status,
+        network_type=lb_obj.network_type
+    )
 
 
 def main():
@@ -335,8 +322,8 @@ def main():
         name_test = ""
     else:
         name_test = load_balancer_name
-    res_objs =  slb.describe_load_balancers(load_balancer_id = load_balancer_id, load_balancer_name = name_test)
-    if len(res_objs)==1:
+    res_objs = slb.describe_load_balancers(load_balancer_id=load_balancer_id, load_balancer_name=name_test)
+    if len(res_objs) == 1:
         cur_slb = res_objs[0]
 
     if state == "absent":
@@ -344,27 +331,27 @@ def main():
             changed = cur_slb.delete()
             module.exit_json(changed=changed, load_balancer_id=cur_slb.load_balancer_id)
         else:
-            module.fail_json(msg = "The specified load balancer is not exist. Please check your load_balancer_id or load_balancer_name and try again.")
+            module.fail_json(msg="The specified load balancer is not exist. Please check your load_balancer_id or load_balancer_name and try again.")
     elif state == "present":
         if load_balancer_status and cur_slb:
-            #set status
+            # set status
             changed = cur_slb.set_status(load_balancer_status)
             if changed:
                 cur_slb.load_balancer_status = load_balancer_status
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id) 
+            module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
         elif load_balancer_name and cur_slb:
-            #set name  
+            # set name
             changed = cur_slb.modify_name(load_balancer_name)
             if changed:
                 cur_slb.load_balancer_name = load_balancer_name
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id) 
+            module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
         elif (internet_charge_type or bandwidth) and cur_slb:
-            #set spec
+            # set spec
             changed = cur_slb.modify_spec(internet_charge_type=internet_charge_type, bandwidth=bandwidth)
             if changed:
                 cur_slb.internet_charge_type = internet_charge_type
                 cur_slb.bandwidth = bandwidth
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id) 
+            module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
         elif not cur_slb:
             res_obj = slb.create_load_balancer(load_balancer_name=load_balancer_name,
                                                address_type=address_type, vswitch_id=vswitch_id,
@@ -372,7 +359,7 @@ def main():
                                                master_zone_id=master_zone_id, slave_zone_id=slave_zone_id,
                                                bandwidth=bandwidth)
             changed = True
-            module.exit_json(changed=changed, load_balancer = get_info(res_obj), load_balancer_id = res_obj.load_balancer_id)
+            module.exit_json(changed=changed, load_balancer=get_info(res_obj), load_balancer_id=res_obj.load_balancer_id)
         else:
             module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
     elif state == "list":
@@ -380,7 +367,7 @@ def main():
         for res_obj in res_objs:
             load_balancers.append(get_info(res_obj))
         module.exit_json(changed=True, load_balancers=load_balancers)
-                     
+
 
 if __name__ == "__main__":
     main()

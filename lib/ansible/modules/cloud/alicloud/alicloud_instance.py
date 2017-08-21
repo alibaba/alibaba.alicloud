@@ -58,7 +58,7 @@ options:
     instance_name:
       description:
         - The name of ECS instance, which is a string of 2 to 128 Chinese or English characters. It must begin with an
-          uppercase/lowercase letter or a Chinese character and can contain numerals, ".", "_", or "-".
+          uppercase/lowercase letter or a Chinese character and can contain numerals, ".", "_" or "-".
           It cannot begin with http:// or https://.
       aliases: ['name']
     description:

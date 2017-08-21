@@ -33,50 +33,35 @@ options:
     description:
       -  Whether or not to create, delete or query vswitch.
     choices: ['present', 'absent', 'list']
-    required: false
-    default: present
+    default: 'present'
   alicloud_zone:
     description:
       - Aliyun availability zone ID which to launch the vswitch or list vswitches.
         It is required when creating a vswitch.
-    required: false
-    default: null
     aliases: [ 'acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
   vpc_id:
     description:
       - The ID of a VPC to which that Vswitch belongs. It is required when creating a vswitch.
-    required: false
-    default: null
   cidr_block:
     description:
       - The CIDR block representing the Vswitch e.g. 10.0.0.0/8. The value must be sub cidr_block of Vpc.
         It is required when creating a vswitch.
-    required: false
-    default: null
   vswitch_name:
     description:
       - The name of vswitch, which is a string of 2 to 128 Chinese or English characters. It must begin with an
-        uppercase/lowercase letter or a Chinese character and can contain numerals, "_", or "-".
+        uppercase/lowercase letter or a Chinese character and can contain numerals, "_" or "-".
         It cannot begin with http:// or https://.
-    required: false
-    default: null
     aliases: [ 'name', 'subnet_name' ]
   description:
     description:
       - The description of vswitch, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
-    required: false
-    default: null
   vswitch_id:
     description:
       - VSwitch ID. It is used to manage the existing VSwitch. Such as modifying VSwitch's attribute or deleting VSwitch.
-    required: false
-    default: null
     aliases: [ 'subnet_id' ]
   is_default:
     description:
       - When retrieving VSwitch, it can mark the VSwitch is created by system.
-    required: false
-    default: null
     type: bool
 requirements:
     - "python >= 2.7"

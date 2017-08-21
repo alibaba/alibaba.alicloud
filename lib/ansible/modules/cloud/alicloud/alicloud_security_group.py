@@ -31,28 +31,24 @@ description:
 options:
   state:
     description: Create, delete a security group
-    required: false
     default: 'present'
     choices: ['present', 'absent']
   group_name:
-    description: Name of the security group.
-    required: false
-    default: null
+    description:
+      - Name of the security group, which is a string of 2 to 128 Chinese or English characters. It must begin with an
+        uppercase/lowercase letter or a Chinese character and can contain numerals, "_", "." or "-".
+        It cannot begin with http:// or https://.
     aliases: ['name']
   description:
-    description: Description of the security group.
-    required: false
-    default: null
+    description:
+      - Description of the security group, which is a string of 2 to 256 characters.
+      - It cannot begin with http:// or https://.
   vpc_id:
     description:
       - ID of the VPC to which the security group belongs.
-    required: false
-    default: null
   rules:
     description:
       - List of hash/dictionaries firewall inbound rules to enforce in this group.
-    required: false
-    default: null
     suboptions:
         ip_protocol:
           description: IP protocol
@@ -64,38 +60,30 @@ options:
           required: true
         source_group_id:
           description: The source security group id.
-          required: false
           aliases: ['group_id']
         source_group_owner_id:
           description: The source security group owner id.
-          required: false
           aliases: ['group_owner_id']
         source_cidr_ip:
           description: The source IP address range
-          required: false
           aliases: ['cidr_ip']
         policy:
           description: Authorization policy
-          required: false
           default: "accept"
           choices: ["accept", "drop"]
         priority:
           description: Authorization policy priority
-          required: false
           default: 1
           choices: ["1~100"]
         nic_type:
           description: Network type
-          required: false
-          default: internet
+          default: "internet"
           choices: ["internet", "intranet"]
   rules_egress:
     description:
       - List of hash/dictionaries firewall outbound rules to enforce in this group.
         Keys allowed are:ip_protocol, port_range, dest_group_id, dest_group_owner_id, dest_cidr_ip, policy, priority,nic_type.
         And these keys's attribution same as rules keys.
-    required: false
-    default: null
     suboptions:
         ip_protocol:
           description: IP protocol
@@ -107,36 +95,28 @@ options:
           required: true
         dest_group_id:
           description: The destination security group id.
-          required: false
           aliases: ['group_id']
         dest_group_owner_id:
           description: The destination security group owner id.
-          required: false
           aliases: ['group_owner_id']
         dest_cidr_ip:
           description: The destination IP address range
-          required: false
           aliases: ['cidr_ip']
         policy:
           description: Authorization policy
-          required: false
           default: "accept"
           choices: ["accept", "drop"]
         priority:
           description: Authorization policy priority
-          required: false
           default: 1
           choices: ["1~100"]
         nic_type:
           description: Network type
-          required: false
-          default: internet
+          default: "internet"
           choices: ["internet", "intranet"]
   group_id:
     description:
       - Security group ID. It is required when deleting or querying security group or performing rules authorization.
-    required: false
-    default: null
 requirements:
     - "python >= 2.7"
     - "footmark"

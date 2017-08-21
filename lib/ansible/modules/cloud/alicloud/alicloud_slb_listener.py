@@ -52,12 +52,10 @@ options:
   bandwidth:
     description:
         - Bandwidth peak of Listener
-    required: false
     choices: [1-1000]
   backend_server_port:
     description:
         - Port used by the Server Load Balancer instance backend port
-    required: false
     choices: [1~65535]
   persistence_timeout:
     description:
@@ -67,12 +65,11 @@ options:
   scheduler:
     description:
         - Scheduling algorithm.
-    default: wrr
+    default: 'wrr'
     choices: ['wlc', 'wrr']
   sticky_session:
     description:
         - Whether to enable session persistence.
-    required: false
     choices: ['on', 'off']
   sticky_session_type:
     description:
@@ -88,7 +85,6 @@ options:
   health_check:
     description:
         - Whether to enable health check.
-    required: false
     choices: ['on', 'off']
   health_check_domain:
     description:
@@ -120,7 +116,7 @@ options:
   health_check_http_code:
     description:
         - Regular health check HTTP status code. Multiple codes are segmented by ",". Required when C(health_check='on').
-    default: http_2xx
+    default: 'http_2xx'
     choices: ['http_2xx','http_3xx', 'http_4xx', 'http_5xx']
   vserver_group_id:
     description:
@@ -128,7 +124,7 @@ options:
   gzip:
     description:
         - Whether to open the Gzip compression. If open, the specific file types will be compressed, If not, any type of file won't be compressed.
-    default: on
+    default: 'on'
     choices: ['on','off']
   master_slave_server_group_id:
     description:
@@ -154,28 +150,30 @@ options:
   syn_proxy:
     description:
         - whether open SynProxy
-    default: disable
+    default: 'disable'
     choice: ['disable', 'enable']
   health_check_type:
     description:
         - Health check type
-    default: tcp
+    default: 'tcp'
     choice: ['tcp', 'http']
   vserver_group:
     description: 
         - Whether to use the virtual server group, VserverGroup and MasterSlaveServerGroup only allow one value to be on.
-    default: off
+    default: 'off'
     choice: ['on', 'off']
   master_slave_server_group:
     description: 
         - Whether the main standby server group is used, VserverGroup and MasterSlaveServerGroup only allow one value to be on
-    default: off
+    default: 'off'
     choice: ['on', 'off']
 requirements:
     - "python >= 2.7"
     - "footmark"
 extends_documentation_fragment:
     - alicloud
+author:
+  - "He Guimin (@xiaozhu36)"
 """
 
 EXAMPLES = """
@@ -548,72 +546,72 @@ def main():
     if state == "present":
         if current_listener:
             if access_control_status:
-                #set access_control_status
-                if access_control_status=="on":
+                # set access_control_status
+                if access_control_status == "on":
                     access_control_status = "open_white_list"
-                elif access_control_status=="off":
+                elif access_control_status == "off":
                     access_control_status = "close"
                 changed = current_listener.set_access_control_status(load_balancer_id, access_control_status)
             elif source_items:
-                #add listener_white_list_item
+                # add listener_white_list_item
                 changed = current_listener.add_white_list_item(load_balancer_id, source_items)
             else:
-                #set attribute
-                changed = current_listener.set_attribute(load_balancer_id=load_balancer_id,\
-                                                         bandwidth=bandwidth,\
-                                                         sticky_session=sticky_session,\
-                                                         listener_type=listener_type,\
-                                                         health_check=health_check,\
-                                                         scheduler=scheduler,\
-                                                         sticky_session_type=sticky_session_type,\
-                                                         cookie_timeout=cookie_timeout,\
-                                                         cookie=cookie,\
-                                                         health_check_domain=health_check_domain,\
-                                                         health_check_uri=health_check_uri,\
-                                                         health_check_connect_port=health_check_connect_port,\
-                                                         healthy_threshold=healthy_threshold,\
-                                                         unhealthy_threshold=unhealthy_threshold,\
-                                                         health_check_timeout=health_check_timeout,\
-                                                         health_check_interval=health_check_interval,\
-                                                         health_check_http_code=health_check_http_code,\
-                                                         vserver_group_id=vserver_group_id,\
-                                                         gzip=gzip,\
-                                                         server_certificate_id=server_certificate_id,\
-                                                         master_slave_server_group_id=master_slave_server_group_id,\
-                                                         persistence_timeout=persistence_timeout,\
-                                                         health_check_connect_timeout=health_check_connect_timeout,\
-                                                         ca_certificate_id=ca_certificate_id,\
-                                                         syn_proxy=syn_proxy,\
-                                                         health_check_type=health_check_type,\
-                                                         vserver_group=vserver_group,\
+                # set attribute
+                changed = current_listener.set_attribute(load_balancer_id=load_balancer_id,
+                                                         bandwidth=bandwidth,
+                                                         sticky_session=sticky_session,
+                                                         listener_type=listener_type,
+                                                         health_check=health_check,
+                                                         scheduler=scheduler,
+                                                         sticky_session_type=sticky_session_type,
+                                                         cookie_timeout=cookie_timeout,
+                                                         cookie=cookie,
+                                                         health_check_domain=health_check_domain,
+                                                         health_check_uri=health_check_uri,
+                                                         health_check_connect_port=health_check_connect_port,
+                                                         healthy_threshold=healthy_threshold,
+                                                         unhealthy_threshold=unhealthy_threshold,
+                                                         health_check_timeout=health_check_timeout,
+                                                         health_check_interval=health_check_interval,
+                                                         health_check_http_code=health_check_http_code,
+                                                         vserver_group_id=vserver_group_id,
+                                                         gzip=gzip,
+                                                         server_certificate_id=server_certificate_id,
+                                                         master_slave_server_group_id=master_slave_server_group_id,
+                                                         persistence_timeout=persistence_timeout,
+                                                         health_check_connect_timeout=health_check_connect_timeout,
+                                                         ca_certificate_id=ca_certificate_id,
+                                                         syn_proxy=syn_proxy,
+                                                         health_check_type=health_check_type,
+                                                         vserver_group=vserver_group,
                                                          master_slave_server_group=master_slave_server_group)
             module.exit_json(changed=changed, listener=get_info(current_listener.describe_attribute(load_balancer_id, listener_type)))
         else:
-            changed = slb.create_load_balancer_listener(load_balancer_id=load_balancer_id,\
-                                                        listener_port=listener_port,\
-                                                        backend_server_port=backend_server_port,\
-                                                        bandwidth=bandwidth,\
-                                                        sticky_session=sticky_session,\
-                                                        listener_type=listener_type,\
-                                                        health_check=health_check,\
-                                                        scheduler=scheduler,\
-                                                        sticky_session_type=sticky_session_type,\
-                                                        cookie_timeout=cookie_timeout,\
-                                                        cookie=cookie,\
-                                                        health_check_domain=health_check_domain,\
-                                                        health_check_uri=health_check_uri,\
-                                                        health_check_connect_port=health_check_connect_port,\
-                                                        healthy_threshold=healthy_threshold,\
-                                                        unhealthy_threshold=unhealthy_threshold,\
-                                                        health_check_timeout=health_check_timeout,\
-                                                        health_check_interval=health_check_interval,\
-                                                        health_check_http_code=health_check_http_code,\
-                                                        vserver_group_id=vserver_group_id,\
-                                                        gzip=gzip,\
-                                                        server_certificate_id=server_certificate_id,\
-                                                        master_slave_server_group_id=master_slave_server_group_id,\
-                                                        persistence_timeout=persistence_timeout,\
-                                                        health_check_connect_timeout=health_check_connect_timeout,\
+            changed = slb.create_load_balancer_listener(load_balancer_id=load_balancer_id,
+                                                        listener_port=listener_port,
+                                                        backend_server_port=backend_server_port,
+                                                        bandwidth=bandwidth,
+                                                        sticky_session=sticky_session,
+                                                        listener_type=listener_type,
+                                                        health_check=health_check,
+                                                        scheduler=scheduler,
+                                                        sticky_session_type=sticky_session_type,
+                                                        cookie_timeout=cookie_timeout,
+                                                        cookie=cookie,
+                                                        health_check_domain=health_check_domain,
+                                                        health_check_uri=health_check_uri,
+                                                        health_check_connect_port=health_check_connect_port,
+                                                        healthy_threshold=healthy_threshold,
+                                                        unhealthy_threshold=unhealthy_threshold,
+                                                        health_check_timeout=health_check_timeout,
+                                                        health_check_interval=health_check_interval,
+                                                        health_check_http_code=health_check_http_code,
+                                                        vserver_group_id=vserver_group_id,
+                                                        gzip=gzip,
+                                                        server_certificate_id=server_certificate_id,
+                                                        master_slave_server_group_id=master_slave_server_group_id,
+                                                        persistence_timeout=persistence_timeout,
+                                                        health_check_connect_timeout=health_check_connect_timeout,
                                                         ca_certificate_id=ca_certificate_id)
             new_current_listener = slb.describe_load_balancer_listener_attribute(load_balancer_id, listener_port, listener_type)
             module.exit_json(changed=changed, listener=get_info(new_current_listener))
@@ -621,22 +619,22 @@ def main():
         module.fail_json(msg="The specified load balancer listener is not exist. Please check your load_balancer_id or listener_port and try again.")
     if state == "absent":
         if source_items:
-            #remove listener white list item
+            # remove listener white list item
             changed = current_listener.remove_white_list_item(load_balancer_id, source_items)
             module.exit_json(changed=changed, listener=get_info(current_listener.describe_attribute(load_balancer_id, listener_type)))
-        #delete 
+        # delete
         changed = current_listener.delete(load_balancer_id)
         module.exit_json(changed=changed, listener=get_info(current_listener))
     if state == "running":
-        #start
+        # start
         changed = current_listener.start(load_balancer_id)
         module.exit_json(changed=changed, listener=get_info(current_listener.describe_attribute(load_balancer_id, listener_type)))
     if state == "stopped":
-        #stop
+        # stop
         changed = current_listener.stop(load_balancer_id)
         module.exit_json(changed=changed, listener=get_info(current_listener.describe_attribute(load_balancer_id, listener_type)))
     if state == 'list':
-        #list attribute
+        # list attribute
         module.exit_json(changed=True, listener=get_info(current_listener))
 
 if __name__ == "__main__":
