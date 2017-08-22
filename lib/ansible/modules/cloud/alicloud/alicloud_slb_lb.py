@@ -21,7 +21,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['stableinterface'],
                     'supported_by': 'curated'}
 
-DOCUMENTATION = """ 
+DOCUMENTATION = """
 ---
 module: alicloud_slb_lb
 version_added: "2.4"
@@ -29,7 +29,7 @@ short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS
 options:
   alicloud_region:
     description:
-      - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`, 
+      - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`,
         `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
     required: false
     default: null
@@ -221,13 +221,13 @@ load_balancer:
         - Describe the current info of  load_balancer after user operate a load_balancer
     returned: on present
     type: string
-    sample: {  
-        "address": "101.201.177.136", 
-        "bandwidth": null, 
-        "internet_charge_type": "4", 
-        "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3", 
-        "load_balancer_name": "test_change_name", 
-        "load_balancer_status": "active", 
+    sample: {
+        "address": "101.201.177.136",
+        "bandwidth": null,
+        "internet_charge_type": "4",
+        "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3",
+        "load_balancer_name": "test_change_name",
+        "load_balancer_status": "active",
         "network_type": "classic"
     }
 load_balancer_id:
@@ -242,22 +242,22 @@ load_balancers:
     returned: on list
     type: list
     sample: [
-        {  
-            "address": "101.201.177.136", 
-            "bandwidth": null, 
-            "internet_charge_type": "4", 
-            "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3", 
-            "load_balancer_name": "test_change_name", 
-            "load_balancer_status": "active", 
+        {
+            "address": "101.201.177.136",
+            "bandwidth": null,
+            "internet_charge_type": "4",
+            "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3",
+            "load_balancer_name": "test_change_name",
+            "load_balancer_status": "active",
             "network_type": "classic"
         },
-        {  
-            "address": "101.201.177.136", 
-            "bandwidth": null, 
-            "internet_charge_type": "4", 
-            "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3", 
-            "load_balancer_name": "test_change_name", 
-            "load_balancer_status": "active", 
+        {
+            "address": "101.201.177.136",
+            "bandwidth": null,
+            "internet_charge_type": "4",
+            "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3",
+            "load_balancer_name": "test_change_name",
+            "load_balancer_status": "active",
             "network_type": "classic"
         }
     ]
@@ -286,7 +286,7 @@ def get_info(lb_obj):
     :param lb_obj: lb obj
     :return: info of lb
     """
-    
+
     return dict(load_balancer_id=lb_obj.load_balancer_id,\
                   load_balancer_name=lb_obj.load_balancer_name,\
                   address=lb_obj.address,\
@@ -330,7 +330,7 @@ def main():
     res_objs = []
     changed = False
     cur_slb = None
-        
+
     if load_balancer_id and load_balancer_name:
         name_test = ""
     else:
@@ -351,20 +351,20 @@ def main():
             changed = cur_slb.set_status(load_balancer_status)
             if changed:
                 cur_slb.load_balancer_status = load_balancer_status
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id) 
+            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id)
         elif load_balancer_name and cur_slb:
-            #set name  
+            #set name
             changed = cur_slb.modify_name(load_balancer_name)
             if changed:
                 cur_slb.load_balancer_name = load_balancer_name
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id) 
+            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id)
         elif (internet_charge_type or bandwidth) and cur_slb:
             #set spec
             changed = cur_slb.modify_spec(internet_charge_type=internet_charge_type, bandwidth=bandwidth)
             if changed:
                 cur_slb.internet_charge_type = internet_charge_type
                 cur_slb.bandwidth = bandwidth
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id) 
+            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id)
         elif not cur_slb:
             res_obj = slb.create_load_balancer(load_balancer_name=load_balancer_name,
                                                address_type=address_type, vswitch_id=vswitch_id,
@@ -380,7 +380,7 @@ def main():
         for res_obj in res_objs:
             load_balancers.append(get_info(res_obj))
         module.exit_json(changed=True, load_balancers=load_balancers)
-                     
+
 
 if __name__ == "__main__":
     main()
