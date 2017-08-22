@@ -267,6 +267,7 @@ try:
 except ImportError:
     HAS_FOOTMARK = False
 
+
 def get_info(obj):
     """
     get info from account obj
@@ -282,6 +283,7 @@ def get_info(obj):
                     account_description=obj.account_description,
                     database_privileges=obj.database_privileges)
     return {}
+
 
 def main():
     argument_spec = ecs_argument_spec()
