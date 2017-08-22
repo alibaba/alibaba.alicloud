@@ -30,7 +30,8 @@ module: alicloud_rds_account
 version_added: "2.4"
 short_description: Create, Delete, Modyfy, Reset rds account, Grant or Revoke privilege.
 description:
-    - This module allows the user to manage rds account. Includes support for creating, deleting, reseting and modifying rds account, granting or revoking privilege.
+    - This module allows the user to manage rds account. Includes support for creating, deleting,
+      reseting and modifying rds account, granting or revoking privilege.
 options:
   state:
     description: The state of the account after operating.
@@ -274,12 +275,12 @@ def get_info(obj):
     :return: dict of account info
     """
     if obj:
-        return dict(db_instance_id = obj.dbinstance_id,\
-                account_name = obj.account_name,\
-                account_status = obj.account_status,\
-                account_type = obj.account_type,\
-                account_description = obj.account_description,\
-                database_privileges = obj.database_privileges)
+        return dict(db_instance_id=obj.dbinstance_id,
+                    account_name=obj.account_name,
+                    account_status=obj.account_status,
+                    account_type=obj.account_type,
+                    account_description=obj.account_description,
+                    database_privileges=obj.database_privileges)
     return {}
 
 def main():

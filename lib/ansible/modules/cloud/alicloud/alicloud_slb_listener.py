@@ -99,15 +99,20 @@ options:
         - URI used for health check. Required when C(health_check='on').
   health_check_connect_port:
     description:
-        - Port used for health check. Required when C(health_check='on').When the parameter is set to -520, it means the backend server port (Backen dServerPort) is used.
+        - Port used for health check. Required when C(health_check='on').
+          When the parameter is set to -520, it means the backend server port (Backen dServerPort) is used.
     choices: [1~65535]
   healthy_threshold:
     description:
-        - Threshold determining the result of the health check is success. Namely, after how many successive successful health checks, the health check result of the backend server is changed from fail to success. Required when C(health_check='on').
+        - Threshold determining the result of the health check is success.
+          Namely, after how many successive successful health checks,
+          the health check result of the backend server is changed from fail to success. Required when C(health_check='on').
     choices: [1-10]
   unhealthy_threshold:
     description:
-        - Threshold determining the result of the health check is fail. Namely, after how many successive failed health checks, the health check result of the backend server is changed from success to fail. Required when C(health_check='on').
+        - Threshold determining the result of the health check is fail.
+          Namely, after how many successive failed health checks,
+          the health check result of the backend server is changed from success to fail. Required when C(health_check='on').
     choices: [1-10]
   health_check_timeout:
     description:
@@ -448,12 +453,12 @@ def get_info(obj):
     :param lb_ls_obj: lb obj
     :return: info of lb
     """
-    result = dict(listener_port = obj.listener_port,\
-                  backend_server_port = obj.backend_server_port,\
-                  bandwidth = obj.bandwidth,\
-                  status = obj.status,\
-                  schedule = obj.schedule,\
-                  listener_type = obj.listener_type)
+    result = dict(listener_port=obj.listener_port,
+                  backend_server_port=obj.backend_server_port,
+                  bandwidth=obj.bandwidth,
+                  status=obj.status,
+                  schedule=obj.schedule,
+                  listener_type=obj.listener_type)
 
     if hasattr(obj, 'server_certificate_id'):
         result['server_certificate_id'] = obj.server_certificate_id
