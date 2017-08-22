@@ -335,8 +335,8 @@ def main():
         name_test = ""
     else:
         name_test = load_balancer_name
-    res_objs =  slb.describe_load_balancers(load_balancer_id = load_balancer_id, load_balancer_name = name_test)
-    if len(res_objs)==1:
+    res_objs = slb.describe_load_balancers(load_balancer_id=load_balancer_id, load_balancer_name=name_test)
+    if len(res_objs) == 1:
         cur_slb = res_objs[0]
 
     if state == "absent":
@@ -344,27 +344,27 @@ def main():
             changed = cur_slb.delete()
             module.exit_json(changed=changed, load_balancer_id=cur_slb.load_balancer_id)
         else:
-            module.fail_json(msg = "The specified load balancer is not exist. Please check your load_balancer_id or load_balancer_name and try again.")
+            module.fail_json(msg="The specified load balancer is not exist. Please check your load_balancer_id or load_balancer_name and try again.")
     elif state == "present":
         if load_balancer_status and cur_slb:
-            #set status
+            # set status
             changed = cur_slb.set_status(load_balancer_status)
             if changed:
                 cur_slb.load_balancer_status = load_balancer_status
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id)
+            module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
         elif load_balancer_name and cur_slb:
-            #set name
+            # set name
             changed = cur_slb.modify_name(load_balancer_name)
             if changed:
                 cur_slb.load_balancer_name = load_balancer_name
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id)
+            module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
         elif (internet_charge_type or bandwidth) and cur_slb:
-            #set spec
+            # set spec
             changed = cur_slb.modify_spec(internet_charge_type=internet_charge_type, bandwidth=bandwidth)
             if changed:
                 cur_slb.internet_charge_type = internet_charge_type
                 cur_slb.bandwidth = bandwidth
-            module.exit_json(changed=changed, load_balancer = get_info(cur_slb), load_balancer_id = cur_slb.load_balancer_id)
+            module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
         elif not cur_slb:
             res_obj = slb.create_load_balancer(load_balancer_name=load_balancer_name,
                                                address_type=address_type, vswitch_id=vswitch_id,
@@ -372,7 +372,7 @@ def main():
                                                master_zone_id=master_zone_id, slave_zone_id=slave_zone_id,
                                                bandwidth=bandwidth)
             changed = True
-            module.exit_json(changed=changed, load_balancer = get_info(res_obj), load_balancer_id = res_obj.load_balancer_id)
+            module.exit_json(changed=changed, load_balancer=get_info(res_obj), load_balancer_id=res_obj.load_balancer_id)
         else:
             module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
     elif state == "list":

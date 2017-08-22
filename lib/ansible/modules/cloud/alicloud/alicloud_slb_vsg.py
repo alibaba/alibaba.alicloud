@@ -267,6 +267,7 @@ def get_info(obj):
         res['vserver_group_name'] = obj.vserver_group_name
     return res
 
+
 def convert_to_utf8(obj):
     if isinstance(obj, dict):
         res = {}
@@ -282,6 +283,7 @@ def convert_to_utf8(obj):
         return obj.encode('utf-8')
     else:
         return obj
+
 
 def main():
     argument_spec = ecs_argument_spec()
