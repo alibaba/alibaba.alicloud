@@ -287,13 +287,13 @@ def get_info(lb_obj):
     :return: info of lb
     """
 
-    return dict(load_balancer_id=lb_obj.load_balancer_id,\
-                  load_balancer_name=lb_obj.load_balancer_name,\
-                  address=lb_obj.address,\
-                  internet_charge_type=lb_obj.internet_charge_type,\
-                  bandwidth=lb_obj.bandwidth,\
-                  load_balancer_status=lb_obj.load_balancer_status,\
-                  network_type=lb_obj.network_type)
+    return dict(load_balancer_id=lb_obj.load_balancer_id,
+                load_balancer_name=lb_obj.load_balancer_name,
+                address=lb_obj.address,
+                internet_charge_type=lb_obj.internet_charge_type,
+                bandwidth=lb_obj.bandwidth,
+                load_balancer_status=lb_obj.load_balancer_status,
+                network_type=lb_obj.network_type)
 
 
 def main():
