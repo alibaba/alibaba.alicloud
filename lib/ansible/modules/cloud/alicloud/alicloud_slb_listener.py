@@ -20,7 +20,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -29,6 +29,7 @@ DOCUMENTATION = """
 module: alicloud_slb_listener
 version_added: "2.4"
 short_description: Create, Delete, Start or Stop Server Load Balancer Listener in ECS
+description: Create, Delete, Start or Stop Server Load Balancer Listener in ECS
 options:
   state:
     description: The state of the instance after operating.
@@ -158,22 +159,24 @@ options:
     description:
       - whether open SynProxy
     default: disable
-    choice: ['disable', 'enable']
+    choices: ['disable', 'enable']
   health_check_type:
     description:
       - Health check type
     default: tcp
-    choice: ['tcp', 'http']
+    choices: ['tcp', 'http']
   vserver_group:
     description:
       - Whether to use the virtual server group, VserverGroup and MasterSlaveServerGroup only allow one value to be on.
     default: off
-    choice: ['on', 'off']
+    choices: ['on', 'off']
   master_slave_server_group:
     description:
       - Whether the main standby server group is used, VserverGroup and MasterSlaveServerGroup only allow one value to be on.
     default: off
-    choice: ['on', 'off']
+    choices: ['on', 'off']
+author:
+    - "Liu Qiang"
 requirements:
     - "python >= 2.7"
     - "footmark"

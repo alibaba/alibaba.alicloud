@@ -20,7 +20,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -30,8 +30,8 @@ module: alicloud_rds_account
 version_added: "2.4"
 short_description: Create, Delete, Modyfy, Reset rds account, Grant or Revoke privilege.
 description:
-    - This module allows the user to manage rds account. Includes support for creating, deleting,
-      reseting and modifying rds account, granting or revoking privilege.
+  - This module allows the user to manage rds account. Includes support for creating, deleting,
+    reseting and modifying rds account, granting or revoking privilege.
 options:
   state:
     description: The state of the account after operating.
@@ -39,7 +39,7 @@ options:
     choices: [ 'present', 'absent']
   db_instance_id:
     description:
-        - Id of rds instance.
+      - Id of rds instance.
     required: true
   account_name:
     description:
@@ -71,6 +71,8 @@ options:
       - Account permission.Required when C(account_privilege != "")
     aliases: ['privilege']
     choices: ['ReadOnly', 'ReadWrite']
+author:
+  - "Li Qiang"
 requirements:
     - "python >= 2.7"
     - "footmark"

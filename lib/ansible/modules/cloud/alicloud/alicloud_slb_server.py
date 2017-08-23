@@ -20,7 +20,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -64,6 +64,8 @@ options:
       - list ports used by the Server Load Balancer instance frontend to describe health status for
     required: false
     default: null
+author:
+    - liu Qiang"
 requirements:
     - "python >= 2.7"
     - "footmark"
@@ -72,9 +74,7 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = '''
-#
 # Provisioning new add or remove Backend Server from SLB
-#
 Basic example to add backend server to load balancer instance
 - name: add backend server
   hosts: localhost
@@ -90,7 +90,7 @@ Basic example to add backend server to load balancer instance
             weight: 70
           - server_id: xxxxxxxxxx
 
-Basic example to set backend server of load balancer instance
+#Basic example to set backend server of load balancer instance
 - name: set backend server
   hosts: localhost
   connection: local
@@ -109,7 +109,7 @@ Basic example to set backend server of load balancer instance
           - server_id: xxxxxxxxxx
             weight: 80
 
-Basic example to remove backend servers from load balancer instance
+#Basic example to remove backend servers from load balancer instance
 - name: remove backend servers
   hosts: localhost
   connection: local
@@ -122,7 +122,7 @@ Basic example to remove backend servers from load balancer instance
           - xxxxxxxxxx
           - xxxxxxxxxx
 
-Basic example to describe backend server health status of load balancer instance
+#Basic example to describe backend server health status of load balancer instance
 - name: describe backend server health status
   hosts: localhost
   connection: local
