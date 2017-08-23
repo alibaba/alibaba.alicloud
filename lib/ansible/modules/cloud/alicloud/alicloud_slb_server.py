@@ -20,7 +20,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -70,9 +70,7 @@ author:
 """
 
 EXAMPLES = '''
-#
 # Provisioning new add or remove Backend Server from SLB
-#
 Basic example to add backend server to load balancer instance
 - name: add backend server
   hosts: localhost
@@ -88,7 +86,7 @@ Basic example to add backend server to load balancer instance
             weight: 70
           - server_id: xxxxxxxxxx
 
-Basic example to set backend server of load balancer instance
+#Basic example to set backend server of load balancer instance
 - name: set backend server
   hosts: localhost
   connection: local
@@ -107,7 +105,7 @@ Basic example to set backend server of load balancer instance
           - server_id: xxxxxxxxxx
             weight: 80
 
-Basic example to remove backend servers from load balancer instance
+#Basic example to remove backend servers from load balancer instance
 - name: remove backend servers
   hosts: localhost
   connection: local
@@ -120,7 +118,7 @@ Basic example to remove backend servers from load balancer instance
           - xxxxxxxxxx
           - xxxxxxxxxx
 
-Basic example to describe backend server health status of load balancer instance
+#Basic example to describe backend server health status of load balancer instance
 - name: describe backend server health status
   hosts: localhost
   connection: local
@@ -145,11 +143,11 @@ load_balancer_id:
     type: list
     sample: [
         {
-            "health_status": "abnormal", 
+            "health_status": "abnormal",
             "id": "i-2zeau2evvbnwufq0fa7q"
-        }, 
+        },
         {
-            "health_status": "abnormal", 
+            "health_status": "abnormal",
             "id": "i-2zehasnejqr6g6agys5a"
         }
     ]
@@ -266,8 +264,7 @@ def remove_backend_servers(module, slb, load_balancer_id=None, backend_servers=N
     results = []
 
     try:
-        backend_servers = slb.remove_backend_servers(load_balancer_id=load_balancer_id,
-                                                             backend_server_ids=backend_servers)
+        backend_servers = slb.remove_backend_servers(load_balancer_id=load_balancer_id, backend_server_ids=backend_servers)
         changed = True
 
     except SLBResponseError as ex:
@@ -327,7 +324,7 @@ def validate_backend_server_info(module, backend_servers, check_weight, default_
                 if k not in VALID_PARAMS:
                     module.fail_json(msg='Invalid backend_server parameter \'{}\''.format(k))
 
-            server_id = get_alias_value(backend_server,[server_id_param])
+            server_id = get_alias_value(backend_server, [server_id_param])
             if server_id is None:
                 module.fail_json(msg='server_id is mandatory')
 
@@ -339,15 +336,13 @@ def validate_backend_server_info(module, backend_servers, check_weight, default_
                 else:
                     module.fail_json(msg='Weight is mandatory')
             else:
-                #verifying weight parameter for non numeral string and limit validation
+                # verifying weight parameter for non numeral string and limit validation
                 try:
                     w = int(weight)
                     if w < 1 or w > 100:
                         module.fail_json(msg='Invalid weight parameter.')
                 except Exception as e:
                     module.fail_json(msg='Invalid weight parameter.')
-
-
         else:
             if isinstance(backend_server, str) is False:
                 module.fail_json(msg='Invalid backend_server parameter type [%s].' % type(backend_server))

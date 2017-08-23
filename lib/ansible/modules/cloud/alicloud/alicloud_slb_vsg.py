@@ -20,7 +20,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -29,6 +29,7 @@ DOCUMENTATION = '''
 module: alicloud_slb_vsg
 version_added: "2.4"
 short_description: Create, Delete VServerGroup and Modify its name or backend servers.
+description: Create, Delete VServerGroup and Modify its name or backend servers.
 options:
     state:
       description:
@@ -64,6 +65,8 @@ options:
       description:
         - Virtual server group id. It is required when need to operate an existing vserver group.
       aliases: [ 'group_id' ]
+author:
+    - "Liu Qiang"
 requirements:
     - "python >= 2.6"
     - "footmark"
@@ -229,7 +232,7 @@ vserver_group:
             "backend_server": [
                 {
                     "port": 80,
-                    "server_id": "i-2ze3ajpeq3y80w4lt4jr", 
+                    "server_id": "i-2ze3ajpeq3y80w4lt4jr",
                     "weight": 100
                 }
             ]
@@ -272,14 +275,18 @@ def get_info(obj):
 
 def convert_to_utf8(obj):
     if isinstance(obj, dict):
-        return {convert_to_utf8(key): convert_to_utf8(value) for (key, value) in obj.iteritems()}
+        res = {}
+        for key, value in obj.iteritems():
+            res = dict(res, **{convert_to_utf8(key): convert_to_utf8(value)})
+        return res
     elif isinstance(obj, list):
-        return [convert_to_utf8(element) for element in obj]
-    elif isinstance(obj, unicode):
+        res = []
+        for i in obj:
+            res.append(convert_to_utf8(i))
+        return res
+    elif not isinstance(obj, int):
         return obj.encode('utf-8')
-    else:
-        return obj
-
+    return obj
 
 def main():
     argument_spec = ecs_argument_spec()
@@ -306,7 +313,7 @@ def main():
     vserver_group_id = module.params['vserver_group_id']
     changed = False
     current_vserver_group = None
-    
+
     if vserver_group_id:
         try:
             current_vserver_group = slb.describe_vserver_group_attribute(vserver_group_id)

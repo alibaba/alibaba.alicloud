@@ -17,19 +17,23 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
-                    'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
 
-DOCUMENTATION = """ 
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['stableinterface'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = """
 ---
 module: alicloud_slb_lb
 version_added: "2.4"
-short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS
+short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS.
+description: Create, Delete, Enable or Disable Server Load Balancer in ECS.
 options:
   alicloud_region:
     description:
-      - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`, 
+      - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`,
         `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
     aliases: ['acs_region', 'ecs_region', 'region']
   state:
@@ -38,8 +42,8 @@ options:
     choices: [ 'present', 'absent']
   load_balancer_name:
     description:
-        - The name of the server load balancer, which is a string of 1 to 80 characters.
-        - It can contain numerals, "_", "/", "." or "-".
+      - The name of the server load balancer, which is a string of 1 to 80 characters.
+        It can contain numerals, "_", "/", "." or "-".
     aliases: [ 'name' ]
   load_balancer_id:
     description:
@@ -56,24 +60,26 @@ options:
     choices: ['internet', 'intranet']
   vswitch_id:
     description:
-        - The vswitch id of the VPC instance.
+      - The vswitch id of the VPC instance.
     aliases: ['subnet_id', 'subnet']
   internet_charge_type:
     description:
-        - The charge type of internet.
+      - The charge type of internet.
     default: 'paybytraffic'
     choices: ['paybybandwidth', 'paybytraffic']
   master_zone_id:
     description:
-        - The main usable area ID of the created Load Balancer can be found by the DescribeZone interface
+      - The main usable area ID of the created Load Balancer can be found by the DescribeZone interface
   slave_zone_id:
     description:
         - The ID of the standby zone of the created Load Balancer can be found on the DescribeZone interface
   bandwidth:
     description:
-        - Bandwidth peak of the public network instance charged per fixed bandwidth
+      - Bandwidth peak of the public network instance charged per fixed bandwidth
     default: 1
     choices: [ 1-1000 Mbps ]
+author:
+  - "Li Qiang"
 requirements:
     - "python >= 2.7"
     - "footmark"
@@ -205,13 +211,13 @@ load_balancer:
         - Describe the current info of  load_balancer after user operate a load_balancer
     returned: on present
     type: string
-    sample: {  
-        "address": "101.201.177.136", 
-        "bandwidth": null, 
-        "internet_charge_type": "4", 
-        "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3", 
-        "load_balancer_name": "test_change_name", 
-        "load_balancer_status": "active", 
+    sample: {
+        "address": "101.201.177.136",
+        "bandwidth": null,
+        "internet_charge_type": "4",
+        "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3",
+        "load_balancer_name": "test_change_name",
+        "load_balancer_status": "active",
         "network_type": "classic"
     }
 load_balancer_id:
@@ -226,22 +232,22 @@ load_balancers:
     returned: on list
     type: list
     sample: [
-        {  
-            "address": "101.201.177.136", 
-            "bandwidth": null, 
-            "internet_charge_type": "4", 
-            "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3", 
-            "load_balancer_name": "test_change_name", 
-            "load_balancer_status": "active", 
+        {
+            "address": "101.201.177.136",
+            "bandwidth": null,
+            "internet_charge_type": "4",
+            "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3",
+            "load_balancer_name": "test_change_name",
+            "load_balancer_status": "active",
             "network_type": "classic"
         },
-        {  
-            "address": "101.201.177.136", 
-            "bandwidth": null, 
-            "internet_charge_type": "4", 
-            "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3", 
-            "load_balancer_name": "test_change_name", 
-            "load_balancer_status": "active", 
+        {
+            "address": "101.201.177.136",
+            "bandwidth": null,
+            "internet_charge_type": "4",
+            "load_balancer_id": "lb-2zekcf2uvij5yw3a7t1c3",
+            "load_balancer_name": "test_change_name",
+            "load_balancer_status": "active",
             "network_type": "classic"
         }
     ]
@@ -271,16 +277,13 @@ def get_info(lb_obj):
     :param lb_obj: lb obj
     :return: info of lb
     """
-
-    return dict(
-        load_balancer_id=lb_obj.load_balancer_id,
-        load_balancer_name=lb_obj.load_balancer_name,
-        address=lb_obj.address,
-        internet_charge_type=lb_obj.internet_charge_type,
-        bandwidth=lb_obj.bandwidth,
-        load_balancer_status=lb_obj.load_balancer_status,
-        network_type=lb_obj.network_type
-    )
+    return dict(load_balancer_id=lb_obj.load_balancer_id,
+                load_balancer_name=lb_obj.load_balancer_name,
+                address=lb_obj.address,
+                internet_charge_type=lb_obj.internet_charge_type,
+                bandwidth=lb_obj.bandwidth,
+                load_balancer_status=lb_obj.load_balancer_status,
+                network_type=lb_obj.network_type)
 
 
 def main():
@@ -317,7 +320,7 @@ def main():
     res_objs = []
     changed = False
     cur_slb = None
-        
+
     if load_balancer_id and load_balancer_name:
         name_test = ""
     else:
@@ -371,4 +374,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
