@@ -17,15 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+                    'supported_by': 'community'}
 
 DOCUMENTATION = """
 ---
 module: alicloud_slb_lb
 version_added: "2.4"
-short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS
+short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS.
+description: Create, Delete, Enable or Disable Server Load Balancer in ECS.
 options:
   alicloud_region:
     description:
@@ -41,56 +45,58 @@ options:
     choices: [ 'present', 'absent']
   load_balancer_name:
     description:
-        - The name of the server load balancer
+      - The name of the server load balancer
     default: null
     required: false
     aliases: [ 'name' ]
   load_balancer_id:
     description:
-        - This parameter is required when user wants to perform edit operation in Load Balancer
+      - This parameter is required when user wants to perform edit operation in Load Balancer
     default: null
     required: false
   load_balancer_status:
     description:
-        - The lb instance status.
+      - The lb instance status.
     default: null
     required: false
     choices: ['inactive', 'active']
   address_type:
     description:
-        - The address type of the SLB.
+      - The address type of the SLB.
     default: internet
     required: false
     aliases: [ 'scheme' ]
     choices: ['internet', 'intranet']
   vswitch_id:
     description:
-        - The vswitch id of the VPC instance.
+      - The vswitch id of the VPC instance.
     default: null
     required: false
     aliases: ['subnet_id', 'subnet']
   internet_charge_type:
     description:
-        - The charge type of internet.
+      - The charge type of internet.
     default: 'paybytraffic'
     required: false
     choices: ['paybybandwidth', 'paybytraffic']
   master_zone_id:
     description:
-        - The main usable area ID of the created Load Balancer can be found by the DescribeZone interface
+      - The main usable area ID of the created Load Balancer can be found by the DescribeZone interface
     default: null
     required: false
   slave_zone_id:
     description:
-        - The ID of the standby zone of the created Load Balancer can be found on the DescribeZone interface
+      - The ID of the standby zone of the created Load Balancer can be found on the DescribeZone interface
     default: null
     required: false
   bandwidth:
     description:
-        - Bandwidth peak of the public network instance charged per fixed bandwidth
+      - Bandwidth peak of the public network instance charged per fixed bandwidth
     required: false
     default: 1
     choices: [ 1-1000 Mbps ]
+author:
+  - "Li Qiang"
 requirements:
     - "python >= 2.7"
     - "footmark"

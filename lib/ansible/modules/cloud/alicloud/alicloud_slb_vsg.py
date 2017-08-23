@@ -20,7 +20,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -29,6 +29,7 @@ DOCUMENTATION = '''
 module: alicloud_slb_vsg
 version_added: "2.4"
 short_description: Create, Delete VServerGroup and Modify its name or backend servers.
+description: Create, Delete VServerGroup and Modify its name or backend servers.
 options:
     state:
       description:
@@ -64,6 +65,8 @@ options:
       description:
         - Virtual server group id. It is required when need to operate an existing vserver group.
       aliases: [ 'group_id' ]
+author:
+    - "Liu Qiang"
 requirements:
     - "python >= 2.6"
     - "footmark"
@@ -279,11 +282,9 @@ def convert_to_utf8(obj):
         for i in obj:
             res.append(convert_to_utf8(i))
         return res
-    elif isinstance(obj, unicode):
+    elif not isinstance(obj, int):
         return obj.encode('utf-8')
-    else:
-        return obj
-
+    return obj
 
 def main():
     argument_spec = ecs_argument_spec()
