@@ -34,7 +34,6 @@ description:
 options:
   state:
     description: Create, set, remove or describe backend server health status of an slb
-    required: false
     default: 'present'
     choices: ['present', 'absent', 'list']
   load_balancer_id:
@@ -48,7 +47,6 @@ options:
       - List IDs of backend servers which in the load balancer when state is C(present)
       - It is not required when C(list)
     required: true
-    default: null
     suboptions:
       server_id:
         description:
@@ -62,15 +60,13 @@ options:
   ports:
     description:
       - list ports used by the Server Load Balancer instance frontend to describe health status for
-    required: false
-    default: null
-author:
-    - liu Qiang"
 requirements:
     - "python >= 2.7"
     - "footmark"
 extends_documentation_fragment:
     - alicloud
+author:
+  - "He Guimin (@xiaozhu36)"
 """
 
 EXAMPLES = '''

@@ -34,7 +34,7 @@ options:
     state:
       description:
         - The state of the instance after operating.
-      default: present
+      default: 'present'
       choices: [ 'present', 'absent', 'list']
     load_balancer_id:
       description:
@@ -72,6 +72,8 @@ requirements:
     - "footmark"
 extends_documentation_fragment:
     - alicloud
+author:
+  - "He Guimin (@xiaozhu36)"
 '''
 
 EXAMPLES = '''

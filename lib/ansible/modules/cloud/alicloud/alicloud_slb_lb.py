@@ -35,64 +35,47 @@ options:
     description:
       - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`,
         `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
-    required: false
-    default: null
     aliases: ['acs_region', 'ecs_region', 'region']
   state:
     description: The state of the instance after operating.
-    required: false
     default: 'present'
     choices: [ 'present', 'absent']
   load_balancer_name:
     description:
-      - The name of the server load balancer
-    default: null
-    required: false
+      - The name of the server load balancer, which is a string of 1 to 80 characters.
+        It can contain numerals, "_", "/", "." or "-".
     aliases: [ 'name' ]
   load_balancer_id:
     description:
-      - This parameter is required when user wants to perform edit operation in Load Balancer
-    default: null
-    required: false
+        - This parameter is required when user wants to perform edit operation in Load Balancer
   load_balancer_status:
     description:
-      - The lb instance status.
-    default: null
-    required: false
+        - The lb instance status.
     choices: ['inactive', 'active']
   address_type:
     description:
-      - The address type of the SLB.
-    default: internet
-    required: false
+        - The address type of the SLB.
+    default: 'internet'
     aliases: [ 'scheme' ]
     choices: ['internet', 'intranet']
   vswitch_id:
     description:
       - The vswitch id of the VPC instance.
-    default: null
-    required: false
     aliases: ['subnet_id', 'subnet']
   internet_charge_type:
     description:
       - The charge type of internet.
     default: 'paybytraffic'
-    required: false
     choices: ['paybybandwidth', 'paybytraffic']
   master_zone_id:
     description:
       - The main usable area ID of the created Load Balancer can be found by the DescribeZone interface
-    default: null
-    required: false
   slave_zone_id:
     description:
-      - The ID of the standby zone of the created Load Balancer can be found on the DescribeZone interface
-    default: null
-    required: false
+        - The ID of the standby zone of the created Load Balancer can be found on the DescribeZone interface
   bandwidth:
     description:
       - Bandwidth peak of the public network instance charged per fixed bandwidth
-    required: false
     default: 1
     choices: [ 1-1000 Mbps ]
 author:
@@ -102,8 +85,9 @@ requirements:
     - "footmark"
 extends_documentation_fragment:
     - alicloud
+author:
+  - "He Guimin (@xiaozhu36)"
 """
-
 
 EXAMPLES = """
 # Basic provisioning example to create Load Balancer
@@ -281,6 +265,7 @@ HAS_FOOTMARK = False
 
 try:
     from footmark.exception import SLBResponseError
+
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -292,7 +277,6 @@ def get_info(lb_obj):
     :param lb_obj: lb obj
     :return: info of lb
     """
-
     return dict(load_balancer_id=lb_obj.load_balancer_id,
                 load_balancer_name=lb_obj.load_balancer_name,
                 address=lb_obj.address,
@@ -390,4 +374,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

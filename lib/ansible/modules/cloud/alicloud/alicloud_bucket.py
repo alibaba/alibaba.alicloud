@@ -32,20 +32,17 @@ options:
   state:
     description:
       - Create or delete the OSS bucket. List all buckets that has the prefix of 'bucket' value.
-    required: false
-    default: present
+    default: 'present'
     choices: [ 'present', 'absent', 'list']
   bucket:
     description:
       - Bucket name.
     required: true
-    default: null
     aliases: [ 'name' ]
   permission:
     description:
       - This option lets the user set the canned permissions on the bucket that are created.
-    required: false
-    default: private
+    default: 'private'
     choices: [ 'private', 'public-read', 'public-read-write' ]
     aliases: [ 'acl' ]
 requirements:

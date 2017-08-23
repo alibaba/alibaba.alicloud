@@ -34,32 +34,25 @@ options:
     description:
       -  Whether or not to create, delete or query route entry.
     choices: ['present', 'absent', 'list']
-    required: false
-    default: present
+    default: 'present'
   router_id:
     description:
       - The ID of virtual router to which route entry belongs.
     required: true
-    default: null
   destination_cidrblock:
     description:
       - The destination CIDR or Ip address of route entry. Such as:192.168.0.0/24 or 192.168.0.1.
         There is not the same destination cidr_block in the same route table. It is required when creating route entry.
-    required: false
-    default: null
     aliases: ['dest_cidrblock', 'cidr_block']
   nexthop_id:
     description:
       - The next hop ID of route entry. It is required when creating a route entry.
-    required: false
-    default: null
     aliases: ['hop_id']
   nexthop_type:
     description:
       - The next hop type of route entry.
-    required: false
     default: 'Instance'
-    choices: ['Instance', 'Tunnel', 'HaVip', 'RouterInterface']
+    choices: ['Instance', 'Tunnel', 'HaVip', 'RouterInterface', 'VpnGateway']
     aliases: ['hop_type']
 notes:
   - The max items of route entry no more than 48 in the same route table.

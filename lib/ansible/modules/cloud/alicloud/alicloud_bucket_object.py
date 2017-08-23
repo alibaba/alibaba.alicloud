@@ -39,51 +39,39 @@ options:
     description:
       - Bucket name.
     required: true
-    default: null
   permission:
     description:
       - This option lets the user set the canned permissions on the objects that are put. The permissions that
         can be set are 'private', 'public-read', 'public-read-write'.
-    required: false
-    default: private
+    default: 'private'
     choices: [ 'private', 'public-read', 'public-read-write' ]
     aliases: [ 'acl' ]
   headers:
     description:
       - Custom headers for PUT or GET operation, as a dictionary of 'key=value' and 'key=value,key=value'.
-    required: false
-    default: null
   overwrite:
     description:
       - Force overwrite specified object content when putting object.
         If it is true/false, object will be normal/appendable. Appendable Object can be convert to Noraml by setting
         overwrite to true, but conversely, it won't be work.
-    required: false
-    default: false
+    default: False
     type: bool
   content:
     description:
       - The object content that will be upload. It is conflict with 'file_name' when mode is 'put'.
-    required: false
-    default: null
   file_name:
     description:
       - The name of file that used to upload or download object.
-    required: false
-    default: null
     aliases: [ "file" ]
   object:
     description:
       - Name to object after uploaded to bucket
     required: true
-    default: null
     aliases: [ 'key', 'object_name' ]
   byte_range:
     description:
       - The range of object content that would be download.
         Its format like 1-100 that indicates range from one to hundred bytes of object.
-    required: false
-    default: null
     aliases: [ 'range' ]
 requirements:
     - "python >= 2.7"

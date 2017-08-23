@@ -51,12 +51,10 @@ options:
   bandwidth:
     description:
       - Bandwidth peak of Listener
-    required: false
     choices: [1-1000]
   backend_server_port:
     description:
       - Port used by the Server Load Balancer instance backend port
-    required: false
     choices: [1~65535]
   persistence_timeout:
     description:
@@ -66,12 +64,11 @@ options:
   scheduler:
     description:
       - Scheduling algorithm.
-    default: wrr
+    default: 'wrr'
     choices: ['wlc', 'wrr']
   sticky_session:
     description:
       - Whether to enable session persistence.
-    required: false
     choices: ['on', 'off']
   sticky_session_type:
     description:
@@ -87,7 +84,6 @@ options:
   health_check:
     description:
       - Whether to enable health check.
-    required: false
     choices: ['on', 'off']
   health_check_domain:
     description:
@@ -158,30 +154,30 @@ options:
   syn_proxy:
     description:
       - whether open SynProxy
-    default: disable
-    choices: ['disable', 'enable']
+    default: 'disable'
+    choice: ['disable', 'enable']
   health_check_type:
     description:
       - Health check type
-    default: tcp
-    choices: ['tcp', 'http']
+    default: 'tcp'
+    choice: ['tcp', 'http']
   vserver_group:
-    description:
+    description: 
       - Whether to use the virtual server group, VserverGroup and MasterSlaveServerGroup only allow one value to be on.
-    default: off
-    choices: ['on', 'off']
+    default: 'off'
+    choice: ['on', 'off']
   master_slave_server_group:
-    description:
-      - Whether the main standby server group is used, VserverGroup and MasterSlaveServerGroup only allow one value to be on.
-    default: off
-    choices: ['on', 'off']
-author:
-    - "Liu Qiang"
+    description: 
+      - Whether the main standby server group is used, VserverGroup and MasterSlaveServerGroup only allow one value to be on
+    default: 'off'
+    choice: ['on', 'off']
 requirements:
     - "python >= 2.7"
     - "footmark"
 extends_documentation_fragment:
     - alicloud
+author:
+  - "He Guimin (@xiaozhu36)"
 """
 
 EXAMPLES = """
@@ -638,7 +634,7 @@ def main():
         changed = current_listener.start(load_balancer_id)
         module.exit_json(changed=changed, listener=get_info(current_listener.describe_attribute(load_balancer_id, listener_type)))
     if state == "stopped":
-        #stop
+        # stop
         changed = current_listener.stop(load_balancer_id)
         module.exit_json(changed=changed, listener=get_info(current_listener.describe_attribute(load_balancer_id, listener_type)))
     if state == 'list':
@@ -647,4 +643,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
