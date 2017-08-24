@@ -1,5 +1,5 @@
 Alibaba Cloud Compute Services Guide
-=========================
+====================================
 
 .. _alicloud_intro:
 
@@ -34,14 +34,14 @@ specifying your access and secret key as ENV variables or module arguments.
 
 For environment variables::
 
-    export ALICLOUD_ACCESS_KEY='AK123'
-    export ALICLOUD_SECRET_KEY='secret123'
+    export ALICLOUD_ACCESS_KEY='Alicloud123'
+    export ALICLOUD_SECRET_KEY='AlicloudSecret123'
 
-For storing these in a vars_file, ideally encrypted with ansible-vault::
+For storing these in a vars_file::
 
     ---
-    alicloud_access_key: "--REMOVED--"
-    alicloud_secret_key: "--REMOVED--"
+    alicloud_access_key: "<your-alicloud_access_key_id>"
+    alicloud_secret_key: "<your-alicloud_access_secret_key>"
 
 Note that if you store your credentials in vars_file, you need to refer to them in each Alicloud-module. For example::
 
@@ -57,9 +57,15 @@ Provisioning
 
 There are a number of modules to create ECS instance, disk, VPC, VSwitch, Security Group and other resources.
 
-An example of making sure there are 2 instances and other resources as follows.
+An example of making sure there are only 5 instances tagged 'NewECS' and other resources as Alicloud Module follows.
 
-In the example below, the "count" of instances is set to 2.  This means the example can create two instacnes one time.
+In the example below, the "count" of instances is set to 5. This means if there are 0 instances already existing, then
+5 new instances would be created. If there were 2 instances, only 3 would be created, and if there were 8 instances,
+3 instances would be terminated.
+
+If "count_tag" is not specified, "count" would use "instance_name" to create specified number of instances.
+
+::
 
     # alicloud_setup.yml
 
@@ -103,7 +109,13 @@ In the example below, the "count" of instances is set to 2.  This means the exam
              group_id: '{{ created_group.group_id }}'
              instance_type: ecs.n4.small
              image_id: "{{ ami_id }}"
-             count: 2
+             instance_name: "My-new-instance"
+             instance_tags:
+                 Name: NewECS
+                 Version: 0.0.1
+             count: 5
+             count_tag:
+                 Name: NewECS
              allocate_public_ip: true
              max_bandwidth_out: 50
              vswitch_id: '{{ created_vsw.vswitch_id}}'

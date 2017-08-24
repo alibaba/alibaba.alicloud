@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
 #
@@ -71,7 +71,7 @@ author:
 
 EXAMPLES = '''
 # Provisioning new add or remove Backend Server from SLB
-Basic example to add backend server to load balancer instance
+# Basic example to add backend server to load balancer instance
 - name: add backend server
   hosts: localhost
   connection: local
@@ -80,7 +80,7 @@ Basic example to add backend server to load balancer instance
   tasks:
     - name: add backend server
       alicloud_slb_server:
-        load_balancer_id: ''{{ load_balancer_id }}''
+        load_balancer_id: '{{ load_balancer_id }}'
         backend_servers:
           - server_id: xxxxxxxxxx
             weight: 70
@@ -152,8 +152,6 @@ load_balancer_id:
         }
     ]
 '''
-
-from __builtin__ import isinstance
 
 import time
 import sys

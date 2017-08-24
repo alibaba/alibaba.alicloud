@@ -20,7 +20,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -44,16 +44,16 @@ options:
           If it is not specified, it will be allocated by system automatically.
       aliases: ['acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
     image_id:
-      description: Image ID used to launch instances. Required when C(state=present).
+      description: Image ID used to launch instances. Required when C(state=present) and creating new ECS instances.
       aliases: [ 'image' ]
     instance_type:
-      description: Instance type used to launch instances. Required when C(state=present).
+      description: Instance type used to launch instances. Required when C(state=present) and creating new ECS instances.
       aliases: [ 'type' ]
     group_id:
-      description: Security group id used to launch instance or join/leave existing instances.
+      description: Security Group id used to launch instance or join/remove existing instances to/from the specified Security Group.
       aliases: [ 'security_group_id' ]
     vswitch_id:
-      description: The subnet ID in which to launch the instance (VPC).
+      description: The subnet ID in which to launch the instances (VPC).
       aliases: ['subnet_id']
     instance_name:
       description:
@@ -66,7 +66,7 @@ options:
         - The description of ECS instance, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
     internet_charge_type:
       description:
-        - Internet charge type, which can be PayByTraffic or PayByBandwidth.
+        - Internet charge type of ECS instance.
       default: "PayByBandwidth"
       choices: ["PayByBandwidth", "PayByTraffic"]
     max_bandwidth_in:
@@ -82,7 +82,7 @@ options:
     host_name:
       description: Instance host name.
     password:
-      description: The password to login instance.
+      description: The password to login instance. After rebooting instances, the modified password would be take effect.
     disk_category:
       description:
         - Category of the system disk.
@@ -97,15 +97,23 @@ options:
       aliases: ["system_disk_size"]
     disk_name:
       description:
-        - Name of a system disk.
+        - Name of the system disk.
       aliases: ["system_disk_name"]
     disk_description:
       description:
-        - Description of a system disk.
+        - Description of the system disk.
       aliases: ["system_disk_description"]
     count:
-      description: The number of the new instance.
+      description:
+        - The number of the new instance. An integer value which indicates how many instances that match the
+          'count_tag' parameter should be running. Instances are either created or terminated based on this value.
       default: 1
+    count_tag:
+      description:
+      - Used with 'count' to determine how many instances based on a specific tag criteria should be present.
+        This can be expressed in multiple ways and is shown in the EXAMPLES section.
+        The specified count_tag must already exist or be passed in as the 'instance_tags' option.
+        If it is not specified, it will be replaced by 'instance_name' parameter.
     allocate_public_ip:
       description:
         - Whether allocate a public ip for the new instance.
@@ -119,7 +127,7 @@ options:
       default: "PostPaid"
     period:
       description:
-        - The charge duration of the instance. Required when C(instance_charge_type="PrePaid").
+        - The charge duration of the instance. Required when C(instance_charge_type=PrePaid).
       choices: [1~9,12,24,36]
       default: 1
     auto_renew:
@@ -134,15 +142,16 @@ options:
     instance_ids:
       description:
         - A list of instance ids. It is required when need to operate existing instances.
+          If it is specified, 'count' parameter will lose efficacy.
     force:
       description:
-        - Whether force to operation. Required when C(state=stopped) or C(state=restarted) or C(state=absent).
+        - Whether the current operation needs to be execute forcibly.
       default: False
       type: bool
     instance_tags:
       description:
-        - A list of hash/dictionaries of instance tags, '[{tag_key:"value", tag_value:"value"}]',
-                    tag_key must be not null when tag_value isn't null
+        - A hash/dictionaries of instance tags, to add to the new instance or for starting/stopping instance by tag;
+          '{"key":"value"}' and '{"key":"value","key":"value"}'
       aliases: ["tags"]
     sg_action:
       description: The action of operating security group.
@@ -202,11 +211,41 @@ EXAMPLES = '''
         alicloud_region: '{{ alicloud_region }}'
         image: '{{ image }}'
         instance_type: '{{ instance_type }}'
-        assign_public_ip: yes
+        assign_public_ip: true
         group_id: '{{ group_id }}'
         instance_tags:
-            - tag_key : postgress
-              tag_value: 1
+            Name: created_one
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+
+# advanced example with count and count_tag to create a number of instances
+- name: advanced provisioning example
+  hosts: localhost
+  vars:
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
+    alicloud_region: cn-beijing
+    image: ubuntu1404_64_40G_cloudinit_20160727.raw
+    instance_type: ecs.n4.small
+    group_id: sg-abcd1234
+    host_name: myhost
+    password: mypassword
+  tasks:
+    - name: tagging and host name password
+      alicloud_instance:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        image: '{{ image }}'
+        instance_type: '{{ instance_type }}'
+        assign_public_ip: true
+        group_id: '{{ group_id }}'
+        instance_tags:
+            Name: created_one
+            Version: 0.1
+        count: 2
+        count_tag:
+            Name: created_one
         host_name: '{{ host_name }}'
         password: '{{ password }}'
 
@@ -352,6 +391,11 @@ instance_ips:
     returned: expect absent
     type: list
     sample: ["10.1.1.1","10.1.1.2"]
+instance_names:
+    description: List all instances's name after operating ecs instance.
+    returned: expect absent
+    type: list
+    sample: ["MyInstane","MyInstane2"]
 total:
     description: The number of all instances after operating ecs instance.
     returned: expect absent
@@ -379,10 +423,12 @@ def get_public_ip(instance):
     return ""
 
 
-def create_instance(module, ecs):
+def create_instance(module, ecs, exact_count):
     """
     create an instance in ecs
     """
+    if exact_count <= 0:
+        return None
     zone_id = module.params['alicloud_zone']
     image_id = module.params['image_id']
     instance_type = module.params['instance_type']
@@ -399,7 +445,6 @@ def create_instance(module, ecs):
     system_disk_size = module.params['disk_size']
     system_disk_name = module.params['disk_name']
     system_disk_description = module.params['disk_description']
-    count = module.params['count']
     allocate_public_ip = module.params['allocate_public_ip']
     instance_tags = module.params['instance_tags']
     period = module.params['period']
@@ -413,11 +458,6 @@ def create_instance(module, ecs):
     if not instance_type:
         module.fail_json(msg='instance_type is required for new instance')
 
-    # Restrict Instance Count
-    if int(count) > 99:
-        module.fail_json(
-            msg='count value for creating instance is not allowed.')
-
     try:
         # call to create_instance method from footmark
         instances = ecs.create_instance(image_id=image_id, instance_type=instance_type, group_id=group_id,
@@ -427,7 +467,7 @@ def create_instance(module, ecs):
                                         io_optimized='optimized', system_disk_category=system_disk_category,
                                         system_disk_size=system_disk_size, system_disk_name=system_disk_name,
                                         system_disk_description=system_disk_description,
-                                        vswitch_id=vswitch_id, count=count, allocate_public_ip=allocate_public_ip,
+                                        vswitch_id=vswitch_id, count=exact_count, allocate_public_ip=allocate_public_ip,
                                         instance_charge_type=instance_charge_type, period=period, auto_renew=auto_renew,
                                         auto_renew_period=auto_renew_period, instance_tags=instance_tags)
 
@@ -445,6 +485,7 @@ def main():
         instance_type=dict(type='str', aliases=['type']),
         image_id=dict(type='str', aliases=['image']),
         count=dict(type='int', default=1),
+        count_tag=dict(type='str'),
         vswitch_id=dict(type='str', aliases=['subnet_id']),
         instance_name=dict(type='str'),
         host_name=dict(type='str'),
@@ -457,7 +498,7 @@ def main():
         disk_name=dict(type='str', aliases=["system_disk_name"]),
         disk_description=dict(type='str', aliases=["system_disk_description"]),
         force=dict(type='bool', default=False),
-        instance_tags=dict(type='list', aliases=['tags']),
+        instance_tags=dict(type='dict', aliases=['tags']),
         state=dict(default='present', choices=['present', 'running', 'stopped', 'restarted', 'absent']),
         description=dict(type='str'),
         allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
@@ -477,24 +518,50 @@ def main():
     ecs = ecs_connect(module)
     state = module.params['state']
     instance_ids = module.params['instance_ids']
+    count_tag = module.params['count_tag']
+    count = module.params['count']
+    instance_name = module.params['instance_name']
+    force = module.params['force']
     zone_id = module.params['alicloud_zone']
+    changed = False
 
     instances = []
     if instance_ids:
         if not isinstance(instance_ids, list):
             module.fail_json(msg='The parameter instance_ids should be a list, aborting')
         instances = ecs.get_all_instances(zone_id=zone_id, instance_ids=instance_ids)
+        if not instances:
+            module.fail_json(msg="There are no instances in our record based on instance_ids {0}. "
+                                 "Please check it and try again.".format(instance_ids))
+    elif count_tag:
+        instances = ecs.get_all_instances(zone_id=zone_id, instance_tags=eval(count_tag))
+    elif instance_name:
+        instances = ecs.get_all_instances(zone_id=zone_id, instance_name=instance_name)
 
     ids = []
     ips = []
+    names = []
     if state == 'present':
-        if len(instances) < 1:
-            instances = create_instance(module, ecs)
-
-            for inst in instances:
-                ids.append(inst.id)
-                ips.append(get_public_ip(inst))
-            module.exit_json(changed=True, instance_ids=ids, instance_ips=ips, total=len(ids))
+        if not instance_ids:
+            if len(instances) > count:
+                for i in range(0, len(instances) - count):
+                    inst = instances[len(instances) - 1]
+                    if inst.status is not 'stopped' and not force:
+                        module.fail_json(msg="That to delete instance {0} is failed results from it is running, "
+                                             "and please stop it or set 'force' as True.".format(inst.id))
+                    try:
+                        changed = inst.terminate(force=force)
+                    except Exception as e:
+                        module.fail_json(msg="Delete instance {0} got an error: {e}".format(inst.id, e))
+                    instances.pop(len(instances) - 1)
+            else:
+                try:
+                    new_instances = create_instance(module, ecs, count - len(instances))
+                    if new_instances:
+                        changed = True
+                        instances.extend(new_instances)
+                except Exception as e:
+                    module.fail_json(msg="Create new instances got an error: {0}".format(e))
 
         # Security Group join/leave begin
         sg_action = module.params['sg_action']
@@ -510,25 +577,21 @@ def main():
             for inst in instances:
                 # Adding an Instance to a Security Group
                 if action == 'join':
-                    changed = inst.join_security_group(security_group_id)
+                    if security_group_id not in inst.security_group_ids['security_group_id']:
+                        changed = inst.join_security_group(security_group_id)
                 else:
-                    changed = inst.leave_security_group(security_group_id)
+                    if security_group_id in inst.security_group_ids['security_group_id']:
+                        changed = inst.leave_security_group(security_group_id)
 
-                if inst.id not in ids:
-                    ids.append(inst.id)
-                ip = get_public_ip(inst)
-                if ip not in ips:
-                    ips.append(ip)
         # Security Group join/leave ends here
 
         # Modify instance attribute
-        name = module.params['instance_name']
         description = module.params['description']
         host_name = module.params['host_name']
         password = module.params['password']
         for inst in instances:
             update = False
-            if name and name != inst.name:
+            if instance_name and instance_name != inst.name:
                 update = True
             else:
                 name = inst.name
@@ -545,22 +608,23 @@ def main():
 
             if update:
                 try:
-                    inst.modify(name=name, description=description, host_name=host_name, password=password)
+                    changed = inst.modify(name=name, description=description, host_name=host_name, password=password)
                 except Exception as e:
                     module.fail_json(msg="Modify instance attribute {0} got an error: {1}".format(inst.id, e))
 
             if inst.id not in ids:
                 ids.append(inst.id)
+                names.append(inst.name)
             ip = get_public_ip(inst)
             if ip not in ips:
                 ips.append(ip)
 
-        module.exit_json(changed=True, instance_ids=ids, instance_ips=ips, total=len(ids))
+        module.exit_json(changed=changed, instance_ids=ids, instance_ips=ips, instance_names=names, total=len(ids))
 
     else:
         if len(instances) < 1:
             module.fail_json(msg='Please specify ECS instances that you want to operate by using '
-                                 'parameters instance_ids and alicloud_zone, aborting')
+                                 'parameters instance_ids, instance_tags or instance_name, aborting')
         force = module.params['force']
         if state == 'running':
             try:
@@ -568,9 +632,10 @@ def main():
                     changed = inst.start()
                     if changed:
                         ids.append(inst.id)
+                        names.append(inst.name)
                         ips.append(get_public_ip(inst))
 
-                module.exit_json(changed=changed, instance_ids=ids, instance_ips=ips, total=len(ids))
+                module.exit_json(changed=changed, instance_ids=ids, instance_ips=ips, instance_names=names, total=len(ids))
             except Exception as e:
                 module.fail_json(msg='Start instances got an error: {0}'.format(e))
         elif state == 'stopped':
@@ -579,9 +644,10 @@ def main():
                     changed = inst.stop(force=force)
                     if changed:
                         ids.append(inst.id)
+                        names.append(inst.name)
                         ips.append(get_public_ip(inst))
 
-                module.exit_json(changed=changed, instance_ids=ids, instance_ips=ips, total=len(ids))
+                module.exit_json(changed=changed, instance_ids=ids, instance_ips=ips, instance_names=names, total=len(ids))
             except Exception as e:
                 module.fail_json(msg='Stop instances got an error: {0}'.format(e))
         elif state == 'restarted':
@@ -590,14 +656,14 @@ def main():
                     changed = inst.reboot(force=module.params['force'])
                     if changed:
                         ids.append(inst.id)
+                        names.append(inst.name)
                         ips.append(get_public_ip(inst))
 
-                module.exit_json(changed=changed, instance_ids=ids, instance_ips=ips, total=len(ids))
+                module.exit_json(changed=changed, instance_ids=ids, instance_ips=ips, instance_names=names, total=len(ids))
             except Exception as e:
                 module.fail_json(msg='Reboot instances got an error: {0}'.format(e))
         else:
             try:
-                force = module.params['force']
                 for inst in instances:
                     if inst.status is not 'stopped' and not force:
                         module.fail_json(msg="Instance is running, and please stop it or set 'force' as True.")

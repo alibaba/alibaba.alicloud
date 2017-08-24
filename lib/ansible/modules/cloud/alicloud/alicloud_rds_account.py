@@ -58,7 +58,7 @@ options:
         English characters/letters, underlines (_), hyphens (-), and numbers. The length may be 2-256 characters,
   account_type:
     description:
-      - Privilege type of account. Normal: Common privilege; Super: High privilege; Default value is Normal.
+      - Privilege type of account. Normal for Common privilege; Super for High privilege; Default value is Normal.
         This parameter is valid for MySQL 5.5/5.6 only
     default: Normal
     aliases: ['type']
@@ -367,8 +367,8 @@ def main():
                 module.fail_json(msg=str("Unable to grant privilege error:{0}".format(e)))
         else:
             module.fail_json(msg="grant privilege failed. Please check your account_privilege and try again.")
-    module.exit_json(changed=True, account_name=account_name, account=get_info(current_account))
+    module.exit_json(changed=changed, account_name=account_name, account=get_info(current_account))
+
 
 if __name__ == "__main__":
     main()
-
