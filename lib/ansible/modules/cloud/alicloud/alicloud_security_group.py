@@ -30,7 +30,8 @@ description:
   - Create, Query or Delete Security Group, and it contains security group rules management.
 options:
   state:
-    description: Create, delete a security group
+    description:
+            - Create, delete a security group
     default: 'present'
     choices: ['present', 'absent']
   group_name:
@@ -51,32 +52,40 @@ options:
       - List of hash/dictionaries firewall inbound rules to enforce in this group.
     suboptions:
         ip_protocol:
-          description: IP protocol
+          description:
+            - IP protocol
           required: true
           choices: ["tcp", "udp", "icmp", "gre", "all"]
           aliases: ['proto']
         port_range:
-          description: The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is -1/-1.
+          description:
+            - The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is -1/-1.
           required: true
         source_group_id:
-          description: The source security group id.
+          description:
+            - The source security group id.
           aliases: ['group_id']
         source_group_owner_id:
-          description: The source security group owner id.
+          description:
+            - The source security group owner id.
           aliases: ['group_owner_id']
         source_cidr_ip:
-          description: The source IP address range
+          description:
+            - The source IP address range
           aliases: ['cidr_ip']
         policy:
-          description: Authorization policy
+          description:
+            - Authorization policy
           default: "accept"
           choices: ["accept", "drop"]
         priority:
-          description: Authorization policy priority
+          description:
+            - Authorization policy priority
           default: 1
           choices: ["1~100"]
         nic_type:
-          description: Network type
+          description:
+            - Network type
           default: "internet"
           choices: ["internet", "intranet"]
   rules_egress:
@@ -86,32 +95,40 @@ options:
         And these keys's attribution same as rules keys.
     suboptions:
         ip_protocol:
-          description: IP protocol
+          description:
+            - IP protocol
           required: true
           choices: ["tcp", "udp", "icmp", "gre", "all"]
           aliases: ['proto']
         port_range:
-          description: The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is "-1/-1".
+          description:
+            - The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is "-1/-1".
           required: true
         dest_group_id:
-          description: The destination security group id.
+          description:
+            - The destination security group id.
           aliases: ['group_id']
         dest_group_owner_id:
-          description: The destination security group owner id.
+          description:
+            - The destination security group owner id.
           aliases: ['group_owner_id']
         dest_cidr_ip:
-          description: The destination IP address range
+          description:
+            - The destination IP address range
           aliases: ['cidr_ip']
         policy:
-          description: Authorization policy
+          description:
+            - Authorization policy
           default: "accept"
           choices: ["accept", "drop"]
         priority:
-          description: Authorization policy priority
+          description:
+            - Authorization policy priority
           default: 1
           choices: ["1~100"]
         nic_type:
-          description: Network type
+          description:
+            - Network type
           default: "internet"
           choices: ["internet", "intranet"]
   group_id:

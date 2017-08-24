@@ -44,16 +44,20 @@ options:
           If it is not specified, it will be allocated by system automatically.
       aliases: ['acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
     image_id:
-      description: Image ID used to launch instances. Required when C(state=present) and creating new ECS instances.
+      description:
+        - Image ID used to launch instances. Required when C(state=present) and creating new ECS instances.
       aliases: [ 'image' ]
     instance_type:
-      description: Instance type used to launch instances. Required when C(state=present) and creating new ECS instances.
+      description:
+        - Instance type used to launch instances. Required when C(state=present) and creating new ECS instances.
       aliases: [ 'type' ]
     group_id:
-      description: Security Group id used to launch instance or join/remove existing instances to/from the specified Security Group.
+      description:
+        - Security Group id used to launch instance or join/remove existing instances to/from the specified Security Group.
       aliases: [ 'security_group_id' ]
     vswitch_id:
-      description: The subnet ID in which to launch the instances (VPC).
+      description:
+        - The subnet ID in which to launch the instances (VPC).
       aliases: ['subnet_id']
     instance_name:
       description:
@@ -80,9 +84,11 @@ options:
       default: 0
       choices: [0~100]
     host_name:
-      description: Instance host name.
+      description:
+        - Instance host name.
     password:
-      description: The password to login instance. After rebooting instances, the modified password would be take effect.
+      description:
+        - The password to login instance. After rebooting instances, the modified password would be take effect.
     disk_category:
       description:
         - Category of the system disk.
@@ -154,7 +160,8 @@ options:
           '{"key":"value"}' and '{"key":"value","key":"value"}'
       aliases: ["tags"]
     sg_action:
-      description: The action of operating security group.
+      description:
+        - The action of operating security group.
       choices: ['join', 'leave']
 author:
     - "He Guimin (@xiaozhu36)"

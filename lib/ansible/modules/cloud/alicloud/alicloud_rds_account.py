@@ -34,7 +34,8 @@ description:
     reseting and modifying rds account, granting or revoking privilege.
 options:
   state:
-    description: The state of the account after operating.
+    description:
+      - The state of the account after operating.
     default: present
     choices: [ 'present', 'absent']
   db_instance_id:

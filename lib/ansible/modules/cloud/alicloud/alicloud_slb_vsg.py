@@ -29,7 +29,8 @@ DOCUMENTATION = '''
 module: alicloud_slb_vsg
 version_added: "2.4"
 short_description: Create, Delete VServerGroup and Modify its name or backend servers.
-description: Create, Delete VServerGroup and Modify its name or backend servers.
+description:
+  - Create, Delete VServerGroup and Modify its name or backend servers.
 options:
     state:
       description:

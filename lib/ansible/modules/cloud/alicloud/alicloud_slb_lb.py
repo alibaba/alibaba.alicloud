@@ -29,7 +29,8 @@ DOCUMENTATION = """
 module: alicloud_slb_lb
 version_added: "2.4"
 short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS.
-description: Create, Delete, Enable or Disable Server Load Balancer in ECS.
+description:
+  - Create, Delete, Enable or Disable Server Load Balancer in ECS.
 options:
   alicloud_region:
     description:
@@ -37,7 +38,8 @@ options:
         `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
     aliases: ['acs_region', 'ecs_region', 'region']
   state:
-    description: The state of the instance after operating.
+    description:
+      - The state of the instance after operating.
     default: 'present'
     choices: [ 'present', 'absent']
   load_balancer_name:

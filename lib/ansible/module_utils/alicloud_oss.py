@@ -29,9 +29,11 @@
 import os
 
 try:
+    import footmark
     import footmark.oss
+    HAS_FOOTMARK = True
 except ImportError:
-    raise ImportError('footmark is required for the module')
+    HAS_FOOTMARK = False
 
 
 class AnsibleACSError(Exception):

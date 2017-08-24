@@ -29,14 +29,17 @@ DOCUMENTATION = """
 module: alicloud_slb_listener
 version_added: "2.4"
 short_description: Create, Delete, Start or Stop Server Load Balancer Listener in ECS
-description: Create, Delete, Start or Stop Server Load Balancer Listener in ECS
+description:
+  - Create, Delete, Start or Stop Server Load Balancer Listener in ECS
 options:
   state:
-    description: The state of the instance after operating.
+    description:
+      - The state of the instance after operating.
     required: true
     choices: [ 'present', 'absent', 'list', 'running', 'stopped']
   listener_type:
-    description: User expects the type of operation listener.
+    description:
+      - User expects the type of operation listener.
     required: true
     choices: [ 'http', 'https', 'tcp', 'udp']
   load_balancer_id:
