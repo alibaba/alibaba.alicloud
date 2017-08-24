@@ -65,8 +65,6 @@ options:
       description:
         - Virtual server group id. It is required when need to operate an existing vserver group.
       aliases: [ 'group_id' ]
-author:
-    - "Liu Qiang"
 requirements:
     - "python >= 2.6"
     - "footmark"
@@ -74,6 +72,7 @@ extends_documentation_fragment:
     - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
+  - "Liu Qiang"
 '''
 
 EXAMPLES = '''
@@ -287,6 +286,7 @@ def convert_to_utf8(obj):
     elif not isinstance(obj, int):
         return obj.encode('utf-8')
     return obj
+
 
 def main():
     argument_spec = ecs_argument_spec()

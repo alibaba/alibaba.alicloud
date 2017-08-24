@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
-# Copyright 2017 Alibaba Group Holding Limited.
+# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
 #
@@ -21,7 +21,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['stableinterface'],
+                    'status': ['preview'],
                     'supported_by': 'community'}
 
 DOCUMENTATION = """
@@ -78,8 +78,6 @@ options:
       - Bandwidth peak of the public network instance charged per fixed bandwidth
     default: 1
     choices: [ 1-1000 Mbps ]
-author:
-  - "Li Qiang"
 requirements:
     - "python >= 2.7"
     - "footmark"
@@ -87,9 +85,10 @@ extends_documentation_fragment:
     - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
+  - "Liu Qiang"
 """
 
-EXAMPLES = """
+EXAMPLES = '''
 # Basic provisioning example to create Load Balancer
 - name: create server load balancer
   hosts: localhost
@@ -178,7 +177,7 @@ EXAMPLES = """
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         load_balancer_id: '{{ load_balancer_id }}'
         state: '{{ state }}'
-        load_balancer_status: '{{ 'load_balancer_status' }}'
+        load_balancer_status: '{{ load_balancer_status }}'
       register: result
     - debug: var=result
 
@@ -204,7 +203,7 @@ EXAMPLES = """
         state: '{{ state }}'
       register: result
     - debug: var=result
-"""
+'''
 RETURN = '''
 load_balancer:
     description:
