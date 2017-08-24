@@ -33,7 +33,8 @@ description:
   - Returns information about the backend servers. Will be marked changed when called only if state is changed.
 options:
   state:
-    description: Create, set, remove or describe backend server health status of an slb
+    description:
+      - Create, set, remove or describe backend server health status of an slb
     default: 'present'
     choices: ['present', 'absent', 'list']
   load_balancer_id:

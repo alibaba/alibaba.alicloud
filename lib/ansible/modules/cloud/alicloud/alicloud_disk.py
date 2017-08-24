@@ -31,12 +31,14 @@ description:
   - Attach a disk to an ecs instance or detach a disk from it.
 options:
   state:
-    description: The state of operating ecs disk.
+    description:
+      - The state of operating ecs disk.
     default: 'present'
     choices:
       - ['present', 'absent']
   alicloud_zone:
-    description: Aliyun availability zone ID which to launch the disk
+    description:
+      - Aliyun availability zone ID which to launch the disk
     required: true
     aliases: [ 'acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
   disk_name:
@@ -50,7 +52,8 @@ options:
       - The description of ECS disk, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
     aliases: [ 'disk_description' ]
   disk_category:
-    description: The category to apply to the disk.
+    description:
+      - The category to apply to the disk.
     default: 'cloud'
     aliases: ['volume_type', 'disk_type']
     choices: ['cloud', 'cloud_efficiency', 'cloud_ssd']
@@ -75,7 +78,8 @@ options:
         If it is null or not be specified, the attached disk will be detach from instance.
     aliases: ['instance']
   disk_id:
-    description: Disk ID is used to attach an existing disk (required instance_id), detach or remove an existing disk.
+    description:
+      - Disk ID is used to attach an existing disk (required instance_id), detach or remove an existing disk.
     required: true
     aliases: ['vol_id', 'id']
   delete_with_instance:
