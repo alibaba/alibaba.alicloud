@@ -1,0 +1,98 @@
+# This Playbook contains test scenario for  Create, modify, restart, release RDS instance and change rds instance type, create and delete database , grant account permission and revoke acccount permission
+# Playbook created by : 
+
+- name: Testing
+  hosts: localhost
+  connection: local
+  vars:
+#create rds instance     
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a 
+  tasks:
+    - name: create rds instance
+      alicloud_rds_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+        engine: MySQL
+        engine_version: 5.6
+        db_instance_class: rds.mysql.t1.small
+        db_instance_storage: 30
+        db_instance_net_type: Internet
+        security_ip_list: 10.23.12.24/24
+        pay_type: Postpaid
+      register: result_create_instance
+    - debug: var=result_create_instance
+    
+    - name: modify instance auto renewal attribute
+      alicloud_rds_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+#        db_instance_id: '{{ db_instance_id }}'
+        db_instance_id: '{{ result_create_instance["instance"]["db_instance_id"] }}'
+        auto_renew: False
+      register: result_grant_permission
+    - debug: var=result_grant_permission
+    
+    
+    - name: allocate instance private connection string
+      alicloud_rds_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+#        db_instance_id: '{{ db_instance_id }}'
+        db_instance_id: '{{ result_create_instance["instance"]["db_instance_id"] }}'
+        private_connection_string_prefix: pirave-89asd
+      register: result_grant_permission
+    - debug: var=result_grant_permission
+    
+#    - name: allocate instance public connection string
+#      alicloud_rds_instance:
+#        alicloud_region: '{{ alicloud_region }}'
+#        state: present
+#        db_instance_id: '{{ db_instance_id }}'
+#        db_instance_id: '{{ result_create_instance["instance"]["db_instance_id"] }}'
+#        public_connection_string_prefix: publicave-89asd
+#        public_port: 3165
+#      register: result_grant_permission
+#    - debug: var=result_grant_permission
+    
+    - name: modify instance current connection string
+      alicloud_rds_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        state: present
+#        db_instance_id: '{{ db_instance_id }}'
+        db_instance_id: '{{ result_create_instance["instance"]["db_instance_id"] }}'
+        current_connection_string: '{{ result_grant_permission["instance"]["connection_string"]}}'
+#        current_connection_string: daqwfadaw-3214das.mysql.rds.aliyuncs.com
+        dest_connection_string_prefix: new-3214dasdsa
+        dest_port: 3267
+      register: result_grant_permission
+    - debug: var=result_grant_permission
+    
+    - name: delete instance public connection string
+      alicloud_rds_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        state: absent
+#        db_instance_id: '{{ db_instance_id }}'
+        db_instance_id: '{{ result_create_instance["instance"]["db_instance_id"] }}'
+        current_connection_string: '{{ result_grant_permission["instance"]["connection_string"]}}'
+#        current_connection_string: aaaaaaaaaaa-3214das.mysql.rds.aliyuncs.com
+      register: result_grant_permission
+    - debug: var=result_grant_permission
+
+    - name: restart rds instance
+      alicloud_rds_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        state: restart
+        db_instance_id: '{{ result_create_instance["instance"]["db_instance_id"] }}'
+#        db_instance_id: '{{ db_instance_id }}'
+      register: result_grant_permission
+    - debug: var=result_grant_permission
+
+    - name: delete rds instance
+      alicloud_rds_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        state: absent
+        db_instance_id: '{{ result_create_instance["instance"]["db_instance_id"] }}'
+#        db_instance_id: '{{ db_instance_id }}'
+      register: result_grant_permission
+    - debug: var=result_grant_permission
