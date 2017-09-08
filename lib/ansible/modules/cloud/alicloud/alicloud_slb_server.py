@@ -415,21 +415,21 @@ def main():
     else:
         module.fail_json(msg='backend server ID(s) information is mandatory to state=absent')
 
-    # elif state == 'list':
-    #
-    #     if load_balancer_id:
-    #
-    #         listener_ports = get_verify_listener_ports(module, listener_ports)
-    #
-    #         backend_servers = describe_backend_servers_health_status(module, slb, load_balancer_id=load_balancer_id,
-    #                                                                  listener_ports=listener_ports)
-    #
-    #         result_servers = []
-    #         for server in backend_servers:
-    #             result_servers.append(get_backen_server_status(server))
-    #         module.exit_json(changed=changed, backend_servers=result_servers, load_balancer_id=load_balancer_id)
-    #     else:
-    #         module.fail_json(msg='load balancer id is mandatory to perform action')
+        # elif state == 'list':
+        #
+        #     if load_balancer_id:
+        #
+        #         listener_ports = get_verify_listener_ports(module, listener_ports)
+        #
+        #         backend_servers = describe_backend_servers_health_status(module, slb, load_balancer_id=load_balancer_id,
+        #                                                                  listener_ports=listener_ports)
+        #
+        #         result_servers = []
+        #         for server in backend_servers:
+        #             result_servers.append(get_backen_server_status(server))
+        #         module.exit_json(changed=changed, backend_servers=result_servers, load_balancer_id=load_balancer_id)
+        #     else:
+        #         module.fail_json(msg='load balancer id is mandatory to perform action')
 
 
 if __name__ == '__main__':
