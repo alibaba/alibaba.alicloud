@@ -28,15 +28,15 @@ DOCUMENTATION = """
 ---
 module: alicloud_slb_server
 version_added: "2.4"
-short_description: Creates, sets and remove backend servers and describe backend servers health status of SLB
+short_description: Add or remove a list of backend servers to/from a specified SLB
 description:
   - Returns information about the backend servers. Will be marked changed when called only if state is changed.
 options:
   state:
     description:
-      - Create, set, remove or describe backend server health status of an slb
+      - Add or remove backend server to/from a specified slb
     default: 'present'
-    choices: ['present', 'absent', 'list']
+    choices: ['present', 'absent']
   load_balancer_id:
     description:
       - The unique ID of a Server Load Balancer instance
@@ -44,23 +44,20 @@ options:
     aliases: [ 'lb_id']
   backend_servers:
     description:
-      - List of hash/dictionary of backend servers to add or set in when state is C(present)
-      - List IDs of backend servers which in the load balancer when state is C(present)
-      - It is not required when C(list)
+      - List of hash/dictionary of backend servers to add or set in when C(state=present)
+      - List IDs of backend servers which in the load balancer when C(state=absent)
     required: true
+    aliases: [ 'servers']
     suboptions:
       server_id:
         description:
           - The ID of ecs instance which is added into load balancer.
         required: true
-        choices: ["instance_id"]
       weight:
         description:
           - The weight of backend server in the load balancer.
+        choices: [0~100]
         default: 100
-  ports:
-    description:
-      - list ports used by the Server Load Balancer instance frontend to describe health status for
 requirements:
     - "python >= 2.7"
     - "footmark"
@@ -77,33 +74,33 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
-    load_balancer_id: xxxxxxxxxx
+    load_balancer_id: lb-abcd1234
   tasks:
     - name: add backend server
       alicloud_slb_server:
         load_balancer_id: '{{ load_balancer_id }}'
         backend_servers:
-          - server_id: xxxxxxxxxx
+          - server_id: i-abcd1234
             weight: 70
-          - server_id: xxxxxxxxxx
+          - server_id: i-abce1245
 
 #Basic example to set backend server of load balancer instance
 - name: set backend server
   hosts: localhost
   connection: local
   vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
   tasks:
     - name: set backend server
       alicloud_slb_server:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
-        load_balancer_id: 'xxxxxxxxxx'
+        load_balancer_id: lb-abcd1234
         backend_servers:
-          - server_id: xxxxxxxxxx
+          - server_id: i-abcd1234
             weight: 50
-          - server_id: xxxxxxxxxx
+          - server_id: i-abcd1234
             weight: 80
 
 #Basic example to remove backend servers from load balancer instance
@@ -113,24 +110,12 @@ EXAMPLES = '''
   tasks:
     - name: remove backend servers
       alicloud_slb_server:
-        load_balancer_id: 'xxxxxxxxxx'
+        load_balancer_id: lb-abcd1234
         state: absent
         backend_servers:
-          - xxxxxxxxxx
-          - xxxxxxxxxx
+          - i-abcd1234
+          - i-abcd1234
 
-#Basic example to describe backend server health status of load balancer instance
-- name: describe backend server health status
-  hosts: localhost
-  connection: local
-  tasks:
-    - name: describe backend server health status
-      alicloud_slb_server:
-        state: list
-        load_balancer_id: 'xxxxxxxxxx'
-        ports:
-          - '80'
-          - '22'
 '''
 RETURN = '''
 load_balancer_id:
@@ -139,8 +124,8 @@ load_balancer_id:
     type: string
     sample: "lb-2zeyfm5a14c9ffxvxmvco"
 "backend_servers":
-    description: Details about the backened-servers that were set or list.
-    returned: on list
+    description: Details about the backened-servers that were added.
+    returned: when success
     type: list
     sample: [
         {
@@ -183,7 +168,7 @@ def get_backen_server_status(server):
     return {'id': server.id, 'health_status': server.status}
 
 
-def add_set_backend_servers(module, slb, load_balancer_id=None, backend_servers=None):
+def add_set_backend_servers(module, slb, load_balancer_id, backend_servers):
     """
     Add and/or Set backend servers to an slb
 
@@ -247,7 +232,7 @@ def add_set_backend_servers(module, slb, load_balancer_id=None, backend_servers=
     return changed, current_backend_servers
 
 
-def remove_backend_servers(module, slb, load_balancer_id=None, backend_servers=None):
+def remove_backend_servers(module, slb, load_balancer_id, backend_servers):
     """
     Remove backend servers from an slb
 
@@ -259,8 +244,6 @@ def remove_backend_servers(module, slb, load_balancer_id=None, backend_servers=N
     """
 
     changed = False
-    current_backend_servers = []
-    results = []
 
     try:
         backend_servers = slb.remove_backend_servers(load_balancer_id=load_balancer_id, backend_server_ids=backend_servers)
@@ -299,13 +282,12 @@ def describe_backend_servers_health_status(module, slb, load_balancer_id=None, l
     return backend_servers_health_status
 
 
-def validate_backend_server_info(module, backend_servers, check_weight, default_weight=None):
+def validate_backend_server_info(module, backend_servers, default_weight):
     """
     Validate backend server information provided by user for add, set and remove action
 
     :param module: Ansible module object
     :param backend_servers: backend severs information to validate (list of dictionaries or string)
-    :param check_weight: specifies whether to check for weight key in dictionary
     :param default_weight: assigns default weight, if provided, for a backend server to set/add
     """
 
@@ -315,39 +297,32 @@ def validate_backend_server_info(module, backend_servers, check_weight, default_
 
     for backend_server in backend_servers:
 
-        if check_weight:
-            if isinstance(backend_server, dict) is False:
-                module.fail_json(msg='Invalid backend_server parameter type [%s].' % type(backend_server))
+        if isinstance(backend_server, dict) is False:
+            module.fail_json(msg='Invalid backend_servers parameter type [%s] for state=present.' % type(backend_server))
 
-            for k in backend_server:
-                if k not in VALID_PARAMS:
-                    module.fail_json(msg='Invalid backend_server parameter \'{}\''.format(k))
+        for k in backend_server:
+            if k not in VALID_PARAMS:
+                module.fail_json(msg='Invalid backend_server parameter \'{}\''.format(k))
 
-            server_id = get_alias_value(backend_server, [server_id_param])
-            if server_id is None:
-                module.fail_json(msg='server_id is mandatory')
+        server_id = get_sub_value(backend_server, [server_id_param])
+        if server_id is None:
+            module.fail_json(msg="'server_id': required field is set")
 
-            weight = get_alias_value(backend_server, [weight_param])
+        weight = get_sub_value(backend_server, [weight_param])
 
-            if weight is None:
-                if default_weight is not None:
-                    backend_server[weight_param] = default_weight
-                else:
-                    module.fail_json(msg='Weight is mandatory')
-            else:
-                # verifying weight parameter for non numeral string and limit validation
-                try:
-                    w = int(weight)
-                    if w < 1 or w > 100:
-                        module.fail_json(msg='Invalid weight parameter.')
-                except Exception as e:
-                    module.fail_json(msg='Invalid weight parameter.')
+        if weight is None:
+            backend_server[weight_param] = default_weight
         else:
-            if isinstance(backend_server, str) is False:
-                module.fail_json(msg='Invalid backend_server parameter type [%s].' % type(backend_server))
+            # verifying weight parameter for non numeral string and limit validation
+            try:
+                w = int(weight)
+                if w < 0 or w > 100:
+                    module.fail_json(msg="'weight': field value is invalid. Expect to [0-100].")
+            except Exception as e:
+                module.fail_json(msg="'weight': field value is invalid. Expect to positive integer [0-100].")
 
 
-def get_alias_value(dictionary, aliases):
+def get_sub_value(dictionary, aliases):
     """
 
     :param dictionary: a dictionary to check in for aliases
@@ -390,10 +365,9 @@ def get_verify_listener_ports(module, listener_ports=None):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(choices=['present', 'absent', 'list'], default='present'),
-        backend_servers=dict(type='list'),
-        load_balancer_id=dict(required='True', aliases=['lb_id']),
-        ports=dict(type='list'),
+        state=dict(choices=['present', 'absent'], default='present'),
+        backend_servers=dict(required=True, type='list', aliases=['servers']),
+        load_balancer_id=dict(required=True, aliases=['lb_id']),
     ))
 
     # handling region parameter which is not required by this module
@@ -402,7 +376,8 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec)
 
     if HAS_FOOTMARK is False:
-        module.fail_json(msg='footmark required for the module alicloud_slb_server.')
+        module.fail_json(msg="'footmark' is required for the module alicloud_slb_server. "
+                             "Please install 'footmark' by using 'sudo pip install footmark'.")
 
     # handling region parameter which is required by common utils file to login but not required by this module
     module.params['alicloud_region'] = 'cn-hangzhou'
@@ -411,67 +386,50 @@ def main():
     state = module.params['state']
     backend_servers = module.params['backend_servers']
     load_balancer_id = module.params['load_balancer_id']
-    listener_ports = module.params['ports']
-
-    changed = False
 
     if state == 'present':
 
-        if backend_servers and load_balancer_id:
-            if len(backend_servers) > 0:
+        if len(backend_servers) > 0:
 
-                validate_backend_server_info(module=module, backend_servers=backend_servers,
-                                             check_weight=True, default_weight="100")
+            validate_backend_server_info(module, backend_servers, 100)
 
-                changed, current_backend_servers = add_set_backend_servers(module, slb, load_balancer_id=load_balancer_id,
-                                                                           backend_servers=backend_servers)
-
-                result_servers = []
-                for server in current_backend_servers:
-                    result_servers.append(get_backen_server_weight(server))
-                module.exit_json(changed=changed, backend_servers=result_servers, load_balancer_id=load_balancer_id)
-            else:
-                module.fail_json(msg='backend servers information is mandatory to perform action')
-        else:
-            module.fail_json(msg='load balancer id and backend servers information is mandatory to perform action')
-
-    elif state == 'absent':
-
-        if backend_servers and load_balancer_id:
-            if len(backend_servers) > 0:
-
-                if isinstance(backend_servers, list) is False:
-                    module.fail_json(msg='Invalid backend_server parameter type [%s].' % type(backend_servers))
-
-                changed, backend_servers = remove_backend_servers(module, slb, load_balancer_id=load_balancer_id,
-                                                                  backend_servers=backend_servers)
-                result_servers = []
-                for server in backend_servers:
-                    result_servers.append(get_backen_server_weight(server))
-                module.exit_json(changed=changed, backend_servers=result_servers, load_balancer_id=load_balancer_id)
-            else:
-                module.fail_json(msg='backend server ID(s) information is mandatory to perform action')
-        else:
-            module.fail_json(msg='load balancer id and backend server ID(s) information is mandatory to perform action')
-
-    elif state == 'list':
-
-        if load_balancer_id:
-
-            listener_ports = get_verify_listener_ports(module, listener_ports)
-
-            backend_servers = describe_backend_servers_health_status(module, slb, load_balancer_id=load_balancer_id,
-                                                                     listener_ports=listener_ports)
+            changed, current_backend_servers = add_set_backend_servers(module, slb, load_balancer_id, backend_servers)
 
             result_servers = []
-            for server in backend_servers:
-                result_servers.append(get_backen_server_status(server))
+            for server in current_backend_servers:
+                result_servers.append(get_backen_server_weight(server))
             module.exit_json(changed=changed, backend_servers=result_servers, load_balancer_id=load_balancer_id)
         else:
-            module.fail_json(msg='load balancer id is mandatory to perform action')
+            module.fail_json(msg='backend servers information is mandatory to state=present')
 
+    if len(backend_servers) > 0:
+
+        if isinstance(backend_servers, list) is False:
+            module.fail_json(msg='Invalid backend_server parameter type [%s] for state=absent.' % type(backend_servers))
+
+        changed, backend_servers = remove_backend_servers(module, slb, load_balancer_id, backend_servers)
+        result_servers = []
+        for server in backend_servers:
+            result_servers.append(get_backen_server_weight(server))
+        module.exit_json(changed=changed, backend_servers=result_servers, load_balancer_id=load_balancer_id)
     else:
-        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", state))
+        module.fail_json(msg='backend server ID(s) information is mandatory to state=absent')
+
+    # elif state == 'list':
+    #
+    #     if load_balancer_id:
+    #
+    #         listener_ports = get_verify_listener_ports(module, listener_ports)
+    #
+    #         backend_servers = describe_backend_servers_health_status(module, slb, load_balancer_id=load_balancer_id,
+    #                                                                  listener_ports=listener_ports)
+    #
+    #         result_servers = []
+    #         for server in backend_servers:
+    #             result_servers.append(get_backen_server_status(server))
+    #         module.exit_json(changed=changed, backend_servers=result_servers, load_balancer_id=load_balancer_id)
+    #     else:
+    #         module.fail_json(msg='load balancer id is mandatory to perform action')
 
 
 if __name__ == '__main__':
