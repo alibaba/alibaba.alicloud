@@ -27,20 +27,20 @@ There are some playbooks to create some alicloud resource or build infrastructur
 There are two ways to install alicloud provider. However, before installing it. you should ensure `Ansible` has existed in your server.
 If not, please install it using the following command:
 
-    sudo pip install ansible -y
+    sudo pip install ansible
 
 * First one
 
     Ansible provider has been released, and you can install it easily using the following command:
 
-      sudo pip install ansible_alicloud -y
+      sudo pip install ansible_alicloud
 
 * Second one
 
     Ansible provider's modules support to install independently. That means you can download one or more modules from lib/ansible/modules/cloud/alicloud and then run them independently.
     However, before running them, you should ensure `ansible_alicloud_module_utils` has existed in your server. If not, please install it using the following command:
 
-      sudo pip install ansible_alicloud_module_utils -y
+      sudo pip install ansible_alicloud_module_utils
 
 ### Execute playbook
 

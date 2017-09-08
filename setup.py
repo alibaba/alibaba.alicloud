@@ -16,12 +16,12 @@ NAME = "ansible_alicloud"
 DESCRIPTION = "Ansible provider for Alicloud."
 AUTHOR = "xiaozhu"
 AUTHOR_EMAIL = "heguimin36@163.com"
-URL = "https://github.com/alibaba/ansible-provider/tree/master/roles/library"
+URL = "https://github.com/alibaba/ansible-provider/tree/master/lib/ansible"
 
-VERSION = "1.0.0.dev13"
+VERSION = "1.0.8"
 
 setup(
-    name="ansible_alicloud",
+    name=NAME,
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -60,5 +60,5 @@ setup(
     package_dir={'': 'lib'},
     packages=find_packages('lib'),
     include_package_data=True,
-    install_requires=['ansible', 'footmark>=1.1.6', 'ansible_alicloud_module_utils', 'importlib']
+    install_requires=['ansible', 'footmark>=1.1.10', 'importlib']
 )

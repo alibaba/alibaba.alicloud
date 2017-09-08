@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
 #
@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
-                    'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
 
 DOCUMENTATION = """
 ---
@@ -30,43 +30,40 @@ description:
     - Manage route entry for Alicloud virtual private cloud.
       Create or Delete route entry and Query route entries in one route table.
 options:
-  status:
+  state:
     description:
       -  Whether or not to create, delete or query route entry.
     choices: ['present', 'absent', 'list']
-    required: false
-    default: present
-    aliases: [ 'state' ]
+    default: 'present'
   router_id:
     description:
       - The ID of virtual router to which route entry belongs.
     required: true
-    default: null
   destination_cidrblock:
     description:
       - The destination CIDR or Ip address of route entry. Such as:192.168.0.0/24 or 192.168.0.1.
         There is not the same destination cidr_block in the same route table. It is required when creating route entry.
-    required: false
-    default: null
     aliases: ['dest_cidrblock', 'cidr_block']
   nexthop_id:
     description:
       - The next hop ID of route entry. It is required when creating a route entry.
-    required: false
-    default: null
     aliases: ['hop_id']
   nexthop_type:
     description:
       - The next hop type of route entry.
-    required: false
     default: 'Instance'
-    choices: ['Instance', 'Tunnel', 'HaVip', 'RouterInterface']
+    choices: ['Instance', 'Tunnel', 'HaVip', 'RouterInterface', 'VpnGateway']
     aliases: ['hop_type']
 notes:
   - The max items of route entry no more than 48 in the same route table.
   - The destination_cidrblock can't have the same cidr block as vswitch and can't belong to its in the same vpc.
   - The destination_cidrblock can't be 100.64.0.0/10 and can't belong to it.
-  - When status is 'list', the parameters 'route_table_id', 'destination_cidrblock' and 'nexthop_id' are optional.
+  - When state is 'list', the parameters 'route_table_id', 'destination_cidrblock' and 'nexthop_id' are optional.
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 """
@@ -198,12 +195,11 @@ total:
 # import module snippets
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, vpc_connect
-from footmark.exception import VPCResponseError
 
 HAS_FOOTMARK = False
 
 try:
-    from footmark.exception import ECSResponseError
+    from footmark.exception import VPCResponseError
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -254,7 +250,7 @@ def create_route_entry(module, vpc, route_table_id):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        status=dict(default='present', aliases=['state'], choices=['present', 'absent', 'list']),
+        state=dict(default='present', choices=['present', 'absent', 'list']),
         destination_cidrblock=dict(type='str', aliases=['dest_cidrblock', 'cidr_block']),
         nexthop_type=dict(default='Instance', aliases=['hop_type'], choices=['Instance', 'Tunnel', 'HaVip', 'RouterInterface']),
         nexthop_id=dict(aliases=['hop_id']),
@@ -262,10 +258,14 @@ def main():
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg='footmark required for the module alicloud_route_entry.')
+
     vpc = vpc_connect(module)
 
     # Get values of variable
-    status = module.params['status']
+    state = module.params['state']
     destination_cidrblock = module.params['destination_cidrblock']
     router_id = module.params['router_id']
     nexthop_id = module.params['nexthop_id']
@@ -297,7 +297,7 @@ def main():
     except VPCResponseError as e:
         module.fail_json(msg='Unable to retrieve route entries, error: {0}'.format(e))
 
-    if status == 'present':
+    if state == 'present':
         if route_entry:
             module.fail_json(changed=changed, msg="The specified route entry {0} has existed in route table {1}."
                              .format(destination_cidrblock, route_table_id))
@@ -305,7 +305,7 @@ def main():
         module.exit_json(changed=changed, route_table_id=route_table_id, route_entry=get_route_entry_detail(route_entry),
                          destination_cidrblock=route_entry.destination_cidrblock)
 
-    elif status == 'absent':
+    elif state == 'absent':
         if route_entry:
             try:
                 changed = vpc.delete_route_entry(route_table_id, destination_cidrblock=destination_cidrblock, nexthop_id=nexthop_id)
@@ -316,7 +316,7 @@ def main():
         module.exit_json(changed=changed, msg="Please specify a route entry by using 'destination_cidrblock',"
                                               "and expected vpcs: {0}".format(route_entries_basic))
 
-    elif status == 'list':
+    elif state == 'list':
         if route_entry:
             module.exit_json(changed=False, route_table_id=route_table_id, route_entries=[route_entry],
                              destination_cidrblocks=[route_entry.destination_cidrblock], total=1)
@@ -330,7 +330,7 @@ def main():
                          destination_cidrblocks=destination_cidrblocks, total=len(route_entries))
 
     else:
-        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", status))
+        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", state))
 
 
 if __name__ == '__main__':

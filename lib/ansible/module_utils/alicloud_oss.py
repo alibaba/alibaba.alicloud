@@ -1,18 +1,39 @@
 # This code is part of Ansible, but is an independent component.
-# This file identifies and gains playbook params, and provides this params to ansible module ecs. 
-# This file implements connection between ansible and Alicloud ecs api via footmark.
+# This particular file snippet, and this file snippet only, is BSD licensed.
+# Modules you write using this snippet, which is embedded dynamically by Ansible
+# still belong to the author of the module, and may assign their own license
+# to the complete work.
 #
-# Copyright (c), xiao zhu <heguimin36@163.com.com>, 2016.08
-# All rights reserved.
+# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+#
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above copyright notice,
+#      this list of conditions and the following disclaimer in the documentation
+#      and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+# USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 
 import os
-from ansible.release import __version__
-import footmark.oss
-#
-# try:
-#     import footmark.oss
-# except ImportError:
-#     raise ImportError('footmark is required for the module')
+
+try:
+    import footmark
+    import footmark.oss
+    HAS_FOOTMARK = True
+except ImportError:
+    HAS_FOOTMARK = False
 
 
 class AnsibleACSError(Exception):
@@ -38,9 +59,8 @@ def oss_bucket_argument_spec():
 
 
 def get_oss_connection_info(module):
-    '''
-    Check module args for credentials, then check environment vars access_key
-    '''
+    """ Check module args for credentials, then check environment vars access_key """
+
     access_key = module.params.get('alicloud_access_key')
     secret_key = module.params.get('alicloud_secret_key')
     region = module.params.get('alicloud_region')
@@ -83,15 +103,14 @@ def get_oss_connection_info(module):
         else:
             module.fail_json(msg="region is required")
 
-    oss_params = dict(acs_access_key_id=access_key, acs_secret_access_key=secret_key, user_agent='Ansible-v' + __version__)
+    oss_params = dict(acs_access_key_id=access_key, acs_secret_access_key=secret_key, user_agent='Ansible-Provider-Alicloud')
 
     return region, oss_params
 
 
 def get_bucket_connection_info(module):
-    '''
-    Check module args for credentials, then check environment vars access_key
-    '''
+    """ Check module args for credentials, then check environment vars access_key """
+
     region, oss_params = get_oss_connection_info(module)
     bucket_name = module.params.get('bucket')
 
@@ -119,7 +138,7 @@ def oss_bucket_connect(module):
     region, oss_params = get_bucket_connection_info(module)
     try:
         return connect_to_oss_bucket(footmark.oss, region, **oss_params)
-    except AnsibleACSError, e:
+    except AnsibleACSError as e:
         module.fail_json(msg=str(e))
 
 
@@ -129,5 +148,5 @@ def oss_service_connect(module):
     region, oss_params = get_oss_connection_info(module)
     try:
         return connect_to_oss(footmark.oss, region, **oss_params)
-    except AnsibleACSError, e:
+    except AnsibleACSError as e:
         module.fail_json(msg=str(e))

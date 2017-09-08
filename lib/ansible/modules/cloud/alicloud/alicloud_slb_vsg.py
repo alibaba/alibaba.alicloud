@@ -1,8 +1,8 @@
 #!/usr/bin/python
-# Copyright (c) 2017 Ansible Project
+# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
-# This file is part of Ansible
+#  This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,46 +17,66 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from future import absolute_import, division, print_function
-metaclass = type
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
 
-ANSIBLE_METADATA = {
-    'metadata_version': '1.0',
-    'supported_by': 'community',
-    'status': ['preview']
-}
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
 
-DOCUMENTATION = """ 
+DOCUMENTATION = '''
 ---
-module: alicloud_vsg
+module: alicloud_slb_vsg
 version_added: "2.4"
-short_description: Create, Delete VServerGroup and Modify its name or backenservers.
+short_description: Create, Delete VServerGroup and Modify its name or backend servers.
+description:
+  - Create, Delete VServerGroup and Modify its name or backend servers.
 options:
-  state:
-    description: The state of the instance after operating.
-    default: present
-    choices: [ 'present', 'absent', 'list']
-  load_balancer_id:
-    description:
+    state:
+      description:
+        - The state of the instance after operating.
+      default: 'present'
+      choices: [ 'present', 'absent', 'list']
+    load_balancer_id:
+      description:
         - The unique ID of an Server Load Balancer instance, It is required when need to create a new vserver group.
-  vserver_group_name:
-    description:
+    vserver_group_name:
+      description:
         - Virtual server group name
-    aliases: [ 'group_name' ]
-  backend_servers:
-    description:
+      aliases: [ 'group_name' ]
+    backend_servers:
+      description:
         - List of backend servers that need to be added.
-        - '[{"key":"value", "key":"value"}]', keys allowed:
-            - instance_id (required:true; default: null, type: string) - The server id is the ECS instance Id.
-            - port (required:true; default: null; choices=[i for i in range(1, 65536)]) -Ports used by backend servers.
-            - weight (required:true; default: 100; choices=[i for i in range(1, 101)]) -The weight of the backend server
-  vserver_group_id:
-    description:
+      suboptions:
+        instance_id:
+          description:
+            - The ID of backend server.
+          required: true
+        port:
+          description:
+            - Port used to backend server
+          required: true
+          choices: [1~65536]
+        weight:
+          description:
+            - The weigth of the backend server
+          default: 100
+          choices: [1~101]
+    vserver_group_id:
+      description:
         - Virtual server group id. It is required when need to operate an existing vserver group.
-    aliases: [ 'group_id' ]
-"""
+      aliases: [ 'group_id' ]
+requirements:
+    - "python >= 2.6"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
+author:
+  - "He Guimin (@xiaozhu36)"
+  - "Liu Qiang"
+'''
 
-EXAMPLES = """
+EXAMPLES = '''
 # basic provisioning example to create VServer Group in SLB
 - name: Create VServer Group in SLB
   hosts: localhost
@@ -73,7 +93,7 @@ EXAMPLES = """
         weight: 100
   tasks:
     - name: Create VServer Group in SLB
-      aliclould_slb_vsg:
+      alicloud_slb_vsg:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -100,7 +120,7 @@ EXAMPLES = """
         weight: 100
   tasks:
     - name: Set VServer Group attribute in SLB
-      aliclould_slb_vsg:
+      alicloud_slb_vsg:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -126,7 +146,7 @@ EXAMPLES = """
         weight: 100
   tasks:
     - name: Add VServer Group Backend Servers in SLB
-      aliclould_slb_vsg:
+      alicloud_slb_vsg:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -150,7 +170,7 @@ EXAMPLES = """
         port: 8080
   tasks:
     - name: remove VServer Group Backend Servers in SLB
-      aliclould_slb_vsg:
+      alicloud_slb_vsg:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -171,7 +191,7 @@ EXAMPLES = """
     vserver_group_id: <your-specified-vserver-group-id>
   tasks:
     - name: Describe VServer Group in SLB
-      aliclould_slb_vsg:
+      alicloud_slb_vsg:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -191,15 +211,15 @@ EXAMPLES = """
     vserver_group_id: <your-specified-vserver-group-id>
   tasks:
     - name: Delete VServer Group in SLB
-      aliclould_slb_vsg:
+      alicloud_slb_vsg:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         vserver_group_id: '{{ vserver_group_id }}'
         state: absent
       register: result
-    - debug: var=result    
-"""
+    - debug: var=result
+'''
 
 RETURN = '''
 vserver_group:
@@ -211,13 +231,13 @@ vserver_group:
         "backend_servers": {
             "backend_server": [
                 {
-                    "port": 80, 
-                    "server_id": "i-2ze3ajpeq3y80w4lt4jr", 
+                    "port": 80,
+                    "server_id": "i-2ze3ajpeq3y80w4lt4jr",
                     "weight": 100
                 }
             ]
-        }, 
-        "vserver_group_id": "rsp-2zejxvoxensk1", 
+        },
+        "vserver_group_id": "rsp-2zejxvoxensk1",
         "vserver_group_name": "Group123"
     }
 '''
@@ -244,28 +264,32 @@ def get_info(obj):
     :param obj: vsg obj
     :return: res: info of vsg
     """
-    res = {}
-    res['vserver_group_id'] = obj.vserver_group_id
+    res = {'vserver_group_id': obj.vserver_group_id}
+
     if hasattr(obj, 'backend_servers'):
         res['backend_servers'] = obj.backend_servers
     if hasattr(obj, 'vserver_group_name'):
         res['vserver_group_name'] = obj.vserver_group_name
     return res
 
+
 def convert_to_utf8(obj):
     if isinstance(obj, dict):
-        return {convert_to_utf8(key): convert_to_utf8(value) for (key, value) in obj.iteritems()}
-    elif isinstance(obj, list):   
-        return [convert_to_utf8(element) for element in obj]
-    elif isinstance(obj, unicode):
+        res = {}
+        for key, value in obj.iteritems():
+            res = dict(res, **{convert_to_utf8(key): convert_to_utf8(value)})
+        return res
+    elif isinstance(obj, list):
+        res = []
+        for i in obj:
+            res.append(convert_to_utf8(i))
+        return res
+    elif not isinstance(obj, int):
         return obj.encode('utf-8')
-    else:
-        return obj
+    return obj
+
 
 def main():
-    if HAS_FOOTMARK is False:
-        module.fail_json("Footmark required for this module")
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(type='str', default='present', choices=['present', 'absent', 'list']),
@@ -278,17 +302,19 @@ def main():
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg='footmark required for the module alicloud_slb_vsg.')
+
     slb = slb_connect(module)
     state = module.params['state']
     load_balancer_id = module.params['load_balancer_id']
     vserver_group_name = module.params['vserver_group_name']
     backend_servers = module.params['backend_servers']
     vserver_group_id = module.params['vserver_group_id']
-    old_backend_servers = module.params['old_backend_servers']
-    new_backend_servers = module.params['new_backend_servers']
     changed = False
     current_vserver_group = None
-    
+
     if vserver_group_id:
         try:
             current_vserver_group = slb.describe_vserver_group_attribute(vserver_group_id)
@@ -322,14 +348,14 @@ def main():
             try:
                 current_vserver_group = slb.describe_vserver_group_attribute(vserver_group_id)
             except Exception as e:
-                module.fail_json(msg=str("Unable to describe vserver group attribute, error:{0}".format(e)))      
+                module.fail_json(msg=str("Unable to describe vserver group attribute, error:{0}".format(e)))
             module.exit_json(changed=True, vserver_group=get_info(current_vserver_group))
         else:
             try:
                 current_vserver_group = slb.create_vserver_group(load_balancer_id, vserver_group_name, backend_servers)
             except Exception as e:
                 module.fail_json(msg=str("Unable to create vserver group error:{0}".format(e)))
-            module.exit_json(changed=True, vserver_group=get_info(current_vserver_group))       
+            module.exit_json(changed=True, vserver_group=get_info(current_vserver_group))
     if not current_vserver_group:
         module.fail_json(msg="The specified vserver group is not exist. Please check your vserver_group_id and try again.")
     elif state == "list":
@@ -347,8 +373,7 @@ def main():
             except Exception as e:
                 module.fail_json(msg=str("Unable to delete vserver group, error:{0}".format(e)))
             module.exit_json(changed=changed, vserver_group=get_info(current_vserver_group))
-            
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()
-

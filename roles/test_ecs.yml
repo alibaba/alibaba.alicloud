@@ -217,6 +217,12 @@
         alicloud_ids: '{{ createinstanceresult["instance_ids"] }}'
       register: all_instances
 
+    - name: Find all disks in the specified region
+      alicloud_disk_facts:
+        alicloud_zone: "{{ alicloud_zone }}"
+        alicloud_region: "{{ alicloud_region }}"
+      register: all_disks
+
     - name: Terminating ECS instance
       alicloud_instance:
         alicloud_region: '{{ alicloud_region }}'

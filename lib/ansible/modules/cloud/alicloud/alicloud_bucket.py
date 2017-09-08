@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
 #
@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+                    'supported_by': 'community'}
 
 DOCUMENTATION = '''
 ---
@@ -32,22 +32,24 @@ options:
   state:
     description:
       - Create or delete the OSS bucket. List all buckets that has the prefix of 'bucket' value.
-    required: false
-    default: present
+    default: 'present'
     choices: [ 'present', 'absent', 'list']
   bucket:
     description:
       - Bucket name.
     required: true
-    default: null
     aliases: [ 'name' ]
   permission:
     description:
       - This option lets the user set the canned permissions on the bucket that are created.
-    required: false
-    default: private
+    default: 'private'
     choices: [ 'private', 'public-read', 'public-read-write' ]
     aliases: [ 'acl' ]
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 '''
@@ -165,6 +167,9 @@ def main():
         )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg="Package 'footmark' required for the module alicloud_bucket.")
 
     oss_bucket = oss_bucket_connect(module)
     state = module.params['state']

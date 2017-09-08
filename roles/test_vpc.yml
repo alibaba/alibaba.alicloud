@@ -7,8 +7,8 @@
   vars:
     # create vpc
     alicloud_region: cn-beijing
-    status: present
-    statusDel: absent
+    state: present
+    stateDel: absent
     cidr_block: 10.0.0.0/8
     vpc_name: travis-ansible-vpc
     description: travis-ansible-vpc
@@ -41,7 +41,7 @@
     - name: Create VPC
       alicloud_vpc:
         alicloud_region: '{{ alicloud_region }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
         cidr_block: '{{ cidr_block }}'
         vpc_name: '{{ vpc_name }}'
         description: '{{ description }}'
@@ -53,7 +53,7 @@
       alicloud_vpc:
        alicloud_region: '{{ alicloud_region }}'
        vpc_id: '{{ create_vpc["vpc_id"] }}'
-       status: list
+       state: list
       register: query_vpc_result
     - debug: var=query_vpc_result
 
@@ -62,7 +62,7 @@
       alicloud_vswitch:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
         cidr_block: '{{ vsw_cidr }}'
         vswitch_name: '{{ vsw_name }}'
         description: '{{ description }}'
@@ -75,7 +75,7 @@
       alicloud_vswitch:
        alicloud_region: '{{ alicloud_region }}'
        vpc_id: '{{ create_vpc["vpc_id"] }}'
-       status: list
+       state: list
       register: query_vsw
     - debug: var=query_vsw
 
@@ -84,7 +84,7 @@
       alicloud_vswitch:
        alicloud_region: '{{ alicloud_region }}'
        vswitch_id: '{{ create_vsw["vswitch_id"] }}'
-       status: list
+       state: list
       register: query_vsw_2
     - debug: var=query_vsw_2
 
@@ -108,7 +108,7 @@
     - name: Create route entry
       alicloud_route_entry:
         alicloud_region: '{{ alicloud_region }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
         nexthop_id: '{{ create_instance_result["instance_ids"][0] }}'
         router_id: '{{ create_vpc["vpc"]["router_id"] }}'
         destination_cidrblock: '{{ destination_cidrblock }}'
@@ -120,7 +120,7 @@
       alicloud_route_entry:
        alicloud_region: '{{ alicloud_region }}'
        router_id: '{{ create_vpc["vpc"]["router_id"] }}'
-       status: list
+       state: list
       register: query_vrouter_result
     - debug: var=query_vrouter_result
 
@@ -144,7 +144,7 @@
 #    - name: Binding EIP with all parameters
 #      ecs_eip:
 #       alicloud_region: '{{ alicloud_region }}'
-#       status: join
+#       state: join
 #       instance_id: '{{ create_instance_result.result[0].instance_id }}'
 #       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
 #      register: bind_eip_result
@@ -156,7 +156,7 @@
 #    - name: Unbinding EIP with all parameters
 #      ecs_eip:
 #       alicloud_region: '{{ alicloud_region }}'
-#       status: leave
+#       state: leave
 #       instance_id: '{{ create_instance_result.result[0].instance_id }}'
 #       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
 #      register: unbind_eip_result
@@ -168,7 +168,7 @@
 #    - name: Release EIP with all parameters
 #      ecs_eip:
 #       alicloud_region: '{{ alicloud_region }}'
-#       status: absent
+#       state: absent
 #       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
 #      register: release_eip_result
 #    - debug: var=release_eip_result
@@ -176,7 +176,7 @@
     - name: Delete route entry
       alicloud_route_entry:
         alicloud_region: '{{ alicloud_region }}'
-        status: absent
+        state: absent
         destination_cidrblock: '{{ create_route_entry["destination_cidrblock"] }}'
         nexthop_id: '{{ create_instance_result["instance_ids"][0]}}'
         router_id: '{{ create_vpc["vpc"]["router_id"] }}'
@@ -194,7 +194,7 @@
     # Delete Vsitches with vpc_id and vswitch_ids
     - name: Delete Vswitch
       alicloud_vswitch:
-        status: absent
+        state: absent
         alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ create_vpc["vpc_id"] }}'
         vswitch_id: '{{ create_vsw["vswitch_id"] }}'
@@ -203,7 +203,7 @@
 
     - name: Get Security Group Info
       alicloud_security_group:
-        status: list
+        state: list
         alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ create_vpc["vpc_id"] }}'
       register: security_group_result
@@ -211,7 +211,7 @@
 
     - name: Delete Security Group
       alicloud_security_group:
-        status: absent
+        state: absent
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ security_group_result["group_ids"][0] }}'
       register: delete_security_group_result
@@ -221,6 +221,6 @@
       alicloud_vpc:
         alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ create_vpc["vpc_id"] }}'
-        status: '{{ statusDel }}'
+        state: '{{ stateDel }}'
       register: delete_vpc
     - debug: var=delete_vpc

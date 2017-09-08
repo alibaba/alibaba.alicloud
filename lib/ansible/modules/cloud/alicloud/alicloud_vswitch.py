@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
 #
@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+                    'supported_by': 'community'}
 
 DOCUMENTATION = """
 ---
@@ -29,56 +29,45 @@ short_description: Create, Query or Delete Vswitch.
 description:
     - Create, Query or Delete vswitch which in the vpc.
 options:
-  status:
+  state:
     description:
       -  Whether or not to create, delete or query vswitch.
     choices: ['present', 'absent', 'list']
-    required: false
-    default: present
-    aliases: [ 'state' ]
+    default: 'present'
   alicloud_zone:
     description:
       - Aliyun availability zone ID which to launch the vswitch or list vswitches.
         It is required when creating a vswitch.
-    required: false
-    default: null
     aliases: [ 'acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
   vpc_id:
     description:
       - The ID of a VPC to which that Vswitch belongs. It is required when creating a vswitch.
-    required: false
-    default: null
   cidr_block:
     description:
       - The CIDR block representing the Vswitch e.g. 10.0.0.0/8. The value must be sub cidr_block of Vpc.
         It is required when creating a vswitch.
-    required: false
-    default: null
   vswitch_name:
     description:
       - The name of vswitch, which is a string of 2 to 128 Chinese or English characters. It must begin with an
-        uppercase/lowercase letter or a Chinese character and can contain numerals, "_", or "-".
+        uppercase/lowercase letter or a Chinese character and can contain numerals, "_" or "-".
         It cannot begin with http:// or https://.
-    required: false
-    default: null
     aliases: [ 'name', 'subnet_name' ]
   description:
     description:
       - The description of vswitch, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
-    required: false
-    default: null
   vswitch_id:
     description:
       - VSwitch ID. It is used to manage the existing VSwitch. Such as modifying VSwitch's attribute or deleting VSwitch.
-    required: false
-    default: null
     aliases: [ 'subnet_id' ]
   is_default:
     description:
       - When retrieving VSwitch, it can mark the VSwitch is created by system.
-    required: false
-    default: null
     type: bool
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 
@@ -211,12 +200,11 @@ total:
 # import module snippets
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, vpc_connect
-from footmark.exception import VPCResponseError
 
 HAS_FOOTMARK = False
 
 try:
-    from footmark.exception import ECSResponseError
+    from footmark.exception import VPCResponseError
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -282,7 +270,7 @@ def create_vswitch(module, vpc):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        status=dict(default='present', aliases=['state'], choices=['present', 'absent', 'list']),
+        state=dict(default='present', choices=['present', 'absent', 'list']),
         cidr_block=dict(aliases=['cidr']),
         description=dict(),
         alicloud_zone=dict(aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
@@ -293,10 +281,13 @@ def main():
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg='footmark required for the module alicloud_vswitch.')
+
     vpc = vpc_connect(module)
 
     # Get values of variable
-    status = module.params['status']
+    state = module.params['state']
     vpc_id = module.params['vpc_id']
     vswitch_id = module.params['vswitch_id']
     vswitch_name = module.params['vswitch_name']
@@ -347,7 +338,7 @@ def main():
     if len(vswitches_by_opts) > 1:
         vswitches = vswitches_by_opts
 
-    if status == 'present':
+    if state == 'present':
         if not vswitch:
             changed, vswitch = create_vswitch(module, vpc)
         elif vswitch_name or description:
@@ -359,7 +350,7 @@ def main():
 
         module.exit_json(changed=changed, vpc_id=vswitch.vpc_id, vswitch=get_vswitch_detail(vswitch), vswitch_id=vswitch.id)
 
-    elif status == 'absent':
+    elif state == 'absent':
         if vswitch:
             try:
                 changed = vswitch.delete()
@@ -370,7 +361,7 @@ def main():
         module.exit_json(changed=changed, msg="Please specify a vswitch by using 'vswitch_id', 'vswitch_name' or "
                                               "'cidr_block', and expected vpcs: %s" % vswitches_basic)
 
-    elif status == 'list':
+    elif state == 'list':
         vswitch_ids = []
         vpc_ids = []
         vswitches_detail = []
@@ -384,7 +375,7 @@ def main():
         module.exit_json(changed=False, vpc_id=vpc_ids, vswitches=vswitches_detail, vswitch_ids=vswitch_ids, total=len(vswitches))
 
     else:
-        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", status))
+        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", state))
 
 
 if __name__ == '__main__':

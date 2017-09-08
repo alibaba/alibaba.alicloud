@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
 #
@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
-                    'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
 
 DOCUMENTATION = '''
 ---
@@ -30,113 +30,115 @@ description:
   - Create, Query or Delete Security Group, and it contains security group rules management.
 options:
   state:
-    description: Create, delete a security group
-    required: false
+    description:
+            - Create, delete a security group
     default: 'present'
     choices: ['present', 'absent']
   group_name:
-    description: Name of the security group.
-    required: false
-    default: null
+    description:
+      - Name of the security group, which is a string of 2 to 128 Chinese or English characters. It must begin with an
+        uppercase/lowercase letter or a Chinese character and can contain numerals, "_", "." or "-".
+        It cannot begin with http:// or https://.
     aliases: ['name']
   description:
-    description: Description of the security group.
-    required: false
-    default: null
+    description:
+      - Description of the security group, which is a string of 2 to 256 characters.
+      - It cannot begin with http:// or https://.
   vpc_id:
     description:
       - ID of the VPC to which the security group belongs.
-    required: false
-    default: null
   rules:
     description:
       - List of hash/dictionaries firewall inbound rules to enforce in this group.
-    required: false
-    default: null
     suboptions:
         ip_protocol:
-          description: IP protocol
+          description:
+            - IP protocol
           required: true
           choices: ["tcp", "udp", "icmp", "gre", "all"]
           aliases: ['proto']
         port_range:
-          description: The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is -1/-1.
+          description:
+            - The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is -1/-1.
           required: true
         source_group_id:
-          description: The source security group id.
-          required: false
+          description:
+            - The source security group id.
           aliases: ['group_id']
         source_group_owner_id:
-          description: The source security group owner id.
-          required: false
+          description:
+            - The source security group owner id.
           aliases: ['group_owner_id']
         source_cidr_ip:
-          description: The source IP address range
-          required: false
+          description:
+            - The source IP address range
           aliases: ['cidr_ip']
         policy:
-          description: Authorization policy
-          required: false
+          description:
+            - Authorization policy
           default: "accept"
           choices: ["accept", "drop"]
         priority:
-          description: Authorization policy priority
-          required: false
+          description:
+            - Authorization policy priority
           default: 1
           choices: ["1~100"]
         nic_type:
-          description: Network type
-          required: false
-          default: internet
+          description:
+            - Network type
+          default: "internet"
           choices: ["internet", "intranet"]
   rules_egress:
     description:
       - List of hash/dictionaries firewall outbound rules to enforce in this group.
         Keys allowed are:ip_protocol, port_range, dest_group_id, dest_group_owner_id, dest_cidr_ip, policy, priority,nic_type.
         And these keys's attribution same as rules keys.
-    required: false
-    default: null
     suboptions:
         ip_protocol:
-          description: IP protocol
+          description:
+            - IP protocol
           required: true
           choices: ["tcp", "udp", "icmp", "gre", "all"]
           aliases: ['proto']
         port_range:
-          description: The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is "-1/-1".
+          description:
+            - The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is "-1/-1".
           required: true
         dest_group_id:
-          description: The destination security group id.
-          required: false
+          description:
+            - The destination security group id.
           aliases: ['group_id']
         dest_group_owner_id:
-          description: The destination security group owner id.
-          required: false
+          description:
+            - The destination security group owner id.
           aliases: ['group_owner_id']
         dest_cidr_ip:
-          description: The destination IP address range
-          required: false
+          description:
+            - The destination IP address range
           aliases: ['cidr_ip']
         policy:
-          description: Authorization policy
-          required: false
+          description:
+            - Authorization policy
           default: "accept"
           choices: ["accept", "drop"]
         priority:
-          description: Authorization policy priority
-          required: false
+          description:
+            - Authorization policy priority
           default: 1
           choices: ["1~100"]
         nic_type:
-          description: Network type
-          required: false
-          default: internet
+          description:
+            - Network type
+          default: "internet"
           choices: ["internet", "intranet"]
   group_id:
     description:
       - Security group ID. It is required when deleting or querying security group or performing rules authorization.
-    required: false
-    default: null
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 '''
@@ -232,7 +234,7 @@ EXAMPLES = '''
     alicloud_region: us-west-1
     group_ids:
      - xxxxxxxxxx
-    status: absent
+    state: absent
   tasks:
     - name: delete security grp
       alicloud_security_group:
@@ -240,7 +242,7 @@ EXAMPLES = '''
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         group_ids: '{{ group_ids }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
 
 
 # Provisioning example to querying security group list
@@ -251,14 +253,14 @@ EXAMPLES = '''
     alicloud_access_key: xxxxxxxxxx
     alicloud_secret_key: xxxxxxxxxx
     alicloud_region: cn-beijing
-    status: list
+    state: list
   tasks:
     - name: Querying Security group list
       alicloud_security_group:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
 '''
 
 RETURN = '''
@@ -594,12 +596,9 @@ def get_group_detail(group):
 
 
 def main():
-    if HAS_FOOTMARK is False:
-        module.fail_json("Footmark required for this module")
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(default='present', type='str', aliases=['state'], choices=['present', 'absent']),
+        state=dict(default='present', type='str', choices=['present', 'absent']),
         group_name=dict(type='str', required=False, aliases=['name']),
         description=dict(type='str', required=False),
         vpc_id=dict(type='str'),
@@ -610,6 +609,9 @@ def main():
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg='footmark required for the module alicloud_security_group.')
 
     ecs = ecs_connect(module)
 

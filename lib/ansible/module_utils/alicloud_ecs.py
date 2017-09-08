@@ -33,6 +33,7 @@ try:
     import footmark.ecs
     import footmark.slb
     import footmark.vpc
+    import footmark.rds
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -61,9 +62,9 @@ def ecs_argument_spec():
 
 
 def get_acs_connection_info(module):
-    '''
-    Check module args for credentials, then check environment vars access_key
-    '''
+
+    # Check module args for credentials, then check environment vars access_key and region
+
     access_key = module.params.get('alicloud_access_key')
     secret_key = module.params.get('alicloud_secret_key')
     security_token = module.params.get('alicloud_security_token')

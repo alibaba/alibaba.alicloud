@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
 #
@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+                    'supported_by': 'community'}
 
 DOCUMENTATION = '''
 ---
@@ -30,36 +30,30 @@ description:
   - Creates and delete a ECS disk.starts, stops, restarts or terminates ecs instances.
   - Attach a disk to an ecs instance or detach a disk from it.
 options:
-  status:
-    description: The state of operating ecs disk.
-    required: false
+  state:
+    description:
+      - The state of operating ecs disk.
     default: 'present'
-    aliases: [ 'state' ]
     choices:
       - ['present', 'absent']
-      - map operation ['create', 'attach', 'detach', 'delete']
   alicloud_zone:
-    description: Aliyun availability zone ID which to launch the disk
+    description:
+      - Aliyun availability zone ID which to launch the disk
     required: true
-    default: null
     aliases: [ 'acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
   disk_name:
     description:
       - The name of ECS disk, which is a string of 2 to 128 Chinese or English characters. It must begin with an
         uppercase/lowercase letter or a Chinese character and can contain numerals, ".", "_", or "-".
         It cannot begin with http:// or https://.
-    required: false
-    default: null
     aliases: [ 'name' ]
   description:
     description:
       - The description of ECS disk, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
-    required: false
-    default: null
     aliases: [ 'disk_description' ]
   disk_category:
-    description: The category to apply to the disk.
-    required: false
+    description:
+      - The category to apply to the disk.
     default: 'cloud'
     aliases: ['volume_type', 'disk_type']
     choices: ['cloud', 'cloud_efficiency', 'cloud_ssd']
@@ -67,46 +61,41 @@ options:
     description:
       - Size of disk (in GB) to create.
         'cloud' valid value is 5~2000; 'cloud_efficiency' or 'cloud_ssd' valid value is 20~32768.
-    required: false
-    default: null
     aliases: ['volume_size', 'disk_size']
   snapshot_id:
     description:
       - Snapshot ID on which to base the data disk.
         If this parameter is specified, the value of 'size' will be ignored. The actual created disk size is the specified snapshot's size.
-    required: false
-    default: null
     aliases: ['snapshot']
   disk_tags:
     description:
       - A list of hash/dictionaries of instance tags, ['{"tag_key":"value", "tag_value":"value"}'],
                 tag_key must be not null when tag_value isn't null.
-    required: false
-    default: null
     aliases: ['tags']
   instance_id:
     description:
       - Ecs instance ID is used to attach the disk. The specified instance and disk must be in the same zone.
         If it is null or not be specified, the attached disk will be detach from instance.
-    required: false
-    default: null
     aliases: ['instance']
   disk_id:
-    description: Disk ID is used to attach an existing disk (required instance_id), detach or remove an existing disk.
+    description:
+      - Disk ID is used to attach an existing disk (required instance_id), detach or remove an existing disk.
     required: true
-    default: null
     aliases: ['vol_id', 'id']
   delete_with_instance:
     description:
-      - When set to "yes" or "true", the disk will be released along with terminating ECS instance.
+      - When set to true, the disk will be released along with terminating ECS instance.
         When mark instance's attribution 'OperationLocks' as "LockReason":"security",
         its value will be ignored and disk will be released along with terminating ECS instance.
-    required: false
-    default: none
     aliases: ['delete_on_termination']
-    choices: ['yes/true', 'no/false']
+    type: bool
 notes:
   - At present, when attach disk, system allocates automatically disk device according to default order from /dev/xvdb to /dev/xvdz.
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 
@@ -127,7 +116,7 @@ EXAMPLES = '''
     alicloud_region: cn-beijing
     alicloud_zone: cn-beijing-b
     size: 20
-    status: present
+    state: present
   tasks:
     - name: create disk
       alicloud_disk:
@@ -136,7 +125,7 @@ EXAMPLES = '''
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         size: '{{ size }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 
@@ -154,7 +143,7 @@ EXAMPLES = '''
     size: 20
     snapshot_id: xxxxxxxxxx
     disk_category: cloud_ssd
-    status: present
+    state: present
   tasks:
     - name: create disk
       alicloud_disk:
@@ -167,7 +156,7 @@ EXAMPLES = '''
         size: '{{ size }}'
         snapshot_id: '{{ snapshot_id }}'
         disk_category: '{{ disk_category }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 
@@ -177,9 +166,9 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
+    state: present
     alicloud_access_key: xxxxxxxxxx
     alicloud_secret_key: xxxxxxxxxx
-    status: present
     alicloud_region: us-west-1
     instance_id: xxxxxxxxxx
     disk_id: xxxxxxxxxx
@@ -187,9 +176,9 @@ EXAMPLES = '''
   tasks:
     - name: Attach Disk to instance
       alicloud_disk:
+        state: '{{ state }}'
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
-        status: '{{ status }}'
         alicloud_region: '{{ alicloud_region }}'
         instance_id: '{{ instance_id }}'
         disk_id: '{{ disk_id }}'
@@ -207,7 +196,7 @@ EXAMPLES = '''
     alicloud_secret_key: xxxxxxxxxx
     alicloud_region: us-west-1
     disk_id: xxxxxxxxxx
-    status: present
+    state: present
   tasks:
     - name: detach disk
       alicloud_disk:
@@ -215,7 +204,7 @@ EXAMPLES = '''
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         id: '{{ disk_id }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 
@@ -229,7 +218,7 @@ EXAMPLES = '''
     alicloud_secret_key: xxxxxxxxxx
     alicloud_region: us-west-1
     disk_id: xxxxxxxxxx
-    status: absent
+    state: absent
   tasks:
     - name: detach disk
       alicloud_disk:
@@ -237,7 +226,7 @@ EXAMPLES = '''
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         disk_id: '{{ disk_id }}'
-        status: '{{ status }}'
+        state: '{{ state }}'
       register: result
     - debug: var=result
 '''
@@ -295,6 +284,7 @@ HAS_FOOTMARK = False
 
 try:
     from footmark.exception import ECSResponseError
+
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -325,14 +315,11 @@ def get_disk_detail(disk):
 
 
 def main():
-    if not HAS_FOOTMARK:
-        module.fail_json(msg="footmark required for this module")
-
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         group_id=dict(),
         alicloud_zone=dict(aliases=['zone_id', 'acs_zone', 'ecs_zone', 'zone', 'availability_zone']),
-        status=dict(default='present', aliases=['state'], choices=['present', 'absent']),
+        state=dict(default='present', choices=['present', 'absent']),
         disk_id=dict(aliases=['vol_id', 'id']),
         disk_name=dict(aliases=['name']),
         disk_category=dict(aliases=['disk_type', 'volume_type']),
@@ -345,8 +332,12 @@ def main():
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if not HAS_FOOTMARK:
+        module.fail_json(msg="footmark required for the module alicloud_disk.")
+
     ecs = ecs_connect(module)
-    status = module.params['status']
+    state = module.params['state']
 
     instance_id = module.params['instance_id']
     disk_id = module.params['disk_id']
@@ -378,14 +369,15 @@ def main():
     except ECSResponseError as e:
         module.fail_json(msg='Error in get_all_volumes: %s' % str(e))
 
-    if status == 'absent':
+    if state == 'absent':
         if not current_disk:
             module.fail_json(msg="Please use disk_id or disk_name to specify one disk for detaching or deleting.")
         if instance_id:
             try:
                 changed = current_disk.detach(instance_id)
                 module.exit_json(changed=changed, disk_id=current_disk.id, disk_category=current_disk.category,
-                                 disk_status=current_disk.status, instance_id=instance_id, disk=get_disk_detail(current_disk))
+                                 disk_status=current_disk.status, instance_id=instance_id,
+                                 disk=get_disk_detail(current_disk))
             except Exception as e:
                 module.fail_json(msg='Detaching disk {0} is failed, error: {1}'.format(current_disk.id, e))
 
@@ -414,7 +406,8 @@ def main():
             if current_disk.name != disk_name \
                     or current_disk.description != description \
                     or current_disk.delete_with_instance != delete_with_instance:
-                changed = current_disk.modify(disk_name=disk_name, description=description, delete_with_instance=delete_with_instance)
+                changed = current_disk.modify(disk_name=disk_name, description=description,
+                                              delete_with_instance=delete_with_instance)
         except Exception as e:
             module.fail_json(msg='Updating disk {0} attribute is failed, error: {1}'.format(current_disk.id, e))
 
@@ -422,7 +415,8 @@ def main():
         try:
             changed = current_disk.attach(instance_id=instance_id, delete_with_instance=delete_with_instance)
         except Exception as e:
-            module.fail_json(msg='Attaching disk {0} to instance {1} is failed, error: {2}'.format(current_disk.id, instance_id, e))
+            module.fail_json(
+                msg='Attaching disk {0} to instance {1} is failed, error: {2}'.format(current_disk.id, instance_id, e))
 
     module.exit_json(changed=changed, disk_id=current_disk.id, disk_category=current_disk.category,
                      disk_status=current_disk.status, instance_id=instance_id, disk=get_disk_detail(current_disk))

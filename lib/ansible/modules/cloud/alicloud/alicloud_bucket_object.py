@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
 #
@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['stableinterface'],
-                    'supported_by': 'curated'}
+                    'supported_by': 'community'}
 
 DOCUMENTATION = '''
 ---
@@ -39,52 +39,45 @@ options:
     description:
       - Bucket name.
     required: true
-    default: null
   permission:
     description:
       - This option lets the user set the canned permissions on the objects that are put. The permissions that
         can be set are 'private', 'public-read', 'public-read-write'.
-    required: false
-    default: private
+    default: 'private'
     choices: [ 'private', 'public-read', 'public-read-write' ]
     aliases: [ 'acl' ]
   headers:
     description:
       - Custom headers for PUT or GET operation, as a dictionary of 'key=value' and 'key=value,key=value'.
-    required: false
-    default: null
   overwrite:
     description:
       - Force overwrite specified object content when putting object.
         If it is true/false, object will be normal/appendable. Appendable Object can be convert to Noraml by setting
         overwrite to true, but conversely, it won't be work.
-    required: false
-    default: false
+    default: False
     type: bool
   content:
     description:
       - The object content that will be upload. It is conflict with 'file_name' when mode is 'put'.
-    required: false
-    default: null
   file_name:
     description:
       - The name of file that used to upload or download object.
-    required: false
-    default: null
     aliases: [ "file" ]
   object:
     description:
       - Name to object after uploaded to bucket
     required: true
-    default: null
     aliases: [ 'key', 'object_name' ]
   byte_range:
     description:
       - The range of object content that would be download.
         Its format like 1-100 that indicates range from one to hundred bytes of object.
-    required: false
-    default: null
     aliases: [ 'range' ]
+requirements:
+    - "python >= 2.7"
+    - "footmark"
+extends_documentation_fragment:
+    - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
 '''
@@ -275,6 +268,14 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_oss import oss_bucket_argument_spec, oss_bucket_connect
 import time
 
+HAS_FOOTMARK = False
+
+try:
+    from footmark.exception import ECSResponseError, OSSResponseError
+    HAS_FOOTMARK = True
+except ImportError:
+    HAS_FOOTMARK = False
+
 
 def get_object_info(obj):
     result = {'key': obj.key, 'last_modified': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(obj.last_modified)),
@@ -301,6 +302,9 @@ def main():
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg="Package 'footmark' required for the module alicloud_bucket_object.")
 
     oss_bucket = oss_bucket_connect(module)
     mode = module.params['mode']
