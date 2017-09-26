@@ -223,6 +223,14 @@
         alicloud_region: "{{ alicloud_region }}"
       register: all_disks
 
+    - name: Find all instance types based on the specified zone and families
+      alicloud_instance_type_facts:
+        alicloud_region: "{{ alicloud_region }}"
+        alicloud_zone: "{{ alicloud_zone }}"
+        instance_type_families:
+          - "ecs.gn5"
+          - "ecs.m1"
+
     - name: Terminating ECS instance
       alicloud_instance:
         alicloud_region: '{{ alicloud_region }}'
