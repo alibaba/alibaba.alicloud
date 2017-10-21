@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 #  This file is part of Ansible
@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: alicloud_instance
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group.
 description:
     - Create, start, stop, restart, modify or terminate ecs instances.
@@ -77,12 +77,10 @@ options:
       description:
         - Maximum incoming bandwidth from the public network, measured in Mbps (Mega bit per second).
       default: 200
-      choices: [1~200]
     max_bandwidth_out:
       description:
         - Maximum outgoing bandwidth to the public network, measured in Mbps (Mega bit per second).
       default: 0
-      choices: [0~100]
     host_name:
       description:
         - Instance host name.
@@ -156,8 +154,7 @@ options:
       type: bool
     instance_tags:
       description:
-        - A hash/dictionaries of instance tags, to add to the new instance or for starting/stopping instance by tag;
-          '{"key":"value"}' and '{"key":"value","key":"value"}'
+        - A hash/dictionaries of instance tags, to add to the new instance or for starting/stopping instance by tag. C({"key":"value"})
       aliases: ["tags"]
     sg_action:
       description:
@@ -166,8 +163,8 @@ options:
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.7"
-    - "footmark"
+    - "python >= 2.6"
+    - "footmark >= 1.1.6"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -313,7 +310,6 @@ EXAMPLES = '''
     alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-shenzhen
     instance_ids: ["i-abcd12346", "i-abcd12345"]
-    state: running
   tasks:
     - name: start instance
       alicloud_instance:
@@ -321,7 +317,7 @@ EXAMPLES = '''
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ instance_ids }}'
-        state: '{{ state }}'
+        state: 'running'
 #
 # stop or restarted instance
 #
@@ -333,7 +329,6 @@ EXAMPLES = '''
     alicloud_region: cn-shenzhen
     instance_ids: ["i-abcd12346", "i-abcd12345"]
     force: False
-    state: restarted
   tasks:
     - name: Restart instance
       ecs:
@@ -341,7 +336,7 @@ EXAMPLES = '''
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ instance_ids }}'
-        state: '{{ state }}'
+        state: 'restarted'
         force: '{{ force }}'
 #
 # add an instance to security group
@@ -559,7 +554,7 @@ def main():
                     try:
                         changed = inst.terminate(force=force)
                     except Exception as e:
-                        module.fail_json(msg="Delete instance {0} got an error: {e}".format(inst.id, e))
+                        module.fail_json(msg="Delete instance {0} got an error: {1}".format(inst.id, e))
                     instances.pop(len(instances) - 1)
             else:
                 try:

@@ -1,5 +1,5 @@
 # !/usr/bin/python
-# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 # This file is part of Ansible
@@ -25,24 +25,24 @@ class ModuleDocFragment(object):
 options:
   alicloud_access_key:
     description:
-      - Aliyun Cloud access key. If not set then the value of the `ALICLOUD_ACCESS_KEY`, `ACS_ACCESS_KEY_ID`,
-        `ACS_ACCESS_KEY` or `ECS_ACCESS_KEY` environment variable is used.
+      - Aliyun Cloud access key. If not set then the value of environment variable C(ALICLOUD_ACCESS_KEY), C(ACS_ACCESS_KEY_ID),
+        C(ACS_ACCESS_KEY) or C(ECS_ACCESS_KEY) will be used instead.
     aliases: ['acs_access_key', 'ecs_access_key','access_key']
   alicloud_secret_key:
     description:
-      - Aliyun Cloud secret key. If not set then the value of the `ALICLOUD_SECRET_KEY`, `ACS_SECRET_ACCESS_KEY`,
-        `ACS_SECRET_KEY`, or `ECS_SECRET_KEY` environment variable is used.
+      - Aliyun Cloud secret key. If not set then the value of environment variable C(ALICLOUD_SECRET_KEY), C(ACS_SECRET_ACCESS_KEY),
+        C(ACS_SECRET_KEY), or C(ECS_SECRET_KEY) will be used instead.
     aliases: ['acs_secret_access_key', 'ecs_secret_key','secret_key']
   alicloud_region:
     description:
-      - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`,
-        `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
+      - The Aliyun Cloud region to use. If not specified then the value of environment variable C(ALICLOUD_REGION), C(ACS_REGION),
+        C(ACS_DEFAULT_REGION) or C(ECS_REGION) will be used instead.
     aliases: ['acs_region', 'ecs_region', 'region']
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.7"
-    - "footmark"
+    - "python >= 2.6"
+    - "footmark >= 1.1.6"
 extends_documentation_fragment:
     - alicloud
 notes:

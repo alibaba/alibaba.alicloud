@@ -4,7 +4,7 @@
 # still belong to the author of the module, and may assign their own license
 # to the complete work.
 #
-# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 #
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
@@ -26,7 +26,7 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import os
+from ansible.module_utils.basic import env_fallback
 
 try:
     import footmark
@@ -45,9 +45,12 @@ class AnsibleACSError(Exception):
 
 def acs_common_argument_spec():
     return dict(
-        alicloud_access_key=dict(aliases=['acs_access_key', 'ecs_access_key', 'access_key']),
-        alicloud_secret_key=dict(no_log=True, aliases=['acs_secret_access_key', 'ecs_secret_key', 'secret_key']),
-        alicloud_security_token=dict(aliases=['security_token', 'access_token'], no_log=True),
+        alicloud_access_key=dict(required=True, aliases=['acs_access_key', 'ecs_access_key', 'access_key'], no_log=True,
+                                 fallback=(env_fallback, ['ALICLOUD_ACCESS_KEY', 'ACS_ACCESS_KEY_ID', 'ACS_ACCESS_KEY', 'ECS_ACCESS_KEY'])),
+        alicloud_secret_key=dict(required=True, aliases=['acs_secret_access_key', 'ecs_secret_key', 'secret_key'], no_log=True,
+                                 fallback=(env_fallback, ['ALICLOUD_SECRET_KEY', 'ACS_SECRET_ACCESS_KEY', 'ACS_SECRET_KEY', 'ECS_SECRET_KEY'])),
+        alicloud_security_token=dict(aliases=['security_token', 'access_token'], no_log=True,
+                                     fallback=(env_fallback, ['ALICLOUD_SECURITY_TOKEN', 'ACS_SECURITY_TOKEN', 'ECS_SECURITY_TOKEN'])),
     )
 
 
@@ -55,7 +58,8 @@ def ecs_argument_spec():
     spec = acs_common_argument_spec()
     spec.update(
         dict(
-            alicloud_region=dict(aliases=['acs_region', 'ecs_region', 'region']),
+            alicloud_region=dict(required=True, aliases=['acs_region', 'ecs_region', 'region'],
+                                 fallback=(env_fallback, ['ALICLOUD_REGION', 'ACS_REGION', 'ACS_DEFAULT_REGION', 'ECS_REGION'])),
         )
     )
     return spec
@@ -63,66 +67,12 @@ def ecs_argument_spec():
 
 def get_acs_connection_info(module):
 
-    # Check module args for credentials, then check environment vars access_key and region
-
-    access_key = module.params.get('alicloud_access_key')
-    secret_key = module.params.get('alicloud_secret_key')
-    security_token = module.params.get('alicloud_security_token')
-    region = module.params.get('alicloud_region')
-
-    if not access_key:
-        if 'ALICLOUD_ACCESS_KEY' in os.environ:
-            access_key = os.environ['ALICLOUD_ACCESS_KEY']
-        elif 'ACS_ACCESS_KEY_ID' in os.environ:
-            access_key = os.environ['ACS_ACCESS_KEY_ID']
-        elif 'ACS_ACCESS_KEY' in os.environ:
-            access_key = os.environ['ACS_ACCESS_KEY']
-        elif 'ECS_ACCESS_KEY' in os.environ:
-            access_key = os.environ['ECS_ACCESS_KEY']
-        else:
-            # in case access_key came in as empty string
-            module.fail_json(msg="access key is required")
-
-    if not secret_key:
-        if 'ALICLOUD_SECRET_KEY' in os.environ:
-            secret_key = os.environ['ALICLOUD_SECRET_KEY']
-        elif 'ACS_SECRET_ACCESS_KEY' in os.environ:
-            secret_key = os.environ['ACS_SECRET_ACCESS_KEY']
-        elif 'ACS_SECRET_KEY' in os.environ:
-            secret_key = os.environ['ACS_SECRET_KEY']
-        elif 'ECS_SECRET_KEY' in os.environ:
-            secret_key = os.environ['ECS_SECRET_KEY']
-        else:
-            # in case secret_key came in as empty string
-            module.fail_json(msg="access secret key is required")
-
-    if not region:
-        if 'ALICLOUD_REGION' in os.environ:
-            region = os.environ['ALICLOUD_REGION']
-        elif 'ACS_REGION' in os.environ:
-            region = os.environ['ACS_REGION']
-        elif 'ACS_DEFAULT_REGION' in os.environ:
-            region = os.environ['ACS_DEFAULT_REGION']
-        elif 'ECS_REGION' in os.environ:
-            region = os.environ['ECS_REGION']
-        else:
-            module.fail_json(msg="region is required")
-
-    if not security_token:
-        if 'ALICLOUD_SECURITY_TOKEN' in os.environ:
-            security_token = os.environ['ALICLOUD_SECURITY_TOKEN']
-        elif 'ACS_SECURITY_TOKEN' in os.environ:
-            security_token = os.environ['ACS_SECURITY_TOKEN']
-        elif 'ECS_SECURITY_TOKEN' in os.environ:
-            security_token = os.environ['ECS_SECURITY_TOKEN']
-        else:
-            # in case security_token came in as empty string
-            security_token = None
-
-    ecs_params = dict(acs_access_key_id=access_key, acs_secret_access_key=secret_key, security_token=security_token,
+    ecs_params = dict(acs_access_key_id=module.params.get('alicloud_access_key'),
+                      acs_secret_access_key=module.params.get('alicloud_secret_key'),
+                      security_token=module.params.get('alicloud_security_token'),
                       user_agent='Ansible-Provider-Alicloud')
 
-    return region, ecs_params
+    return module.params.get('alicloud_region'), ecs_params
 
 
 def connect_to_acs(acs_module, region, **params):
