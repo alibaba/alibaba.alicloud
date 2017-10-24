@@ -35,7 +35,7 @@ For environment variables::
     export ALICLOUD_ACCESS_KEY='Alicloud123'
     export ALICLOUD_SECRET_KEY='AlicloudSecret123'
 
-For storing these in a vars_file, ideally encrypted with ansible-vault considering its security::
+For storing these in a vars_file, ideally encrypted with `ansible-vault <https://docs.ansible.com/ansible/2.4/vault.html>`_ considering its security::
 
     ---
     alicloud_access_key: "--REMOVED--"

@@ -15,7 +15,7 @@ DESCRIPTION = "The dependence of Ansible Provider Alicloud modules."
 AUTHOR = "xiaozhu"
 AUTHOR_EMAIL = "heguimin36@163.com"
 
-VERSION = '1.0.6'
+VERSION = '1.0.7'
 
 setup(
     name=NAME,

@@ -45,12 +45,12 @@ class AnsibleACSError(Exception):
 
 def acs_common_argument_spec():
     return dict(
-        alicloud_access_key=dict(required=True, aliases=['acs_access_key', 'ecs_access_key', 'access_key'], no_log=True,
-                                 fallback=(env_fallback, ['ALICLOUD_ACCESS_KEY', 'ACS_ACCESS_KEY_ID', 'ACS_ACCESS_KEY', 'ECS_ACCESS_KEY'])),
-        alicloud_secret_key=dict(required=True, aliases=['acs_secret_access_key', 'ecs_secret_key', 'secret_key'], no_log=True,
-                                 fallback=(env_fallback, ['ALICLOUD_SECRET_KEY', 'ACS_SECRET_ACCESS_KEY', 'ACS_SECRET_KEY', 'ECS_SECRET_KEY'])),
-        alicloud_security_token=dict(aliases=['security_token', 'access_token'], no_log=True,
-                                     fallback=(env_fallback, ['ALICLOUD_SECURITY_TOKEN', 'ACS_SECURITY_TOKEN', 'ECS_SECURITY_TOKEN'])),
+        alicloud_access_key=dict(required=True, aliases=['access_key_id', 'access_key'], no_log=True,
+                                 fallback=(env_fallback, ['ALICLOUD_ACCESS_KEY', 'ALICLOUD_ACCESS_KEY_ID'])),
+        alicloud_secret_key=dict(required=True, aliases=['secret_access_key', 'secret_key'], no_log=True,
+                                 fallback=(env_fallback, ['ALICLOUD_SECRET_KEY', 'ALICLOUD_SECRET_ACCESS_KEY'])),
+        alicloud_security_token=dict(aliases=['security_token'], no_log=True,
+                                     fallback=(env_fallback, ['ALICLOUD_SECURITY_TOKEN'])),
     )
 
 
@@ -58,8 +58,8 @@ def ecs_argument_spec():
     spec = acs_common_argument_spec()
     spec.update(
         dict(
-            alicloud_region=dict(required=True, aliases=['acs_region', 'ecs_region', 'region'],
-                                 fallback=(env_fallback, ['ALICLOUD_REGION', 'ACS_REGION', 'ACS_DEFAULT_REGION', 'ECS_REGION'])),
+            alicloud_region=dict(required=True, aliases=['region', 'region_id'],
+                                 fallback=(env_fallback, ['ALICLOUD_REGION', 'ALICLOUD_REGION_ID'])),
         )
     )
     return spec
