@@ -117,7 +117,7 @@ options:
     allocate_public_ip:
       description:
         - Whether allocate a public ip for the new instance.
-      default: True
+      default: False
       aliases: [ 'assign_public_ip' ]
       type: bool
     instance_charge_type:
@@ -160,7 +160,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.6"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -280,6 +280,7 @@ total:
     sample: 2
 '''
 
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
@@ -295,8 +296,8 @@ except ImportError:
 def get_public_ip(instance):
     if instance.public_ip_address:
         return instance.public_ip_address
-    elif instance.eip['ip_address']:
-        return instance.eip['ip_address']
+    elif instance.eip:
+        return instance.eip
     return ""
 
 
@@ -335,6 +336,8 @@ def create_instance(module, ecs, exact_count):
     if not instance_type:
         module.fail_json(msg='instance_type is required for new instance')
 
+    client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
+
     try:
         # call to create_instance method from footmark
         instances = ecs.create_instance(image_id=image_id, instance_type=instance_type, group_id=group_id,
@@ -346,7 +349,7 @@ def create_instance(module, ecs, exact_count):
                                         system_disk_description=system_disk_description,
                                         vswitch_id=vswitch_id, count=exact_count, allocate_public_ip=allocate_public_ip,
                                         instance_charge_type=instance_charge_type, period=period, auto_renew=auto_renew,
-                                        auto_renew_period=auto_renew_period, instance_tags=instance_tags)
+                                        auto_renew_period=auto_renew_period, instance_tags=instance_tags, client_token=client_token)
 
     except Exception as e:
         module.fail_json(msg='Unable to create instance, error: {0}'.format(e))
@@ -378,7 +381,7 @@ def main():
         instance_tags=dict(type='dict', aliases=['tags']),
         state=dict(default='present', choices=['present', 'running', 'stopped', 'restarted', 'absent']),
         description=dict(type='str'),
-        allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=True),
+        allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=False),
         instance_charge_type=dict(type='str', default='PostPaid'),
         period=dict(type='int', default=1),
         auto_renew=dict(type='bool', default=False),

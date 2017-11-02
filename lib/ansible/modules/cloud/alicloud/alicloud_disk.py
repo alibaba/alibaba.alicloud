@@ -40,7 +40,7 @@ options:
     description:
       - Aliyun availability zone ID which to launch the disk
     required: true
-    aliases: [ 'acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
+    aliases: [ 'zone_id', 'zone' ]
   disk_name:
     description:
       - The name of ECS disk, which is a string of 2 to 128 Chinese or English characters. It must begin with an
@@ -93,7 +93,7 @@ notes:
   - At present, when attach disk, system allocates automatically disk device according to default order from /dev/xvdb to /dev/xvdz.
 requirements:
     - "python >= 2.7"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -277,6 +277,7 @@ instance_id:
     sample: "i-i2rnfnenfnds"
 '''
 
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect
 
@@ -318,7 +319,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         group_id=dict(),
-        alicloud_zone=dict(aliases=['zone_id', 'acs_zone', 'ecs_zone', 'zone', 'availability_zone']),
+        alicloud_zone=dict(aliases=['zone_id', 'zone']),
         state=dict(default='present', choices=['present', 'absent']),
         disk_id=dict(aliases=['vol_id', 'id']),
         disk_name=dict(aliases=['name']),
@@ -393,10 +394,11 @@ def main():
         size = module.params['size']
         disk_tags = module.params['disk_tags']
         snapshot_id = module.params['snapshot_id']
+        client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
         try:
             current_disk = ecs.create_disk(zone_id=zone_id, disk_name=disk_name,
                                            description=description, disk_category=disk_category, size=size,
-                                           disk_tags=disk_tags, snapshot_id=snapshot_id)
+                                           disk_tags=disk_tags, snapshot_id=snapshot_id, client_token=client_token)
             changed = True
         except Exception as e:
             module.fail_json(msg='Creating a new disk is failed, error: {0}'.format(e))

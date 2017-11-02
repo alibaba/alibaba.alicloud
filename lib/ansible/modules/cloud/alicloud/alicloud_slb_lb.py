@@ -32,11 +32,6 @@ short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS
 description:
   - Create, Delete, Enable or Disable Server Load Balancer in ECS.
 options:
-  alicloud_region:
-    description:
-      - The Aliyun Cloud region to use. If not specified then the value of the `ALICLOUD_REGION`, `ACS_REGION`,
-        `ACS_DEFAULT_REGION` or `ECS_REGION` environment variable, if any, is used.
-    aliases: ['acs_region', 'ecs_region', 'region']
   state:
     description:
       - The state of the instance after operating.
@@ -82,7 +77,7 @@ options:
     choices: [ 1-1000 Mbps ]
 requirements:
     - "python >= 2.7"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -357,11 +352,12 @@ def main():
                 cur_slb.bandwidth = bandwidth
             module.exit_json(changed=changed, load_balancer=get_info(cur_slb), load_balancer_id=cur_slb.load_balancer_id)
         elif not cur_slb:
+            client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
             res_obj = slb.create_load_balancer(load_balancer_name=load_balancer_name,
                                                address_type=address_type, vswitch_id=vswitch_id,
                                                internet_charge_type=internet_charge_type,
                                                master_zone_id=master_zone_id, slave_zone_id=slave_zone_id,
-                                               bandwidth=bandwidth)
+                                               bandwidth=bandwidth, client_token=client_token)
             changed = True
             module.exit_json(changed=changed, load_balancer=get_info(res_obj), load_balancer_id=res_obj.load_balancer_id)
         else:

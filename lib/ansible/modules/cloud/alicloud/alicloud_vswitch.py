@@ -38,7 +38,7 @@ options:
     description:
       - Aliyun availability zone ID which to launch the vswitch or list vswitches.
         It is required when creating a vswitch.
-    aliases: [ 'acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
+    aliases: [ 'zone_id', 'zone' ]
   vpc_id:
     description:
       - The ID of a VPC to which that Vswitch belongs. It is required when creating a vswitch.
@@ -65,7 +65,7 @@ options:
     type: bool
 requirements:
     - "python >= 2.7"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -197,7 +197,7 @@ total:
     sample: 3
 '''
 
-# import module snippets
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, vpc_connect
 
@@ -258,8 +258,9 @@ def create_vswitch(module, vpc):
 
     changed = False
     try:
+        client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
         changed, vswitch = vpc.create_vswitch(zone_id=zone_id, vpc_id=vpc_id, cidr_block=cidr_block,
-                                              vswitch_name=None, description=None)
+                                              vswitch_name=None, description=None, client_token=client_token)
         return changed, vswitch
     except VPCResponseError as e:
         module.fail_json(msg='Unable to create Vswitch, error: {0}'.format(e))
@@ -273,7 +274,7 @@ def main():
         state=dict(default='present', choices=['present', 'absent', 'list']),
         cidr_block=dict(aliases=['cidr']),
         description=dict(),
-        alicloud_zone=dict(aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
+        alicloud_zone=dict(aliases=['zone_id', 'zone']),
         vpc_id=dict(),
         vswitch_name=dict(aliases=['name', 'subnet_name']),
         vswitch_id=dict(aliases=['subnet_id']),

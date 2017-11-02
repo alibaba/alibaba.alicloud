@@ -76,7 +76,7 @@ author:
   - "Li Qiang"
 requirements:
     - "python >= 2.7"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 """

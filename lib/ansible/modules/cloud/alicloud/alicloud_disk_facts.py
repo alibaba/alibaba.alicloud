@@ -37,7 +37,7 @@ options:
     alicloud_zone:
       description:
         - Aliyun availability zone ID in which to launch the disk
-      aliases: ['acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
+      aliases: ['zone_id', 'zone' ]
     disk_names:
       description:
         - A list of ECS disk names.
@@ -50,7 +50,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -216,7 +216,7 @@ def get_disk_info(disk):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        alicloud_zone=dict(aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
+        alicloud_zone=dict(aliases=['zone_id', 'zone']),
         disk_ids=dict(type='list', aliases=['ids']),
         disk_names=dict(type='list', aliases=['names']),
     )
