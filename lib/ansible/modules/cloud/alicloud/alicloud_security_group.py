@@ -136,7 +136,7 @@ options:
       - Security group ID. It is required when deleting or querying security group or performing rules authorization.
 requirements:
     - "python >= 2.7"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -392,7 +392,8 @@ total:
     type: int
     sample: 3
 '''
-# import module snippets
+
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
@@ -667,7 +668,9 @@ def main():
 
     if not group:
         try:
-            group = ecs.create_security_group(group_name=group_name, description=description, vpc_id=vpc_id, group_tags=group_tags)
+            client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
+            group = ecs.create_security_group(group_name=group_name, description=description, vpc_id=vpc_id,
+                                              group_tags=group_tags, client_token=client_token)
             changed = True
 
         except ECSResponseError as e:

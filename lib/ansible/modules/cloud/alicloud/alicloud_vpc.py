@@ -64,7 +64,7 @@ notes:
   - There is only one virtual router in one vpc and one route table in one virtual router.
 requirements:
     - "python >= 2.7"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -194,7 +194,7 @@ total:
     sample: 3
 '''
 
-# import module snippets
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, vpc_connect
 
@@ -300,7 +300,9 @@ def main():
     if state == 'present':
         try:
             if not vpc:
-                vpc = vpc_conn.create_vpc(cidr_block=cidr_block, user_cidr=user_cidr, vpc_name=vpc_name, description=description)
+                client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
+                vpc = vpc_conn.create_vpc(cidr_block=cidr_block, user_cidr=user_cidr, vpc_name=vpc_name,
+                                          description=description, client_token=client_token)
             else:
                 vpc = vpc.update(name=vpc_name, description=description, user_cidr=user_cidr)
             changed = True

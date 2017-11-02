@@ -61,7 +61,7 @@ notes:
   - When state is 'list', the parameters 'route_table_id', 'destination_cidrblock' and 'nexthop_id' are optional.
 requirements:
     - "python >= 2.7"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 author:
