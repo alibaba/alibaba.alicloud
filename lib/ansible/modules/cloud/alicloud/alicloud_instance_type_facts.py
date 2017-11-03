@@ -36,7 +36,7 @@ options:
     alicloud_zone:
       description:
         - The Zone that supports available instance types.
-      aliases: ['acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
+      aliases: ['zone_id', 'zone']
     instance_type_ids:
       description:
         - List Ids of instance types.
@@ -57,7 +57,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -167,7 +167,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(
         dict(
-            alicloud_zone=dict(aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
+            alicloud_zone=dict(aliases=['zone_id', 'zone']),
             instance_type_ids=dict(type='list', aliases=["ids"]),
             instance_type_families=dict(type='list', aliases=["families"]),
             cpu_core_count=dict(type='int', aliases=["cpu_count"]),

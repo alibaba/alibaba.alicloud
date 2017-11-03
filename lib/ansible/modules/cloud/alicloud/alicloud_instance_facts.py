@@ -37,7 +37,7 @@ options:
     alicloud_zone:
       description:
         - Aliyun availability zone ID in which to launch the instance
-      aliases: ['acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
+      aliases: [ 'zone_id', 'zone' ]
     instance_names:
       description:
         - A list of ECS instance names.
@@ -50,7 +50,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.6"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -198,7 +198,7 @@ def get_instance_info(inst):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        alicloud_zone=dict(aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
+        alicloud_zone=dict(aliases=['zone_id', 'zone']),
         instance_ids=dict(type='list', aliases=['ids']),
         instance_names=dict(type='list', aliases=['names']),
         instance_tags=dict(type='list', aliases=['tags']),

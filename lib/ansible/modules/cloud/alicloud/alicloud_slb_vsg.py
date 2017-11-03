@@ -68,7 +68,7 @@ options:
       aliases: [ 'group_id' ]
 requirements:
     - "python >= 2.6"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 author:

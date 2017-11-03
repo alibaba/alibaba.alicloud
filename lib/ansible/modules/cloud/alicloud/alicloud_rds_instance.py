@@ -42,9 +42,10 @@ options:
     description:
       - Aliyun availability zone ID in which to launch the instance.
         If it is not specified, it will be allocated by system automatically.
-    aliases: ['acs_zone', 'ecs_zone', 'zone_id', 'zone' ]
+    aliases: ['zone_id', 'zone']
   engine:
-    description: Database type. Required when C(state=present).
+    description:
+      - Database type. Required when C(state=present).
     choices: [ 'MySQL', 'SQLServer', 'PostgreSQL', 'PPAS' ]
   engine_version:
     description:
@@ -55,7 +56,8 @@ options:
         PPAS: 9.3.
         Required when C(state=present).
   instance_type:
-    description: Instance specification. Required when C(state=present).
+    description:
+      - Instance specification. Required when C(state=present).
     aliases: ['db_instance_class']
   instance_storage:
     description:
@@ -97,8 +99,6 @@ options:
       - The charge duration of the instance. Required when C(instance_charge_type=PrePaid).
     choices: [1~9,12,24,36]
     default: 1
-  client_token:
-    description: Used to ensure idempotency. Required when C(state=present).
   connection_mode:
     description:
       - Performance is standard access mode; Safty is a high security access mode; default is RDS system allocation.
@@ -107,7 +107,8 @@ options:
     description:
       - Vswitch id
   private_ip_address:
-    description: Users can specify VSvitchId under vpcIp, if not input, the system automatically assigned.
+    description:
+      - Users can specify VSvitchId under vpcIp, if not input, the system automatically assigned.
   instance_id:
     description:
       - Instance id, the unique identifier if the instance. Required when C(state in ["present", "absent", "restart"])
@@ -163,7 +164,7 @@ author:
     - "liu Qiang"
 requirements:
     - "python >= 2.7"
-    - "footmark"
+    - "footmark >= 1.1.13"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -329,6 +330,7 @@ instance:
   }
 '''
 
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect, vpc_connect
 
@@ -358,7 +360,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default="present", choices=["present", "absent", "restart"], alias=['status']),
-        alicloud_zone=dict(type='str', aliases=['acs_zone', 'ecs_zone', 'zone_id', 'zone']),
+        alicloud_zone=dict(type='str', aliases=['zone_id', 'zone']),
         engine=dict(type='str', choices=["MySQL", "SQLServer", "PostgreSQL", "PPAS"]),
         engine_version=dict(type='str'),
         instance_net_type=dict(type='str', choices=["Internet", "Intranet"], aliases=['db_instance_net_type']),
@@ -366,7 +368,6 @@ def main():
         security_ips=dict(type='str'),
         instance_charge_type=dict(type='str', choices=["Postpaid", "Prepaid"]),
         period=dict(type='int', choices=range(1, 10).extend([12, 24, 36])),
-        client_token=dict(type='str'),
         connection_mode=dict(type='str', choices=["Performance", "Safty"]),
         vpc_id=dict(type='str'),
         vswitch_id=dict(type='str'),
@@ -404,7 +405,6 @@ def main():
     security_ips = modules.params['security_ips']
     instance_charge_type = modules.params['instance_charge_type']
     period = modules.params['period']
-    client_token = modules.params['client_token']
     connection_mode = modules.params['connection_mode']
     vswitch_id = modules.params['vswitch_id']
     private_ip_address = modules.params['private_ip_address']
@@ -434,8 +434,6 @@ def main():
             vswitch_obj = vpc.get_vswitch_attribute(vswitch_id)
             if vswitch_obj:
                 vpc_id = vswitch_obj.vpc_id
-            else:
-                modules.fail_json(msg=str("Unable to get vpc_id, error:{0}".format(e)))
         except Exception as e:
             modules.fail_json(msg=str("Unable to get vswitch, error:{0}".format(e)))
     if instance_id:
@@ -468,6 +466,7 @@ def main():
         modules.fail_json(msg=str("Unable to restart your instance, please check your instance_id and try again!"))
     if not current_instance:
         try:
+            client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
             current_instance = rds.create_rds_instance(engine=engine,
                                                        engine_version=engine_version,
                                                        db_instance_class=instance_type,
