@@ -44,7 +44,8 @@ options:
         If it is not specified, it will be allocated by system automatically.
     aliases: ['zone_id', 'zone']
   engine:
-    description: Database type. Required when C(state=present).
+    description:
+      - Database type. Required when C(state=present).
     choices: [ 'MySQL', 'SQLServer', 'PostgreSQL', 'PPAS' ]
   engine_version:
     description:
@@ -55,7 +56,8 @@ options:
         PPAS: 9.3.
         Required when C(state=present).
   instance_type:
-    description: Instance specification. Required when C(state=present).
+    description:
+      - Instance specification. Required when C(state=present).
     aliases: ['db_instance_class']
   instance_storage:
     description:
@@ -105,7 +107,8 @@ options:
     description:
       - Vswitch id
   private_ip_address:
-    description: Users can specify VSvitchId under vpcIp, if not input, the system automatically assigned.
+    description:
+      - Users can specify VSvitchId under vpcIp, if not input, the system automatically assigned.
   instance_id:
     description:
       - Instance id, the unique identifier if the instance. Required when C(state in ["present", "absent", "restart"])
@@ -431,8 +434,6 @@ def main():
             vswitch_obj = vpc.get_vswitch_attribute(vswitch_id)
             if vswitch_obj:
                 vpc_id = vswitch_obj.vpc_id
-            else:
-                modules.fail_json(msg=str("Unable to get vpc_id, error:{0}".format(e)))
         except Exception as e:
             modules.fail_json(msg=str("Unable to get vswitch, error:{0}".format(e)))
     if instance_id:
