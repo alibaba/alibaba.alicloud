@@ -156,11 +156,21 @@ options:
       description:
         - The action of operating security group.
       choices: ['join', 'leave']
+    key_name:
+      description:
+        - The name of key pair which is used to access ECS instance in SSH.
+      required: false
+      aliases: ['keypair']
+    user_data:
+      description:
+        - User-defined data to customize the startup behaviors of an ECS instance and to pass data into an ECS instance.
+          It only will take effect when launching the new ECS instances.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.13"
+    - "footmark >= 1.1.14"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -329,6 +339,8 @@ def create_instance(module, ecs, exact_count):
     auto_renew = module.params['auto_renew']
     instance_charge_type = module.params['instance_charge_type']
     auto_renew_period = module.params['auto_renew_period']
+    user_data = module.params['user_data']
+    key_name = module.params['key_name']
 
     # check whether the required parameter passed or not
     if not image_id:
@@ -349,7 +361,8 @@ def create_instance(module, ecs, exact_count):
                                         system_disk_description=system_disk_description,
                                         vswitch_id=vswitch_id, count=exact_count, allocate_public_ip=allocate_public_ip,
                                         instance_charge_type=instance_charge_type, period=period, auto_renew=auto_renew,
-                                        auto_renew_period=auto_renew_period, instance_tags=instance_tags, client_token=client_token)
+                                        auto_renew_period=auto_renew_period, instance_tags=instance_tags,
+                                        key_pair_name=key_name, user_data=user_data, client_token=client_token)
 
     except Exception as e:
         module.fail_json(msg='Unable to create instance, error: {0}'.format(e))
@@ -388,6 +401,8 @@ def main():
         instance_ids=dict(type='list'),
         sg_action=dict(type='str'),
         auto_renew_period=dict(type='int'),
+        key_name=dict(type='str', aliases=['keypair']),
+        user_data=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -403,6 +418,7 @@ def main():
     instance_name = module.params['instance_name']
     force = module.params['force']
     zone_id = module.params['alicloud_zone']
+    key_name = module.params['key_name']
     changed = False
 
     instances = []
@@ -464,6 +480,17 @@ def main():
                         changed = inst.leave_security_group(security_group_id)
 
         # Security Group join/leave ends here
+
+        # Attach/Detach key pair
+        inst_ids = []
+        for inst in instances:
+            if key_name is not None and key_name != inst.key_name:
+                if key_name == "":
+                    changed = inst.detach_key_pair()
+                else:
+                    inst_ids.append(inst.id)
+        if inst_ids:
+            changed = ecs.attach_key_pair(instance_ids=inst_ids, key_pair_name=key_name)
 
         # Modify instance attribute
         description = module.params['description']

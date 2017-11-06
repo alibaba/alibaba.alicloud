@@ -50,7 +50,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.13"
+    - "footmark >= 1.1.14"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -118,6 +118,7 @@ instances:
         "instance_name": "test-instance",
         "instance_type": "ecs.n1.small",
         "io_optimized": true,
+        "key_name": "test"
         "launch_time": "2017-05-23T00:56Z",
         "private_ip": "10.31.153.209",
         "public_ip": "47.94.45.175",
@@ -177,7 +178,8 @@ def get_instance_info(inst):
                      'tags': inst.tags,
                      'vpc_attributes': inst.vpc_attributes,
                      'eip': inst.eip_address,
-                     'io_optimized': inst.io_optimized
+                     'io_optimized': inst.io_optimized,
+                     'key_name': inst.key_name
                      }
     try:
         bdm_dict = {}
