@@ -2,6 +2,13 @@
 
 ## 1.1.0 (unreleased)
 
+## 1.0.12 (November 6, 2017)
+
+IMPROVEMENTS:
+
+  * alicloud_instance: add key pair and userdata ([#69](https://github.com/alibaba/footmark/pull/69))
+
+
 ## 1.0.11 (November 2, 2017)
 
 IMPROVEMENTS:
