@@ -118,7 +118,7 @@ instances:
         "instance_name": "test-instance",
         "instance_type": "ecs.n1.small",
         "io_optimized": true,
-        "key_name": "test"
+        "key_name": "test",
         "launch_time": "2017-05-23T00:56Z",
         "private_ip": "10.31.153.209",
         "public_ip": "47.94.45.175",
