@@ -9,8 +9,6 @@ IMPROVEMENTS:
   * alicloud_instance: add key pair and userdata ([#69](https://github.com/alibaba/footmark/pull/69))
 
 
-## 1.0.11 (November 2, 2017)
-
 IMPROVEMENTS:
 
   * add client token for disk, group, vpc, vswitch, slb and rds ([#67](https://github.com/alibaba/footmark/pull/67))
