@@ -18,10 +18,43 @@
     alicloud_zone: cn-beijing-a
     vsw_description: Test vswitch created
 
+    # create group
+    sg_name: travis-ansible-instance
+    inboundRules:
+      - proto: tcp
+        port_range: 22/22
+        cidr_ip: 0.0.0.0/0
+        priority: 1
+
+      - proto: tcp
+        port_range: 80/80
+        cidr_ip: 0.0.0.0/0
+        priority: 1
+
+      - proto: udp
+        port_range: 10988/10989
+        cidr_ip: 47.89.23.33/32
+        priority: 2
+
+    outboundRules:
+      - proto: tcp
+        port_range: 80/80
+        cidr_ip: 192.168.0.54/32
+        priority: 1
+
+      - proto: tcp
+        port_range: 8080/8085
+        cidr_ip: 47.89.23.33/32
+        priority: 1
+
+      - proto: udp
+        port_range: 10989/10997
+        cidr_ip: 47.89.23.33/32
+        priority: 2
+
     # Eip Realted interface
     internetChargeType: PayByTraffic
-    bandwidth: 5
-    new_bandwidth: 7
+    bandwidth: 7
 
     # create ecs instance connected to the switch
     image: ubuntu_14_0405_64_40G_base_20170222.vhd
@@ -33,6 +66,7 @@
     allocate_public_ip: False
     pagenumber: 1
     pagesize: 10
+    user_data: "#!/bin/sh\ncd /root\ntouch hahah\nwget http://wordpress.org/latest.tar.gz\n"
 
     # create route entry
     destination_cidrblock: 10.0.14.0/24
@@ -48,15 +82,6 @@
       register: create_vpc
     - debug: var=create_vpc
 
-    # Querying vpc list with all valid parameters
-    - name: Querying vpc
-      alicloud_vpc:
-       alicloud_region: '{{ alicloud_region }}'
-       vpc_id: '{{ create_vpc["vpc_id"] }}'
-       state: list
-      register: query_vpc_result
-    - debug: var=query_vpc_result
-
     # Create Vswitch
     - name: Create VSwitch
       alicloud_vswitch:
@@ -70,28 +95,20 @@
       register: create_vsw
     - debug: var=create_vsw
 
-    # Querying vswitch list with vpc_id
-    - name: Querying vswitch
-      alicloud_vswitch:
-       alicloud_region: '{{ alicloud_region }}'
-       vpc_id: '{{ create_vpc["vpc_id"] }}'
-       state: list
-      register: query_vsw
-    - debug: var=query_vsw
-
-     # Querying vswitch list with vswitch_ids
-    - name: Querying vswitch
-      alicloud_vswitch:
-       alicloud_region: '{{ alicloud_region }}'
-       vswitch_id: '{{ create_vsw["vswitch_id"] }}'
-       state: list
-      register: query_vsw_2
-    - debug: var=query_vsw_2
+    - name: Creating security group
+      alicloud_security_group:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ sg_name }}'
+        description: '{{description}}'
+        vpc_id: '{{ create_vpc.vpc_id }}'
+        rules: '{{ inboundRules }}'
+        rules_egress: '{{ outboundRules }}'
+      register: createsgeresult
+    - debug: var=createsgeresult
 
     - name: Creating an ECS instance
-      ecs:
+      alicloud_instance:
         alicloud_region: '{{ alicloud_region }}'
-        alicloud_zone: '{{ alicloud_zone }}'
         image: '{{ image }}'
         type: '{{ type }}'
         instance_name: '{{ instance_name }}'
@@ -99,8 +116,10 @@
         host_name: '{{ host_name }}'
         password: '{{ password }}'
         count: '{{ count }}'
+        group_id: '{{ createsgeresult.group_id }}'
         allocate_public_ip: '{{ allocate_public_ip }}'
-        vswitch_id: '{{ create_vsw["vswitch_id"] }}'
+        vswitch_id: '{{ create_vsw.vswitch_id }}'
+        user_data: '{{ user_data }}'
       register: create_instance_result
     - debug: var=create_instance_result
 
@@ -115,63 +134,36 @@
       register: create_route_entry
     - debug: var=create_route_entry
 
-    # Querying route entry list with all valid parameters
-    - name: Querying vrouter list
-      alicloud_route_entry:
-       alicloud_region: '{{ alicloud_region }}'
-       router_id: '{{ create_vpc["vpc"]["router_id"] }}'
-       state: list
-      register: query_vrouter_result
-    - debug: var=query_vrouter_result
+    - name: allocating an eip
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        internet_charge_type: '{{ internetChargeType }}'
+        bandwidth: '{{ bandwidth }}'
+        ip_address: '47.93.2.116'
+        state: present
+      register: new_eip
 
-#    - name: Request EIP with all parameters
-#      ecs_eip:
-#       alicloud_region: '{{ alicloud_region }}'
-#       bandwidth: '{{ bandwidth }}'
-#       internet_charge_type: '{{ internetChargeType }}'
-#      register: req_eip_result
-#    - debug: var=req_eip_result
-#
-#
-#    - name: Modify EIP with all parameters
-#      ecs_eip:
-#       alicloud_region: '{{ alicloud_region }}'
-#       bandwidth: '{{ new_bandwidth }}'
-#       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
-#      register: modify_eip
-#    - debug: var=modify_eip
-#
-#    - name: Binding EIP with all parameters
-#      ecs_eip:
-#       alicloud_region: '{{ alicloud_region }}'
-#       state: join
-#       instance_id: '{{ create_instance_result.result[0].instance_id }}'
-#       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
-#      register: bind_eip_result
-#    - debug: var=bind_eip_result
-#
-#    - pause:
-#        seconds: 15
-#
-#    - name: Unbinding EIP with all parameters
-#      ecs_eip:
-#       alicloud_region: '{{ alicloud_region }}'
-#       state: leave
-#       instance_id: '{{ create_instance_result.result[0].instance_id }}'
-#       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
-#      register: unbind_eip_result
-#    - debug: var=unbind_eip_result
-#
-#    - pause:
-#        seconds: 15
-#
-#    - name: Release EIP with all parameters
-#      ecs_eip:
-#       alicloud_region: '{{ alicloud_region }}'
-#       state: absent
-#       allocation_id: '{{ req_eip_result.result["AllocationId"] }}'
-#      register: release_eip_result
-#    - debug: var=release_eip_result
+    - name: associate the created EIP with an ECS instance
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        bandwidth: '{{bandwidth}}'
+        ip_address: '{{ new_eip.ip_address }}'
+        instance_id: '{{ create_instance_result["instance_ids"][0] }}'
+        state: present
+
+    - name: disassociate the created EIP with an ECS instance
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        bandwidth: '{{bandwidth}}'
+        ip_address: '{{ new_eip.ip_address }}'
+        instance_id: '{{ create_instance_result["instance_ids"][0] }}'
+        state: absent
+
+    - name: release the created EIP
+      alicloud_eip:
+        alicloud_region: '{{ alicloud_region }}'
+        ip_address: '{{ new_eip.ip_address }}'
+        state: absent
 
     - name: Delete route entry
       alicloud_route_entry:
@@ -187,9 +179,8 @@
       alicloud_instance:
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ create_instance_result["instance_ids"][0] }}'
+        force: true
         state: absent
-      register: delete_instance_result
-    - debug: var=delete_instance_result
 
     # Delete Vsitches with vpc_id and vswitch_ids
     - name: Delete Vswitch
@@ -198,29 +189,15 @@
         alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ create_vpc["vpc_id"] }}'
         vswitch_id: '{{ create_vsw["vswitch_id"] }}'
-      register: delete_vswitch_result
-    - debug: var=delete_vswitch_result
-
-    - name: Get Security Group Info
-      alicloud_security_group:
-        state: list
-        alicloud_region: '{{ alicloud_region }}'
-        vpc_id: '{{ create_vpc["vpc_id"] }}'
-      register: security_group_result
-    - debug: var=security_group_result
 
     - name: Delete Security Group
       alicloud_security_group:
         state: absent
         alicloud_region: '{{ alicloud_region }}'
-        group_id: '{{ security_group_result["group_ids"][0] }}'
-      register: delete_security_group_result
-    - debug: var=delete_security_group_result
+        group_id: '{{ createsgeresult.group_id }}'
 
     - name: Delete VPC
       alicloud_vpc:
         alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ create_vpc["vpc_id"] }}'
         state: '{{ stateDel }}'
-      register: delete_vpc
-    - debug: var=delete_vpc

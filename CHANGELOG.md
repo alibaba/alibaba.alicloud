@@ -1,6 +1,12 @@
 # Ansible-Alicloud Change Log
 
-## 1.1.0 (unreleased)
+## 1.2.0 (unrelease)
+
+## 1.1.1 (November 13, 2017)
+
+NEW RESOURCE MODULES:
+
+    * alicloud_eip: new module for EIP ([#76](https://github.com/alibaba/footmark/pull/76))
 
 ## 1.0.12 (November 6, 2017)
 

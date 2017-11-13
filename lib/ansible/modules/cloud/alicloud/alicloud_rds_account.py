@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: alicloud_rds_account
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Delete, Modyfy, Reset rds account, Grant or Revoke privilege.
 description:
   - This module allows the user to manage rds account. Includes support for creating, deleting,
@@ -75,8 +75,8 @@ options:
 author:
   - "Li Qiang"
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 """

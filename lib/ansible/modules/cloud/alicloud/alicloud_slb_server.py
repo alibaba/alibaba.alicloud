@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: alicloud_slb_server
-version_added: "2.4"
+version_added: "2.5"
 short_description: Add or remove a list of backend servers to/from a specified SLB
 description:
   - Returns information about the backend servers. Will be marked changed when called only if state is changed.
@@ -59,8 +59,8 @@ options:
         choices: [0~100]
         default: 100
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:

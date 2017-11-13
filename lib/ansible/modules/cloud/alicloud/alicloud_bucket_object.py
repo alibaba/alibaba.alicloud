@@ -24,7 +24,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: alicloud_bucket_object
-version_added: "2.4"
+version_added: "2.5"
 short_description: Manage object in OSS
 description:
     - This module allows the user to manage OSS objects within bucket. Includes support for uploading and downloading
@@ -74,8 +74,8 @@ options:
         Its format like 1-100 that indicates range from one to hundred bytes of object.
     aliases: [ 'range' ]
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:
