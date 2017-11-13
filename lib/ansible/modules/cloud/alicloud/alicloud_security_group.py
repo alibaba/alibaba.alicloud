@@ -24,7 +24,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: alicloud_security_group
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Query or Delete Security Group.
 description:
   - Create, Query or Delete Security Group, and it contains security group rules management.
@@ -135,8 +135,8 @@ options:
     description:
       - Security group ID. It is required when deleting or querying security group or performing rules authorization.
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:

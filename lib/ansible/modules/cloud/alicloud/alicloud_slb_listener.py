@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: alicloud_slb_listener
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Delete, Start or Stop Server Load Balancer Listener in ECS
 description:
   - Create, Delete, Start or Stop Server Load Balancer Listener in ECS
@@ -175,8 +175,8 @@ options:
     default: 'off'
     choices: ['on', 'off']
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:

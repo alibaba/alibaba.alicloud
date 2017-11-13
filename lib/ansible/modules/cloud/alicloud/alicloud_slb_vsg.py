@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: alicloud_slb_vsg
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Delete VServerGroup and Modify its name or backend servers.
 description:
   - Create, Delete VServerGroup and Modify its name or backend servers.
@@ -68,7 +68,7 @@ options:
       aliases: [ 'group_id' ]
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.13"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:
