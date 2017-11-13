@@ -24,16 +24,16 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: alicloud_route_entry
-version_added: "2.4"
+version_added: "2.5"
 short_description: Manage route entry for Alicloud virtual private cloud,
 description:
     - Manage route entry for Alicloud virtual private cloud.
-      Create or Delete route entry and Query route entries in one route table.
+      Create or Delete route entry in one route table.
 options:
   state:
     description:
-      -  Whether or not to create, delete or query route entry.
-    choices: ['present', 'absent', 'list']
+      -  Whether or not to create, delete route entry.
+    choices: ['present', 'absent']
     default: 'present'
   router_id:
     description:
@@ -60,8 +60,8 @@ notes:
   - The destination_cidrblock can't be 100.64.0.0/10 and can't belong to it.
   - When state is 'list', the parameters 'route_table_id', 'destination_cidrblock' and 'nexthop_id' are optional.
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -250,7 +250,7 @@ def create_route_entry(module, vpc, route_table_id):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(default='present', choices=['present', 'absent', 'list']),
+        state=dict(default='present', choices=['present', 'absent']),
         destination_cidrblock=dict(type='str', aliases=['dest_cidrblock', 'cidr_block']),
         nexthop_type=dict(default='Instance', aliases=['hop_type'], choices=['Instance', 'Tunnel', 'HaVip', 'RouterInterface']),
         nexthop_id=dict(aliases=['hop_id']),
@@ -298,14 +298,13 @@ def main():
         module.fail_json(msg='Unable to retrieve route entries, error: {0}'.format(e))
 
     if state == 'present':
-        if route_entry:
-            module.fail_json(changed=changed, msg="The specified route entry {0} has existed in route table {1}."
-                             .format(destination_cidrblock, route_table_id))
-        changed, route_entry = create_route_entry(module, vpc, route_table_id)
+        if not route_entry:
+            changed, route_entry = create_route_entry(module, vpc, route_table_id)
+
         module.exit_json(changed=changed, route_table_id=route_table_id, route_entry=get_route_entry_detail(route_entry),
                          destination_cidrblock=route_entry.destination_cidrblock)
 
-    elif state == 'absent':
+    else:
         if route_entry:
             try:
                 changed = vpc.delete_route_entry(route_table_id, destination_cidrblock=destination_cidrblock, nexthop_id=nexthop_id)
@@ -315,22 +314,6 @@ def main():
 
         module.exit_json(changed=changed, msg="Please specify a route entry by using 'destination_cidrblock',"
                                               "and expected vpcs: {0}".format(route_entries_basic))
-
-    elif state == 'list':
-        if route_entry:
-            module.exit_json(changed=False, route_table_id=route_table_id, route_entries=[route_entry],
-                             destination_cidrblocks=[route_entry.destination_cidrblock], total=1)
-
-        destination_cidrblocks = []
-        route_entries_detail = []
-        for entry in route_entries:
-            destination_cidrblocks.append(entry.destination_cidrblock)
-            route_entries_detail.append(get_route_entry_detail(entry))
-        module.exit_json(changed=False, route_table_id=route_table_id, route_entries=route_entries_detail,
-                         destination_cidrblocks=destination_cidrblocks, total=len(route_entries))
-
-    else:
-        module.fail_json(msg='The expected state: {0}, {1} and {2}, but got {3}.'.format("present", "absent", "list", state))
 
 
 if __name__ == '__main__':

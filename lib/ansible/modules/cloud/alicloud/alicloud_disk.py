@@ -24,7 +24,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: alicloud_disk
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Attach, Detach or Delete a disk in Alicloud ECS
 description:
   - Creates and delete a ECS disk.starts, stops, restarts or terminates ecs instances.
@@ -92,8 +92,8 @@ options:
 notes:
   - At present, when attach disk, system allocates automatically disk device according to default order from /dev/xvdb to /dev/xvdz.
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:

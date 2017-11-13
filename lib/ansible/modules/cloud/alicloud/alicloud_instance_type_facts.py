@@ -57,7 +57,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.13"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 '''

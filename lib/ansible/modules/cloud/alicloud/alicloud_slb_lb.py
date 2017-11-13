@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: alicloud_slb_lb
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Delete, Enable or Disable Server Load Balancer in ECS.
 description:
   - Create, Delete, Enable or Disable Server Load Balancer in ECS.
@@ -76,8 +76,8 @@ options:
     default: 1
     choices: [ 1-1000 Mbps ]
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:

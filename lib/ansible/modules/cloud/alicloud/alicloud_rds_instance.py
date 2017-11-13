@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: alicloud_rds_instance
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Restart or Terminate an Instance in RDS.
 description:
     - Create, restart, modify or terminate rds instances.
@@ -163,8 +163,8 @@ options:
 author:
     - "liu Qiang"
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 '''

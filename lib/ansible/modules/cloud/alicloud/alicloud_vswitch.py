@@ -24,7 +24,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: alicloud_vswitch
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create, Query or Delete Vswitch.
 description:
     - Create, Query or Delete vswitch which in the vpc.
@@ -64,8 +64,8 @@ options:
       - When retrieving VSwitch, it can mark the VSwitch is created by system.
     type: bool
 requirements:
-    - "python >= 2.7"
-    - "footmark >= 1.1.13"
+    - "python >= 2.6"
+    - "footmark >= 1.1.16"
 extends_documentation_fragment:
     - alicloud
 author:
