@@ -38,6 +38,22 @@ options:
       description:
         - A list of RDS database instance ids.
       aliases: [ "db_instance_ids" ]
+    engine:
+      description:
+        - Type of the database.
+    dbinstance_type:
+      description:
+        - Instance type.
+    instance_network_type:
+      description:
+        - Instance network type.
+    connection_mode:
+      description:
+        - Instance connection mode.
+    tags:
+      description:
+        - Database tags.
+      
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -51,13 +67,19 @@ EXAMPLES = '''
 # Fetch database instance details according to setting different filters
 - name: fetch database instance details example
   hosts: localhost
+  connection: local
   vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-beijing
+    engine: MySQL
+    dbinstance_type: Temp
+    instance_network_type: Classic
+    connection_mode: Safe
+    tags:  
+      rds: '01'
     instance_ids:
-      - rm-dj1d7a046kur7syix
-      - rm-dj164ju77728joefu
+      - rm-dj163498yvlgy80ug
   tasks:
     - name: Find all database instance in the specified region
       alicloud_rds_instance_facts:
@@ -75,6 +97,47 @@ EXAMPLES = '''
         instance_ids: '{{ instance_ids }}'
       register: db_instance_by_ids
     - debug: var=db_instance_by_ids
+    
+    - name: Find all database instance in the specified region based on database instance type
+      alicloud_rds_instance_facts:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ instance_ids }}'        
+        engine: '{{ engine }}'
+      register: db_instance_by_dbtype
+    - debug: var=db_instance_by_dbtype   
+     
+    - name: Find all database instance in the specified region based on instance type
+      alicloud_rds_instance_facts:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ instance_ids }}'        
+        dbinstance_type: '{{ dbinstance_type }}'
+      register: db_instance_by_type
+    - debug: var=db_instance_by_type  
+      
+    - name: Find all database instance in the specified region based on instance network type
+      alicloud_rds_instance_facts:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ instance_ids }}'        
+        instance_network_type: '{{ instance_network_type }}'
+      register: db_instance_by_network_type
+    - debug: var=db_instance_by_network_type  
+      
+    - name: Find all database instance in the specified region based on instance connection mode and tags
+      alicloud_rds_instance_facts:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ instance_ids }}'        
+        connection_mode: '{{ connection_mode }}'
+        tags: '{{ tags }}'
+      register: db_instance_by_connection_mode
+    - debug: var=db_instance_by_connection_mode          
 '''
 
 RETURN = '''
@@ -150,7 +213,7 @@ from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect, vp
 HAS_FOOTMARK = False
 
 try:
-    from footmark.exception import ECSResponseError
+    from footmark.exception import RDSResponseError
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -187,6 +250,11 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         instance_ids=dict(type='list', aliases=['db_instance_ids']),
+        engine=dict(type='str'),
+        dbinstance_type=dict(type='str'),
+        instance_network_type=dict(type='str'),
+        connection_mode=dict(type='str'),
+        tags = dict(type='dict')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 
@@ -196,6 +264,11 @@ def main():
     result = []
     ids = []
     instance_ids = module.params['instance_ids']
+    engine = module.params['engine']
+    dbinstance_type = module.params['dbinstance_type']
+    instance_network_type = module.params['instance_network_type']
+    connection_mode = module.params['connection_mode']
+    tags = module.params['tags']
 
     if instance_ids and (not isinstance(instance_ids, list) or len(instance_ids)) < 1:
         module.fail_json(msg='instance_ids should be a list of db_instance id, aborting')
@@ -205,7 +278,11 @@ def main():
         # list rds db_instance by instance ids
         if instance_ids:
             instance_id = ",".join(instance_ids)
-            for rds_instance in rds.get_rds_instances(instance_id=instance_id):
+
+            for rds_instance in rds.get_rds_instances(instance_id=instance_id, engine=engine,
+                                                      dbinstance_type=dbinstance_type,
+                                                      instance_network_type=instance_network_type,
+                                                      connection_mode=connection_mode, tags=tags):
                 result.append(get_info(rds_instance))
                 ids.append(rds_instance.dbinstance_id)
 

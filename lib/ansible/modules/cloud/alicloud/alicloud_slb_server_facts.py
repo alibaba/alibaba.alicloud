@@ -38,7 +38,7 @@ options:
         - ID of server load balancer.
       required: true
       aliases: [ "lb_id" ]
-    frontend_server_ports:
+    listener_ports:
       description:
         - A list of backend server listening ports.
       aliases: [ "ports" ]
@@ -55,14 +55,15 @@ EXAMPLES = '''
 # Fetch backend server health status details according to setting different filters
 - name: fetch backend server health status in the specified region
   hosts: localhost
+  connection: local
   vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-beijing
-    load_balancer_id: lb-dj1jywbux1zslfna6pvnv
+    load_balancer_id: lb-dj1e5kwh41n87vkn1pxn5
     ports:
-      - 80
-      - 8080
+      - 100
+      - 90
   tasks:
     - name: Find all backend server health status in specified region
       alicloud_slb_server_facts:
@@ -79,7 +80,7 @@ EXAMPLES = '''
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ load_balancer_id }}'
-        ports: '{{ ports }}'
+        listener_ports: '{{ ports }}'
       register: backend_servera_by_ports
     - debug: var=backend_servera_by_ports
 '''
@@ -147,7 +148,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         load_balancer_id=dict(required=True, aliases=['lb_id']),
-        frontend_server_ports=dict(type='list', aliases=['ports']),
+        listener_ports=dict(type='list', aliases=['ports']),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -156,11 +157,11 @@ def main():
         module.fail_json(msg="Package 'footmark' required for this module.")
 
     load_balancer_id = module.params['load_balancer_id']
-    ports = module.params['frontend_server_ports']
+    ports = module.params['listener_ports']
     result = []
 
     if ports and (not isinstance(ports, list) or len(ports)) < 1:
-        module.fail_json(msg='frontend_server_ports should be a list of backend server ports, aborting')
+        module.fail_json(msg='backend_server_ports should be a list of backend server ports, aborting')
 
     try:
         slb = slb_connect(module)

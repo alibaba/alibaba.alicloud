@@ -33,8 +33,11 @@ description:
 options:
     bucket:
         description:
-          - Name of OSS bucket.
-        aliases: [ 'name' ]    
+          - OSS bucket name.
+        aliases: [ 'name' ]  
+    bucket_prefix:
+        description:
+          - Prefix of OSS bucket name.         
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -52,17 +55,20 @@ EXAMPLES = '''
 # Basic provisioning example to create bucket
 - name: List buckets detail example
   hosts: localhost
+  connection: local
   vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-beijing
-    bucket: xiaozhubucket
+    bucket: buctest1
+    bucket_prefix: buctest1
   tasks:
     - name: List all buckets in the specified region
       alicloud_bucket_facts:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
+        bucket: '{{ bucket }}'
       register: all_buckets
     - debug: var=all_buckets
 
@@ -72,6 +78,7 @@ EXAMPLES = '''
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
+        bucket_prefix: '{{ bucket_prefix }}'
       register: buckets_by_name
     - debug: var=buckets_by_name
 '''
@@ -134,6 +141,7 @@ def main():
     argument_spec.update(
         dict(
             bucket=dict(aliases=["name"]),
+            bucket_prefix=dict(type="str")
         )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -143,7 +151,7 @@ def main():
 
     try:
         oss_service = oss_service_connect(module)
-        keys = oss_service.list_buckets(prefix=module.params['bucket'], max_keys=200)
+        keys = oss_service.list_buckets(prefix=module.params['bucket_prefix'], max_keys=200)
 
         buckets = []
         bucket_names = []

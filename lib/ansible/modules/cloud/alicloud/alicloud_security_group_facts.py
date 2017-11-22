@@ -38,6 +38,9 @@ options:
     vpc_id:
       description:
         - Id of vpc to list security groups.
+    names:    
+    description:
+        - Name of the security group.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -47,17 +50,18 @@ extends_documentation_fragment:
     - alicloud
 '''
 
-EXAMPLES = '''
-# Fetch security group details according to setting different filters
+EXAMPLES = '''# Fetch security group details according to setting different filters
 - name: Fetch security group example
   hosts: localhost
+  connection: local
   vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-beijing
     vpc_id: vpc-2zegusms7jwd94lq7ix8o
+    names: 
+      - sg-j6cgf3gifygjt94zivku   
     group_ids:
-      - sg-2ze12578be1ls4wcjhfd
       - sg-2ze28n1vj1iqztxp7p6h
   tasks:
     - name: Find all security groups in the specified region
@@ -73,7 +77,7 @@ EXAMPLES = '''
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
-        group_ids: '{{ group_ids }}'
+        ids: '{{ group_ids }}'
       register: security_group_by_id
     - debug: var=security_group_by_id
 
@@ -91,8 +95,28 @@ EXAMPLES = '''
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
+        ids: '{{ group_ids }}'
+        vpc_id: '{{ vpc_id }}'
+      register: security_group_by_id_and_vpc_id
+    - debug: var=security_group_by_id_and_vpc_id
+    
+    - name: Find all security groups by name
+      alicloud_security_group_facts:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        names: '{{ names }}'
+      register: security_group_by_vpc_id
+    - debug: var=security_group_by_vpc_id    
+
+    - name: Find all security groups by group ids, vpc id and name 
+      alicloud_security_group_facts:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
         group_ids: '{{ group_ids }}'
         vpc_id: '{{ vpc_id }}'
+        names: '{{ names }}'
       register: security_group_by_id_and_vpc_id
     - debug: var=security_group_by_id_and_vpc_id
 '''
@@ -233,7 +257,8 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         vpc_id=dict(type='str'),
-        group_ids=dict(type='list', aliases=['ids'])
+        group_ids=dict(type='list', aliases=['ids']),
+        names=dict(type='list')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -245,6 +270,7 @@ def main():
 
     vpc_id = module.params['vpc_id']
     group_ids = module.params['group_ids']
+    names = module.params['names']
 
     changed = False
     result = []
@@ -252,29 +278,23 @@ def main():
     if group_ids and (not isinstance(group_ids, list) or len(group_ids)) < 1:
         module.fail_json(msg='group_ids should be a list of security group, aborting')
 
+    if names and (not isinstance(names, list) or len(names)) < 1:
+        module.fail_json(msg='names should be a list of security group names, aborting')
+
     try:
-        if group_ids and vpc_id:
-            security_groups = ecs.get_all_security_groups(group_ids=group_ids, vpc_id=vpc_id)
-            for security_group in security_groups:
-                result.append(get_group_detail(security_group))
+        security_groups = ecs.get_all_security_groups(group_ids=group_ids, vpc_id=vpc_id)
+        group_ids = []
+        for security_group in security_groups:
+            result.append(get_group_detail(security_group))
+            group_ids.append(security_group.id)
 
-        elif group_ids:
-            security_groups = ecs.get_all_security_groups(group_ids=group_ids)
-            for security_group in security_groups:
-                result.append(get_group_detail(security_group))
+        if names:
+            for name in names:
+                security_groups = ecs.get_all_security_groups(name=name)
+                for security_group in security_groups:
+                    result.append(get_group_detail(security_group))
+                    group_ids.append(security_group.id)
 
-        elif vpc_id:
-            group_ids = []
-            security_groups = ecs.get_all_security_groups(vpc_id=vpc_id)
-            for security_group in security_groups:
-                result.append(get_group_detail(security_group))
-                group_ids.append(security_group.id)
-        else:
-            group_ids = []
-            security_groups = ecs.get_all_security_groups()
-            for security_group in security_groups:
-                result.append(get_group_detail(security_group))
-                group_ids.append(security_group.id)
     except ECSResponseError as e:
         module.fail_json(msg='Error in get_all_security_groups: %s' % str(e))
 

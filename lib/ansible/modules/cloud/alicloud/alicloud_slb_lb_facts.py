@@ -36,7 +36,7 @@ description:
 options:
     load_balancer_name:
       description:
-        - A name of server laod balancer.
+        - A list of server laod balancer names.
       aliases: [ "name"]
     load_balancer_ids:
       description:
@@ -55,14 +55,17 @@ EXAMPLES = '''
 # Fetch server load balancers according to setting different filters
 - name: Fetch server load balancer example
   hosts: localhost
+  connection: local
   vars:   
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
+    alicloud_access_key: <your-alicloud-access-key-id>
+    alicloud_secret_key: <your-alicloud-access-secret-key>
     alicloud_region: cn-beijing
     load_balancer_ids:
-      - lb-dj1oi1h5l74hg22gsnugf
-      - lb-dj1t1xwn0y9zcr90e52i2
-    load_balancer_name: test
+      - lb-dj1tlosv0oqbkho4bitj4
+      - lb-dj1e5kwh41n87vkn1pxn5
+    load_balancer_name: 
+          - test1
+          - test
   tasks:
     - name: Find all server load balancers in specified region.
       alicloud_slb_lb_facts:
@@ -72,15 +75,6 @@ EXAMPLES = '''
       register: all_slb
     - debug: var=all_slb
 
-    - name: Find all server load balancers by name
-      alicloud_slb_lb_facts:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_name: '{{ load_balancer_name }}'
-      register: slb_by_name
-    - debug: var=slb_by_name
-
     - name: Find all server load balancers by ids
       alicloud_slb_lb_facts:
         alicloud_access_key: '{{ alicloud_access_key }}'
@@ -89,6 +83,15 @@ EXAMPLES = '''
         load_balancer_ids: '{{ load_balancer_ids }}'
       register: slb_by_id
     - debug: var=slb_by_id
+    
+    - name: Find all server load balancers by name
+      alicloud_slb_lb_facts:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ load_balancer_name }}'
+      register: slb_by_name
+    - debug: var=slb_by_name
 '''
 
 RETURN = '''
@@ -187,7 +190,7 @@ def get_info(lb_obj):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        load_balancer_name=dict(type='str', aliases=['name']),
+        load_balancer_name=dict(type='list', aliases=['name']),
         load_balancer_ids=dict(type='list', aliases=['ids'])
     ))
 
@@ -197,7 +200,7 @@ def main():
         module.fail_json(msg="Package 'footmark' required for this module.")
 
     load_balancer_ids = module.params['load_balancer_ids']
-    load_balancer_name = module.params['load_balancer_name']
+    load_balancer_names = module.params['load_balancer_name']
     result = []
     ids = []
 
@@ -207,23 +210,29 @@ def main():
         if load_balancer_ids and (not isinstance(load_balancer_ids, list) or len(load_balancer_ids)) < 1:
             module.fail_json(msg='load_balancer_ids should be a list of load balancer ids, aborting')
 
+        if load_balancer_names and (not isinstance(load_balancer_names, list) or len(load_balancer_names)) < 1:
+            module.fail_json(msg='load_balancer_name should be a list of load balancer name, aborting')
+
         # list load balancers by name
-        if load_balancer_name:
-            for slb in slb.describe_load_balancers(load_balancer_name=load_balancer_name):
-                result.append(get_info(slb))
-                ids.append(slb.load_balancer_id)
+        if load_balancer_names:
+            result = []
+            ids = []
+            for  load_balancer_name in load_balancer_names:
+                for slb_res in slb.describe_load_balancers(load_balancer_name=load_balancer_name):
+                    result.append(get_info(slb_res))
+                    ids.append(slb_res.load_balancer_id)
 
         # list load balancers by ids
         elif load_balancer_ids:
-            ids = ",".join(load_balancer_ids)
-            for slb in slb.describe_load_balancers(load_balancer_id=ids):
-                result.append(get_info(slb))
-                ids.append(slb.load_balancer_id)
+            slb_lb_ids = ",".join(load_balancer_ids)
+            for slb_res in slb.describe_load_balancers(load_balancer_id=slb_lb_ids):
+                result.append(get_info(slb_res))
+                ids.append(slb_res.load_balancer_id)
         # list all load balancers
         else:
-            for slb in slb.describe_load_balancers():
-                result.append(get_info(slb))
-                ids.append(slb.load_balancer_id)
+            for slb_res in slb.describe_load_balancers():
+                result.append(get_info(slb_res))
+                ids.append(slb_res.load_balancer_id)
 
         module.exit_json(changed=False, load_balancer_ids=ids, load_balancers=result, total=len(result))
     except Exception as e:

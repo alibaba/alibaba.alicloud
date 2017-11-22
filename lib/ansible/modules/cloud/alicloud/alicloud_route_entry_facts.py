@@ -38,6 +38,9 @@ options:
       description:
         - Id of vrouter of vpc
       aliases: ["id"]
+    route_table_id:
+     description:
+        - The ID of the route table.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -57,6 +60,8 @@ EXAMPLES = '''
     alicloud_secret_key: <your-alicloud-secret-key>
     alicloud_region: cn-beijing
     vrouter_id: xxxxxxxxxxxxx
+    route_table_id: xxxxxxxxxxxxx
+    
   tasks:
     - name: Find all vroute_entries in the specified vroute
       alicloud_route_entry_facts:
@@ -66,6 +71,16 @@ EXAMPLES = '''
         vrouter_id: '{{ vrouter_id }}'
       register: result
     - debug: var=result
+    
+    - name: Find all vroute_entries in the specified vroute by route table id
+      alicloud_route_entry_facts:
+        alicloud_access_key: '{{ alicloud_access_key }}'
+        alicloud_secret_key: '{{ alicloud_secret_key }}'
+        alicloud_region: '{{ alicloud_region }}'
+        vrouter_id: '{{ vrouter_id }}'
+        route_table_id: '{{ route_table_id }}'
+      register: result_by_tbl_id
+    - debug: var=result_by_tbl_id    
 
 '''
 
@@ -160,7 +175,8 @@ def get_info(route_entry):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        vrouter_id=dict(type='str', required=True, aliases=['id'])
+        vrouter_id=dict(type='str', required=True, aliases=['id']),
+        route_table_id=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -170,13 +186,15 @@ def main():
 
     result = []
     vrouter_id = module.params['vrouter_id']
+    route_table_id = module.params['route_table_id']
+
 
     try:
         vpc_conn = vpc_connect(module)
 
         # list all route entries in vrouter
         if vrouter_id:
-            vrouter_entries = vpc_conn.get_all_route_entries(router_id=vrouter_id)
+            vrouter_entries = vpc_conn.get_all_route_entries(router_id=vrouter_id, route_table_id=route_table_id)
             for vrouter_entry in vrouter_entries:
                 result.append(get_info(vrouter_entry))
     except Exception as e:
