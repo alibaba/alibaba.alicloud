@@ -70,7 +70,21 @@ options:
           - Id of snapshot
       disk_size:
         description:
-          - Size of the disk, in the range [5-2000GB]                
+          - Size of the disk, in the range [5-2000GB]   
+  client_token:
+    description:
+      - Used to ensure the idempotence of the request.
+  wait:
+    description:
+      - wait for the Image to be in state 'available'.      
+     default: 'no'
+     choices: [ 'yes', 'no' ]
+     
+  wait_timeout:
+    description:
+      - how long before wait gives up, in seconds     
+    default: 300
+               
   image_id:
     description:
       - Image ID to be deregistered.
@@ -106,7 +120,10 @@ EXAMPLES = '''
     image_name: image_test
     image_version: 4
     description: description
-    image_id: xxxxxxxxxx 
+    image_id: xxxxxxxxxx   
+    wait: false
+    wait_timeout: 10
+    
   tasks:
     - name: create image form ecs instance
       alicloud_image:
@@ -146,7 +163,9 @@ EXAMPLES = '''
         image_version: '{{ image_version }}'
         description: '{{ description }}'       
         disk_mapping: '{{ disk_mapping }}'
-        state: 'present'        
+        wait: '{{ wait }}'
+        wait_timeout: '{{ wait_timeout }}'
+        state: 'present'      
       register: result
     - debug: var=result
 
@@ -210,7 +229,6 @@ except ImportError:
 def get_image_detail(image):
     """
     Method call to get image details
-
     :param image:  Image object to Describe
     :return: return id, status and object of disk
     """
@@ -230,7 +248,6 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
                  disk_mapping, client_token, wait, wait_timeout):
     """
     Create a user-defined image with snapshots.
-
     :param module: Ansible module object
     :param ecs: authenticated ecs connection object
     :param snapshot_id: A user-defined image is created from the specified snapshot.
@@ -289,18 +306,18 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
 
     # call to create_image method in footmark
     try:
-        changed, result, current_image = ecs.create_image(snapshot_id=snapshot_id, image_name=image_name,
-                                                          image_version=image_version, description=description,
-                                                          instance_id=instance_id, disk_mapping=disk_mapping,
-                                                          client_token=client_token, wait=wait,
-                                                          wait_timeout=wait_timeout)
+        changed, image_id, results, request_id = ecs.create_image(snapshot_id=snapshot_id, image_name=image_name,
+                                                                  image_version=image_version, description=description,
+                                                                  instance_id=instance_id, disk_mapping=disk_mapping,
+                                                                  client_token=client_token, wait=wait,
+                                                                  wait_timeout=wait_timeout)
 
-        if 'error code' in str(result).lower():
-            module.fail_json(changed=changed, msg=result)
+        if 'error code' in str(results).lower():
+            module.fail_json(changed=changed, msg=results)
 
     except ECSResponseError as e:
         module.fail_json(msg='Unable to create image, error: {0}'.format(e))
-    return changed, result, current_image
+    return changed, image_id, results, request_id
 
 
 def main():
@@ -316,7 +333,7 @@ def main():
         state=dict(default='present', choices=[
             'present', 'absent'
         ]),
-        wait=dict( default=False, type='bool'),
+        wait=dict(default=False, type=bool),
         wait_timeout=dict(type='int', default='300')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
@@ -333,13 +350,11 @@ def main():
     current_image = None
 
     try:
-
-
         if image_id:
             images = ecs.get_all_images(image_id=image_id)
             if images and len(images) == 1:
                 current_image = images[0]
-        elif image_name:
+        elif image_name and state == 'absent':
             images = ecs.get_all_images(image_name=image_name)
             if images:
                 if len(images) == 1:
@@ -350,7 +365,7 @@ def main():
                         images_ids.append(i.id)
                     module.fail_json(msg="There is too many images match name '{0}', "
                                          "please use image_id or a new image_name to specify a unique image."
-                                         "Matched images ids are: {1}".format(image_name, images_ids))
+                                             "Matched images ids are: {1}".format(image_name, images_ids))
         elif state == 'absent':
             images = ecs.get_all_images()
             if images and len(images) > 0:
@@ -364,8 +379,8 @@ def main():
             module.fail_json(msg="Please use valid image_id or image_name to specify one image for deleting.")
 
         try:
-            changed = current_image.delete()
-            module.exit_json(changed=changed, image_id=current_image.id, image=get_image_detail(current_image))
+            changed_img = current_image.delete()
+            module.exit_json(changed=changed_img, image_id=current_image.id, image=get_image_detail(current_image))            
         except Exception as e:
             module.fail_json(msg='Deleting a image is failed, error: {0}'.format(e))
     if not current_image:
@@ -381,13 +396,17 @@ def main():
         try:
             # Calling create_image method
             client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
-            changed, result, current_image = create_image(module=module, ecs=ecs, snapshot_id=snapshot_id,
+            changed, image_id, results, request_id = create_image(module=module, ecs=ecs, snapshot_id=snapshot_id,
                                                           image_name=image_name, image_version=image_version,
                                                           description=description, instance_id=instance_id,
                                                           disk_mapping=disk_mapping, client_token=client_token,
                                                           wait=wait, wait_timeout=wait_timeout)
+            images = ecs.get_all_images(image_id=image_id)
+            if images:
+                if len(images) == 1:
+                    current_image = images[0]
 
-            module.exit_json(changed=changed, image_id=result[0]['image_id'], image=get_image_detail(current_image))
+            module.exit_json(changed=changed, image_id=image_id, image=get_image_detail(current_image) )
         except Exception as e:
             module.fail_json(msg='Creating a new image is failed, error: {0}'.format(e))
 

@@ -252,7 +252,6 @@ def main():
 
     try:
         ecs = ecs_connect(module)
-
         if image_ids:
             image_id = ",".join(image_ids)
             for image in ecs.get_all_images(image_id=image_id):
@@ -261,10 +260,10 @@ def main():
 
         elif image_names:
             for name in image_names:
-                image = ecs.get_all_images(image_name=name)
-                if image and len(image) == 1:
-                    result.append(get_info(image[0]))
-                    ids.append(image[0].image_id)
+                for image in ecs.get_all_images(image_name=name):
+                    if image:						
+                        result.append(get_info(image))
+                        ids.append(image.image_id)
 
         else:
             for image in ecs.get_all_images():
