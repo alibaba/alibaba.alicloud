@@ -9,115 +9,67 @@
     alicloud_zone: cn-beijing-a
 
   tasks:
-    - name: Creating listener
-      alicloud_slb_listener:
+    - name: create server load balancer
+      alicloud_slb_lb:
         alicloud_region: '{{ alicloud_region }}'
-        listener_type: tcp
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        backend_server_port: 80
-        bandwidth: 4
-        server_certificate_id: 1307087942598154_15d9be73dc3_1698816079_2014691590
-        sticky_session: off
-        health_check: off
+        name: "test-alb-ansible"
         state: present
-      register: create_instance_result
-    - debug: var=create_instance_result
-    
-    - name: start listener
+      register: slb
+
+    - name: Creating tcp listener
       alicloud_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        listener_type: tcp
-        state: running
-      register: create_instance_result
-    - debug: var=create_instance_result
+        protocol: tcp
+        load_balancer_id: '{{ slb.load_balancer.id }}'
+        listener_port: 443
+        backend_server_port: 443
+        bandwidth: 4
+        sticky_session: off
+        state: present
+      register: tcp
    
     - name: stop listener
       alicloud_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        listener_type: tcp
+        load_balancer_id: '{{ slb.load_balancer.id }}'
+        listener_port: 443
         state: stopped
-      register: create_instance_result
-    - debug: var=create_instance_result
-    
-    - name: start listener
-      alicloud_slb_listener:
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        listener_type: tcp
-        state: running
-      register: create_instance_result
-    - debug: var=create_instance_result
-    
-    - name: set access control status
-      alicloud_slb_listener:
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        listener_type: tcp
-        access_control_status: on
-        state: present
-      register: create_instance_result
-    - debug: var=create_instance_result
-    
-    - name: add white list item
-      alicloud_slb_listener:
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        listener_type: tcp
-        source_items: 100.22.3.4 
-        state: present
-      register: create_instance_result
-    - debug: var=create_instance_result
-    
-    - name: remove white list item
-      alicloud_slb_listener:
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        listener_type: tcp
-        source_items: 100.22.3.4
-        state: absent
-      register: create_instance_result
-    - debug: var=create_instance_result
-    
-    - name: set attribute
-      alicloud_slb_listener:
-        alicloud_region: '{{ alicloud_region }}'
-        listener_type: tcp
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        bandwidth: 5
-        scheduler: wrr
-        sticky_session: off
-        server_certificate_id: 1307087942598154_15d9be73dc3_1698816079_2014691590
-        health_check: off
-        state: present
-      register: create_instance_result
-    - debug: var=create_instance_result
-    
-    - name: list
-      alicloud_slb_listener:
-        alicloud_region: '{{ alicloud_region }}'
-        listener_type: tcp
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_port: 80
-        state: list
-      register: create_instance_result
-    - debug: var=create_instance_result
-    
+
     - name: delete listener
       alicloud_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: lb-2zehfr9wsqo2lfkhzue66
-        listener_type: tcp
+        load_balancer_id: '{{ slb.load_balancer.id }}'
+        listener_port: 443
+        state: absent
+
+    - name: Creating http listener
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        protocol: http
+        load_balancer_id: '{{ slb.load_balancer.id }}'
+        listener_port: 80
+        backend_server_port: 80
+        bandwidth: 4
+        sticky_session: off
+        state: present
+      register: tcp
+
+    - name: stop listener
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: '{{ slb.load_balancer.id }}'
+        listener_port: 80
+        state: stopped
+
+    - name: delete listener
+      alicloud_slb_listener:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: '{{ slb.load_balancer.id }}'
         listener_port: 80
         state: absent
-      register: create_instance_result
-    - debug: var=create_instance_result
+
+    - name: delete load balancer
+      alicloud_slb_lb:
+        alicloud_region: '{{ alicloud_region }}'
+        load_balancer_id: '{{ slb.load_balancer.id }}'
+        state: absent

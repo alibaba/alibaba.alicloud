@@ -2,6 +2,17 @@
 
 ## 1.2.0 (unrelease)
 
+## 1.1.3 (December 20, 2017)
+
+IMPROVEMENTS:
+
+    * alicloud_slb_lb: remove status and add start/stop slb instance ([#78](https://github.com/alibaba/footmark/pull/78))
+
+BUG FIXED:
+
+    * alicloud_slb_listener: fix listener not found ([#78](https://github.com/alibaba/footmark/pull/78))
+
+
 ## 1.1.1 (November 13, 2017)
 
 NEW RESOURCE MODULES:
