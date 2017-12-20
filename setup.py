@@ -18,7 +18,7 @@ AUTHOR = "xiaozhu"
 AUTHOR_EMAIL = "heguimin36@163.com"
 URL = "https://github.com/alibaba/ansible-provider/tree/master/lib/ansible"
 
-VERSION = "1.1.1"
+VERSION = "1.1.3"
 
 setup(
     name=NAME,
@@ -60,5 +60,5 @@ setup(
     package_dir={'': 'lib'},
     packages=find_packages('lib'),
     include_package_data=True,
-    install_requires=['ansible', 'footmark>=1.1.16', 'importlib']
+    install_requires=['ansible', 'footmark>=1.1.18', 'importlib']
 )
