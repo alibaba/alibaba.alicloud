@@ -9,6 +9,7 @@ IMPROVEMENTS:
   * **New Module:** alicloud_ess_group ([#79](https://github.com/alibaba/footmark/pull/79))
   * **New Module:** alicloud_ess_configuration ([#79](https://github.com/alibaba/footmark/pull/79))
   * **New Module:** alicloud_ess_instance ([#79](https://github.com/alibaba/footmark/pull/79))
+  * Update module 'alicloud_slb_listener' examples spelling error: ([#80](https://github.com/alibaba/footmark/pull/80))
 
 
 ## 1.1.3 (December 20, 2017)
