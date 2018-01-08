@@ -1,0 +1,232 @@
+# This Playbook contains test scenario for instance in classic network type
+# Playbook created by : Shrutika M
+
+- name: Testing Classic network type scenarions
+  hosts: localhost
+  connection: local
+  vars:
+    # general
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a
+
+    # create vpc
+    cidr_block: 10.0.0.0/8
+    vpc_name: travis-ansible-vpc
+
+    # create vswitch
+    vsw_cidr: 10.0.13.0/24
+    vsw_name: travis-ansible-vpc
+
+    # create group
+    sg_name: travis-ansible-instance
+    inboundRules:
+      - proto: tcp
+        port_range: 22/22
+        cidr_ip: 0.0.0.0/0
+        priority: 1
+      - proto: tcp
+        port_range: 80/80
+        cidr_ip: 0.0.0.0/0
+        priority: 1
+    outboundRules:
+      - proto: all
+        port_range: -1/-1
+        cidr_ip: 0.0.0.0/0
+
+    # create instance
+    image: centos_6_09_64_20G_alibase_20170825.vhd
+    type: ecs.n4.small
+    instance_name: travis-ansible-vpc-instance
+    host_name: myhost
+    password: pass@123
+    count: 2
+    allocate_public_ip: False
+    user_data: "#!/bin/sh\ncd /root\ntouch hahah\nwget http://wordpress.org/latest.tar.gz\n"
+    allocate_public_ip: True
+    internet_charge_type: PayByBandwidth
+    max_bandwidth_in: 200
+    max_bandwidth_out: 10
+    system_disk_category: cloud_efficiency
+    system_disk_size: 50
+
+    # create scaling group
+    ess_group_name: from-ansible
+    max_size: 2
+    min_size: 0
+    cooldown: 400
+    removal_policies:
+      - 'OldestScalingConfiguration'
+      - 'OldestInstance'
+
+    # create scaling configuration
+    ess_config_name: from-ansible
+    key_name: key-pair-for-ess
+    data_disks:
+      - size: 50
+        category: cloud_efficiency
+
+    tags:
+      CreatedBy: 'Ansible'
+      Version: '1'
+
+  tasks:
+    - name: Create VPC
+      alicloud_vpc:
+        alicloud_region: '{{ alicloud_region }}'
+        cidr_block: '{{ cidr_block }}'
+        vpc_name: '{{ vpc_name }}'
+      register: vpc
+    - debug: var=vpc
+
+    # Create Vswitch
+    - name: Create VSwitch
+      alicloud_vswitch:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        cidr_block: '{{ vsw_cidr }}'
+        vpc_id: '{{ vpc["vpc_id"] }}'
+        vswitch_id: '{{ vsw_name }}'
+      register: subnet
+    - debug: var=subnet
+
+    - name: Creating security group
+      alicloud_security_group:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ sg_name }}'
+        vpc_id: '{{ vpc.vpc_id }}'
+        rules: '{{ inboundRules }}'
+        rules_egress: '{{ outboundRules }}'
+      register: securitygroup
+    - debug: var=securitygroup
+
+    - name: Create scaling group
+      alicloud_ess_group:
+        alicloud_region: '{{ alicloud_region }}'
+        max_size: '{{ max_size }}'
+        min_size: '{{ min_size }}'
+        name: '{{ ess_group_name }}'
+        vswitch_ids:
+          - '{{ subnet.vswitch_id }}'
+      register: essgroup
+    - debug: var=essgroup
+
+    - name: Create scaling configuration
+      alicloud_ess_configuration:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ essgroup.id }}'
+        name: '{{ ess_config_name }}'
+        image: '{{ image }}'
+        instance_type: '{{ type }}'
+        security_group_id: '{{ securitygroup.group_id }}'
+        internet_charge_type: '{{ internet_charge_type }}'
+        max_bandwidth_in: '{{ max_bandwidth_in }}'
+        max_bandwidth_out: '{{ max_bandwidth_out }}'
+        data_disks: '{{ data_disks }}'
+        tags: '{{ tags }}'
+      register: configuration
+    - debug: var=configuration
+
+    - name: Create scaling configuration 2
+      alicloud_ess_configuration:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ essgroup.id }}'
+        name: '{{ ess_config_name }}-2'
+        image: '{{ image }}'
+        instance_type: '{{ type }}'
+        security_group_id: '{{ securitygroup.group_id }}'
+        internet_charge_type: '{{ internet_charge_type }}'
+        max_bandwidth_in: '{{ max_bandwidth_in }}'
+        max_bandwidth_out: '{{ max_bandwidth_out }}'
+        data_disks: '{{ data_disks }}'
+        tags: '{{ tags }}'
+      register: configuration2
+    - debug: var=configuration2
+
+    - name: Creating an ECS instance
+      alicloud_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        image: '{{ image }}'
+        type: '{{ type }}'
+        instance_name: '{{ instance_name }}'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+        group_id: '{{ securitygroup.group_id }}'
+        count: '{{ count }}'
+        allocate_public_ip: '{{ allocate_public_ip }}'
+        internet_charge_type: '{{ internet_charge_type }}'
+        max_bandwidth_in: '{{ max_bandwidth_in }}'
+        max_bandwidth_out: '{{ max_bandwidth_out }}'
+        instance_tags: '{{ tags }}'
+        vswitch_id: '{{ subnet.vswitch_id }}'
+      register: instance
+    - debug: var=instance
+
+    - name: active scaling group
+      alicloud_ess_group:
+        alicloud_region: '{{ alicloud_region }}'
+        configuration_id: '{{ configuration.id }}'
+        id: '{{ essgroup.id }}'
+        state: active
+
+    - name: remove auto-created instances
+      alicloud_ess_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        creation_type: 'AutoCreated'
+        group_id: '{{ essgroup.id }}'
+        state: absent
+
+    - name: add instances
+      alicloud_ess_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ instance.instance_ids }}'
+        group_id: '{{ essgroup.id }}'
+
+    - name: remove instances
+      alicloud_ess_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ instance.instance_ids }}'
+        group_id: '{{ essgroup.id }}'
+        state: absent
+
+    - name: inactive scaling group
+      alicloud_ess_group:
+        alicloud_region: '{{ alicloud_region }}'
+        id: '{{ essgroup.id }}'
+        state: inactive
+
+    - name: delete scaling configuration
+      alicloud_ess_configuration:
+        alicloud_region: '{{ alicloud_region }}'
+        id: '{{ configuration2.id }}'
+        state: absent
+
+    - name: delete scaling group
+      alicloud_ess_group:
+        alicloud_region: '{{ alicloud_region }}'
+        id: '{{ essgroup.id }}'
+        state: absent
+
+    - name: Delete ECS instance
+      alicloud_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ instance.instance_ids }}'
+        force: True
+        state: 'absent'
+
+    - name: Deleting security group
+      alicloud_security_group:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ securitygroup.group_id }}'
+        state: absent
+
+    - name: Deleting subnet
+      alicloud_vswitch:
+        alicloud_region: '{{ alicloud_region }}'
+        vswitch_id: '{{ subnet.vswitch_id }}'
+        state: absent
+
+    - name: Deleting vpc
+      alicloud_vpc:
+        alicloud_region: '{{ alicloud_region }}'
+        vpc_id: '{{ vpc.vpc_id }}'
+        state: absent

@@ -110,3 +110,5 @@ var/
 
 *~HEAD
 *~reback
+*.cache
+*.index
