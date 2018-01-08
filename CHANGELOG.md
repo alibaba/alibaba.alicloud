@@ -1,6 +1,15 @@
 # Ansible-Alicloud Change Log
 
-## 1.2.0 (unrelease)
+## 1.3.0 (unrelease)
+
+## 1.2.0 (January 8, 2018)
+
+IMPROVEMENTS:
+
+  * **New Module:** alicloud_ess_group ([#79](https://github.com/alibaba/footmark/pull/79))
+  * **New Module:** alicloud_ess_configuration ([#79](https://github.com/alibaba/footmark/pull/79))
+  * **New Module:** alicloud_ess_instance ([#79](https://github.com/alibaba/footmark/pull/79))
+
 
 ## 1.1.3 (December 20, 2017)
 

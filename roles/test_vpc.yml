@@ -64,8 +64,6 @@
     password: pass@123
     count: 1
     allocate_public_ip: False
-    pagenumber: 1
-    pagesize: 10
     user_data: "#!/bin/sh\ncd /root\ntouch hahah\nwget http://wordpress.org/latest.tar.gz\n"
 
     # create route entry

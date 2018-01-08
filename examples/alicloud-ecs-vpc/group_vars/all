@@ -60,7 +60,7 @@ allocate_public_ip: True
 internet_charge_type: "PayByTraffic"
 max_bandwidth_in: 200
 max_bandwidth_out: 50
-instance_tags: [{tag_key: "created_by", tag_value: "Ansible-Alicloud"}, {tag_key: "created_from", tag_value: "example-alicloud-ecs-vpc"}]
+instance_tags: {created_by: Ansible-Alicloud, created_from: example-alicloud-ecs-vpc}
 
 system_disk_category: "cloud_ssd"
 system_disk_size: 50

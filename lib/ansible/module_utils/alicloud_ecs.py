@@ -34,6 +34,7 @@ try:
     import footmark.slb
     import footmark.vpc
     import footmark.rds
+    import footmark.ess
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -141,3 +142,17 @@ def rds_connect(module):
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return rds
+
+
+def ess_connect(module):
+    """ Return an ess connection"""
+
+    region, ess_params = get_acs_connection_info(module)
+    # If we have a region specified, connect to its endpoint.
+    if region:
+        try:
+            ess = connect_to_acs(footmark.ess, region, **ess_params)
+        except AnsibleACSError as e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return ess

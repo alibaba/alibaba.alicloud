@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
+# Copyright (c) 2017 Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 #  This file is part of Ansible
@@ -18,16 +18,16 @@
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['stableinterface'],
+                    'status': ['preview'],
                     'supported_by': 'community'}
 
 DOCUMENTATION = '''
 ---
 module: alicloud_image
-version_added: "2.4"
+version_added: "2.5"
 short_description: Create or delete user-defined image
 description:
-    - Create or delete user-defined images
+    - Create user-defined image from ECS instance, snapshot or disk_mapping; delete user-defined image 
 options:
   state:
     description:
@@ -37,48 +37,53 @@ options:
    
   instance_id:
     description:
-      - instance id of the image to create
+      - The ECS instance ID. A custom image is created from the specified instance.
     aliases: [ 'instance' ]
      
   snapshot_id:
     description:
-      - snapshot id of the image to create, image from system of instance  
+      - The system disk snapshot ID. A custom image is created from the specified snapshot.
     required: true   
     aliases: [ 'snapshot' ]
      
   image_name:
     description:
-      - The name of the new image to create
+      - The name of the image, [2, 128] English or Chinese characters.
+        It must begin with an uppercase/lowercase letter or a Chinese character, and may contain numbers, "_" or "-".
+        It cannot begin with http:// or https://.
     aliases: [ 'name' ]
      
   description:
     description:
-      - An optional human-readable string describing the contents and purpose of the AMI.
+      - The description of the image, with a length limit of [0, 256] characters.
+        Leaving it blank means null, which is the default value.
+        It cannot begin with http:// or https://.
      
   image_version:
     description:
-      - The version of the new image to create.      
+      - The version number of the image, with a length limit of [1, 40] English characters.   
     aliases: [ 'version' ]
     
   disk_mapping:
     description:
-      - An optional list of device hashes/dictionaries with custom configurations (same block-device-mapping
-        parameters)
+      - An optional list of device hashes/dictionaries with multiple snapshots configurations.
+        It can combine multiple snapshots to be an image template.
     suboptions:
       snapshot_id:
         description:
-          - Id of snapshot
+          - The snapshot ID. Only one system disk's snapshot can be specified
       disk_size:
         description:
           - Size of the disk, in the range [5-2000GB]   
   client_token:
     description:
       - Used to ensure the idempotence of the request.
+
   wait:
     description:
-      - wait for the Image to be in state 'available'.      
-     default: 'no'
-     choices: [ 'yes', 'no' ]
+      - wait for the Image to be available.     
+    type: bool
+    default: False
      
   wait_timeout:
     description:
@@ -271,12 +276,12 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
     if image_version:
         if image_version.isdigit():
             if int(image_version) < 1 or int(image_version) > 40:
-                    module.fail_json(msg='The permitted range of image_version is between 1 - 40')
+                module.fail_json(msg='The permitted range of image_version is between 1 - 40')
         else:
             module.fail_json(msg='The permitted range of image_version is between 1 - 40, entered value is {0}'
-                                .format(image_version))    
+                             .format(image_version))
 
-    if disk_mapping:        
+    if disk_mapping:
         for mapping in disk_mapping:
             if mapping:
                 if 'snapshot_id' not in mapping:
@@ -365,7 +370,7 @@ def main():
                         images_ids.append(i.id)
                     module.fail_json(msg="There is too many images match name '{0}', "
                                          "please use image_id or a new image_name to specify a unique image."
-                                             "Matched images ids are: {1}".format(image_name, images_ids))
+                                         "Matched images ids are: {1}".format(image_name, images_ids))
         elif state == 'absent':
             images = ecs.get_all_images()
             if images and len(images) > 0:
@@ -380,7 +385,7 @@ def main():
 
         try:
             changed_img = current_image.delete()
-            module.exit_json(changed=changed_img, image_id=current_image.id, image=get_image_detail(current_image))            
+            module.exit_json(changed=changed_img, image_id=current_image.id, image=get_image_detail(current_image))
         except Exception as e:
             module.fail_json(msg='Deleting a image is failed, error: {0}'.format(e))
     if not current_image:
@@ -397,10 +402,10 @@ def main():
             # Calling create_image method
             client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
             changed, image_id, results, request_id = create_image(module=module, ecs=ecs, snapshot_id=snapshot_id,
-                                                          image_name=image_name, image_version=image_version,
-                                                          description=description, instance_id=instance_id,
-                                                          disk_mapping=disk_mapping, client_token=client_token,
-                                                          wait=wait, wait_timeout=wait_timeout)
+                                                                  image_name=image_name, image_version=image_version,
+                                                                  description=description, instance_id=instance_id,
+                                                                  disk_mapping=disk_mapping, client_token=client_token,
+                                                                  wait=wait, wait_timeout=wait_timeout)
             images = ecs.get_all_images(image_id=image_id)
             if images:
                 if len(images) == 1:

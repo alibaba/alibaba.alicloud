@@ -19,8 +19,8 @@
     group_id: '{{ group_details.group_id }}'
     vswitch_id: '{{ vswitch_details.vswitch_id }}'
 
-    disk_category: '{{ system_disk_category }}'
-    disk_size: '{{ system_disk_size }}'
+    system_disk_category: '{{ system_disk_category }}'
+    system_disk_size: '{{ system_disk_size }}'
 
     state: 'present'
     count: '{{ number_of_instances }}'

@@ -13,6 +13,9 @@ There are several files in the module directory, and these files describe some f
 - `alicloud_slb_lb.py`: Create or Delete a Load balancer.
 - `alicloud_slb_listener.py`: Create or Delete a listener for one Load balancer.
 - `alicloud_slb_server.py`: Add or Remove backend server to/from Load balancer.
+- `alicloud_ess_group.py`: Create or Delete a scaling group.
+- `alicloud_ess_configuration.py`: Create or Delete a scaling configuration.
+- `alicloud_ess_instance.py`: Add or Remove ECS instnaces in a specified scaling group.
 
 - `alicloud_bucket.py`: Create or Delete an OSS bucket.
 - `alicloud_bucket_object.py`: Upload or Download an object to/from an OSS bucket.
@@ -50,3 +53,8 @@ If not, please install it using the following command:
 
 	  $ ansible-playbook xxx.yml
 	   
+## Refrence
+
+Ansible Document: https://www.terraform.io/intro/
+
+Ansible Alicloud: [Docs Details](http://47.95.33.19:8080/ansible_alicloud/latest/list_of_all_modules.html)

@@ -261,7 +261,7 @@ def main():
         elif image_names:
             for name in image_names:
                 for image in ecs.get_all_images(image_name=name):
-                    if image:						
+                    if image:
                         result.append(get_info(image))
                         ids.append(image.image_id)
 
