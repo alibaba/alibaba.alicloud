@@ -173,7 +173,7 @@ EXAMPLES = """
     state: present
   tasks:
     - name: create server load balancer listener
-      alicloud_slb_lb:
+      alicloud_slb_listener:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -201,7 +201,7 @@ EXAMPLES = """
     state: stopped
   tasks:
     - name: stop server load balancer listener
-      alicloud_slb_lb:
+      alicloud_slb_listener:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -225,7 +225,7 @@ EXAMPLES = """
     state: running
   tasks:
     - name: start server load balancer listener
-      alicloud_slb_lb:
+      alicloud_slb_listener:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -249,7 +249,7 @@ EXAMPLES = """
     state: present
   tasks:
     - name: set listener attribute
-      alicloud_slb_lb:
+      alicloud_slb_listener:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
@@ -277,7 +277,7 @@ EXAMPLES = """
     state: absent
   tasks:
     - name: delete listener
-      alicloud_slb_lb:
+      alicloud_slb_listener:
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
