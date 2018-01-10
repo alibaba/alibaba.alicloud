@@ -1,6 +1,16 @@
 # Ansible-Alicloud Change Log
 
-## 1.3.0 (unrelease)
+## 1.5.0 (unrelease)
+
+## 1.3.0 (January 10, 2018)
+
+IMPROVEMENTS:
+
+  * **New Module:** alicloud_ess_rule ([#81](https://github.com/alibaba/footmark/pull/81))
+  * **New Module:** alicloud_ess_task ([#81](https://github.com/alibaba/footmark/pull/81))
+  * Remove all ECS instances in the specified ESS Group ([#81](https://github.com/alibaba/footmark/pull/81))
+  * Modify alicloud_ess_instance to remove all instances in the ESS Group ([#81](https://github.com/alibaba/footmark/pull/81))
+
 
 ## 1.2.0 (January 8, 2018)
 
