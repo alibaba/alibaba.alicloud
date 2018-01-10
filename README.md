@@ -16,6 +16,8 @@ There are several files in the module directory, and these files describe some f
 - `alicloud_ess_group.py`: Create or Delete a scaling group.
 - `alicloud_ess_configuration.py`: Create or Delete a scaling configuration.
 - `alicloud_ess_instance.py`: Add or Remove ECS instnaces in a specified scaling group.
+- `alicloud_ess_task.py`: Create or Delete a scheduled task for scaling activity.
+- `alicloud_ess_rule.py`: Create or Delete a scaling rule.
 
 - `alicloud_bucket.py`: Create or Delete an OSS bucket.
 - `alicloud_bucket_object.py`: Upload or Download an object to/from an OSS bucket.

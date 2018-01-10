@@ -1,24 +1,22 @@
 # This Playbook contains test scenario for instance in classic network type
-# Playbook created by : Shrutika M
+# Playbook created by : He Guimin
 
 - name: Testing Classic network type scenarions
   hosts: localhost
   connection: local
   vars:
     # general
-    alicloud_region: cn-beijing
-    alicloud_zone: cn-beijing-a
+    alicloud_region: eu-central-1
+    alicloud_zone: eu-central-1a
+    name: from-ansible-roles-test_ess
 
     # create vpc
     cidr_block: 10.0.0.0/8
-    vpc_name: travis-ansible-vpc
 
     # create vswitch
     vsw_cidr: 10.0.13.0/24
-    vsw_name: travis-ansible-vpc
 
     # create group
-    sg_name: travis-ansible-instance
     inboundRules:
       - proto: tcp
         port_range: 22/22
@@ -36,7 +34,6 @@
     # create instance
     image: centos_6_09_64_20G_alibase_20170825.vhd
     type: ecs.n4.small
-    instance_name: travis-ansible-vpc-instance
     host_name: myhost
     password: pass@123
     count: 2
@@ -50,7 +47,6 @@
     system_disk_size: 50
 
     # create scaling group
-    ess_group_name: from-ansible
     max_size: 2
     min_size: 0
     cooldown: 400
@@ -59,7 +55,6 @@
       - 'OldestInstance'
 
     # create scaling configuration
-    ess_config_name: from-ansible
     key_name: key-pair-for-ess
     data_disks:
       - size: 50
@@ -69,12 +64,23 @@
       CreatedBy: 'Ansible'
       Version: '1'
 
+    # create scaling rule
+    adjustment_type: QuantityChangeInCapacity
+    adjustment_value: 3
+
+    # create scheduled task
+    launch_time: 2018-01-10T08:00Z
+    launch_expiration: 300
+    recurrence_type: 'Daily'
+    recurrence_value: 10
+    recurrence_endtime: 2018-02-10T15:00Z
+
   tasks:
     - name: Create VPC
       alicloud_vpc:
         alicloud_region: '{{ alicloud_region }}'
         cidr_block: '{{ cidr_block }}'
-        vpc_name: '{{ vpc_name }}'
+        vpc_name: '{{ name }}'
       register: vpc
     - debug: var=vpc
 
@@ -85,14 +91,14 @@
         alicloud_zone: '{{ alicloud_zone }}'
         cidr_block: '{{ vsw_cidr }}'
         vpc_id: '{{ vpc["vpc_id"] }}'
-        vswitch_id: '{{ vsw_name }}'
+        vswitch_name: '{{ name }}'
       register: subnet
     - debug: var=subnet
 
     - name: Creating security group
       alicloud_security_group:
         alicloud_region: '{{ alicloud_region }}'
-        name: '{{ sg_name }}'
+        name: '{{ name }}'
         vpc_id: '{{ vpc.vpc_id }}'
         rules: '{{ inboundRules }}'
         rules_egress: '{{ outboundRules }}'
@@ -104,7 +110,7 @@
         alicloud_region: '{{ alicloud_region }}'
         max_size: '{{ max_size }}'
         min_size: '{{ min_size }}'
-        name: '{{ ess_group_name }}'
+        name: '{{ name }}'
         vswitch_ids:
           - '{{ subnet.vswitch_id }}'
       register: essgroup
@@ -114,7 +120,7 @@
       alicloud_ess_configuration:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ essgroup.id }}'
-        name: '{{ ess_config_name }}'
+        name: '{{ name }}'
         image: '{{ image }}'
         instance_type: '{{ type }}'
         security_group_id: '{{ securitygroup.group_id }}'
@@ -130,7 +136,7 @@
       alicloud_ess_configuration:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ essgroup.id }}'
-        name: '{{ ess_config_name }}-2'
+        name: '{{ name }}-2'
         image: '{{ image }}'
         instance_type: '{{ type }}'
         security_group_id: '{{ securitygroup.group_id }}'
@@ -147,7 +153,7 @@
         alicloud_region: '{{ alicloud_region }}'
         image: '{{ image }}'
         type: '{{ type }}'
-        instance_name: '{{ instance_name }}'
+        instance_name: '{{ name }}'
         host_name: '{{ host_name }}'
         password: '{{ password }}'
         group_id: '{{ securitygroup.group_id }}'
@@ -188,6 +194,59 @@
         group_id: '{{ essgroup.id }}'
         state: absent
 
+    - name: create a scaling rule
+      alicloud_ess_rule:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ essgroup.id }}'
+        adjustment_type: '{{adjustment_type}}'
+        adjustment_value: '{{adjustment_value}}'
+        cooldown: '{{cooldown}}'
+        name: '{{name}}'
+      register: rule
+    - debug: var=rule
+
+    - name: modify a scaling rule
+      alicloud_ess_rule:
+        alicloud_region: '{{ alicloud_region }}'
+        cooldown: 800
+        name: '{{name}}'
+      register: rule
+    - debug: var=rule
+
+    - name: create a scheduled task
+      alicloud_ess_task:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ name }}'
+        rule_id: '{{ rule.id }}'
+        launch_time: '{{ launch_time }}'
+        launch_expiration: '{{ launch_expiration }}'
+        recurrence_type: '{{ recurrence_type }}'
+        recurrence_value: '{{ recurrence_value }}'
+        recurrence_endtime: '{{ recurrence_endtime }}'
+      register: task
+    - debug: var=task
+
+    - name: modify a scheduled task
+      alicloud_ess_task:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ name }}'
+        description: "test modify task"
+        launch_expiration: 400
+      register: modifytask
+    - debug: var=modifytask
+
+    - name: delete a scheduled task
+      alicloud_ess_task:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ name }}'
+        state: absent
+
+    - name: delete a scaling rule
+      alicloud_ess_rule:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ name }}'
+        state: absent
+
     - name: inactive scaling group
       alicloud_ess_group:
         alicloud_region: '{{ alicloud_region }}'
@@ -198,6 +257,12 @@
       alicloud_ess_configuration:
         alicloud_region: '{{ alicloud_region }}'
         id: '{{ configuration2.id }}'
+        state: absent
+
+    - name: remove all of ECS instances
+      alicloud_ess_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ essgroup.id }}'
         state: absent
 
     - name: delete scaling group
