@@ -27,11 +27,11 @@ module: alicloud_security_group
 version_added: "2.5"
 short_description: Create, Query or Delete Security Group.
 description:
-  - Create, Query or Delete Security Group, and it contains security group rules management.
+  - Create and Delete Security Group, and it contains security group rules management.
 options:
   state:
     description:
-            - Create, delete a security group
+      - Create, delete a security group
     default: 'present'
     choices: ['present', 'absent']
   group_name:
@@ -244,36 +244,24 @@ EXAMPLES = '''
         group_ids: '{{ group_ids }}'
         state: '{{ state }}'
 
-
-# Provisioning example to querying security group list
-- name: querying security group list
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: cn-beijing
-    state: list
-  tasks:
-    - name: Querying Security group list
-      alicloud_security_group:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        state: '{{ state }}'
 '''
 
 RETURN = '''
 group_id:
-    description: security group ID
-    returned: when present and absent
+    description: Deprecated from version 1.3.1 and replaced by 'id'.
+    returned:
+    type:
+    sample:
+id:
+    description: ID of the security group.
+    returned: when present
     type: string
     sample: "sd-safhi3gsv"
-group_ids:
-    description: list IDs of security groups
-    returned: when list
-    type: list
-    sample: ["sg-3de1hhyn7tac4p85gh23", "sg-2ze1hhyn7tac4p85gh45"]
+name:
+    description: Name of the security group.
+    returned: when present
+    type: string
+    sample: "new-group"
 group:
     description: Details about the security group that was created
     returned: when present
@@ -324,73 +312,11 @@ group:
         "tags": {},
         "vpc_id": ""
     }
-groups:
-    description: Details about the security group that was created
-    returned: when list
-    type: list
-    sample: [
-        {
-            "description": "travis-ansible-instance",
-            "id": "sg-2ze1hhyn7tac4p85gh13",
-            "name": "travis-ansible-instance",
-            "region_id": "cn-beijing",
-            "rules": [
-                {
-                    "create_time": "2017-06-19T02:43:29Z",
-                    "description": "",
-                    "dest_cidr_ip": "",
-                    "dest_group_id": "",
-                    "dest_group_name": "",
-                    "dest_group_owner_account": "",
-                    "direction": "ingress",
-                    "ip_protocol": "TCP",
-                    "nic_type": "internet",
-                    "policy": "Accept",
-                    "port_range": "80/86",
-                    "priority": 1,
-                    "source_cidr_ip": "192.168.0.54/32",
-                    "source_group_id": "",
-                    "source_group_name": "",
-                    "source_group_owner_account": ""
-                },
-                {
-                    "create_time": "2017-06-19T02:43:30Z",
-                    "description": "",
-                    "dest_cidr_ip": "47.89.23.33/32",
-                    "dest_group_id": "",
-                    "dest_group_name": "",
-                    "dest_group_owner_account": "",
-                    "direction": "egress",
-                    "ip_protocol": "TCP",
-                    "nic_type": "internet",
-                    "policy": "Accept",
-                    "port_range": "8080/8085",
-                    "priority": 1,
-                    "source_cidr_ip": "",
-                    "source_group_id": "",
-                    "source_group_name": "",
-                    "source_group_owner_account": ""
-                }
-            ],
-            "tags": {},
-            "vpc_id": ""
-        }
-    ]
 vpc_id:
     description: ID of the VPC to which the security group belongs
     returned: when present
     type: string
     sample: "vpc-snif3g3iv"
-vpc_ids:
-    description: list IDs of the VPC to which the list security groups belong
-    returned: when list
-    type: list
-    sample: ["vpc-12snif3g3iv", "vpc-s324vif3g3iv"]
-total:
-    description: The number of all security groups after list.
-    returned: when list
-    type: int
-    sample: 3
 '''
 
 import time
@@ -625,46 +551,33 @@ def main():
 
     changed = False
     group = None
-    groups_by_name = []
 
     try:
         if group_id:
-            security_groups = ecs.get_all_security_groups(group_ids=[group_id], vpc_id=vpc_id)
+            security_groups = ecs.get_all_security_groups(group_ids=[group_id], vpc_id=vpc_id, name=group_name)
         else:
-            security_groups = ecs.get_all_security_groups(vpc_id=vpc_id)
+            security_groups = ecs.get_all_security_groups(vpc_id=vpc_id, name=group_name)
     except ECSResponseError as e:
         module.fail_json(msg='Error in get_all_security_groups: %s' % str(e))
 
-    if security_groups and len(security_groups) == 1:
-        group = security_groups[0]
-
-    group_ids_by_name = []
     group_ids = []
-    if not group and group_name and security_groups:
-        for cur in security_groups:
-            if cur.name == group_name:
-                group_ids_by_name.append(cur.id)
-                groups_by_name.append(cur)
-
-            group_ids.append(cur.id)
-
-        if len(groups_by_name) == 1:
-            group = groups_by_name[0]
-        elif len(groups_by_name) > 1:
-            module.fail_json(msg="There is too many security groups match name '{0}', "
-                                 "please use group_id or a new group_name and vpc_id to specify a unique group."
-                                 "Matched group ids are: {1}".format(group_name, group_ids_by_name))
+    if security_groups and len(security_groups) > 0:
+        if group_id or len(security_groups) == 1:
+            group = security_groups[0]
+        else:
+            for cur in security_groups:
+                group_ids.append(cur.id)
+            module.fail_json(msg="There are several security group in our record based on name {0} or vpc {1}: {2}. "
+                                 "Please specified one using 'id' and try again.".format(group_name, vpc_id, group_ids))
 
     if state == 'absent':
-        if group:
-            try:
-                changed = group.delete()
-                module.exit_json(changed=changed)
-            except ECSResponseError as e:
-                module.fail_json(msg="Deleting security group {0} is failed. Error: {1}".format(group.id, e))
-
-        module.fail_json(changed=changed, msg="Please specify a security group by using 'group_id' or 'group_name' "
-                                              "and 'vpc_id', and expected group ids: {0}".format(group_ids))
+        if not group:
+            module.fail_json(changed=changed, msg="Please specify a security group by using 'group_id' or 'group_name' "
+                                                  "and 'vpc_id' before deleting a security group.")
+        try:
+            module.exit_json(changed=group.delete())
+        except ECSResponseError as e:
+            module.fail_json(msg="Deleting security group {0} is failed. Error: {1}".format(group.id, e))
 
     if not group:
         try:

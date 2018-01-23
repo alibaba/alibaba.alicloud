@@ -380,7 +380,7 @@ def main():
         count=dict(type='int', default=1),
         count_tag=dict(type='str'),
         vswitch_id=dict(type='str', aliases=['subnet_id']),
-        instance_name=dict(type='str'),
+        instance_name=dict(type='str', aliases=['name']),
         host_name=dict(type='str'),
         password=dict(type='str', no_log=True),
         internet_charge_type=dict(type='str', default="PayByBandwidth", choices=["PayByBandwidth", "PayByTraffic"]),

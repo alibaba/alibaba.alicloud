@@ -18,7 +18,7 @@ AUTHOR = "xiaozhu"
 AUTHOR_EMAIL = "heguimin36@163.com"
 URL = "https://github.com/alibaba/ansible-provider/tree/master/lib/ansible"
 
-VERSION = "1.3.0"
+VERSION = "1.3.2"
 
 setup(
     name=NAME,

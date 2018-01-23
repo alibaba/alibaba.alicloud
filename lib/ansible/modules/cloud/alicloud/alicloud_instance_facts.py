@@ -46,6 +46,10 @@ options:
       description:
         - A list of ECS instance ids.
       aliases: ["ids"]
+    instance_tags:
+      description:
+        - A hash/dictionaries of instance tags. C({"key":"value"})
+      aliases: ["tags"]
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
