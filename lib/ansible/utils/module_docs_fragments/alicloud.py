@@ -38,6 +38,11 @@ options:
       - The Aliyun Cloud region to use. If not specified then the value of environment variable
         C(ALICLOUD_REGION), C(ALICLOUD_REGION_ID) will be used instead.
     aliases: ['region', 'region_id']
+  alicloud_security_token:
+    description:
+      - The Aliyun Cloud security token. If not specified then the value of environment variable
+        C(ALICLOUD_SECURITY_TOKEN) will be used instead.
+    aliases: ['security_token']
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -49,7 +54,8 @@ notes:
     environment variables can be used in decreasing order of precedence
     C(ALICLOUD_ACCESS_KEY) or C(ALICLOUD_ACCESS_KEY_ID),
     C(ALICLOUD_SECRET_KEY) or C(ALICLOUD_SECRET_ACCESS_KEY),
-    C(ALICLOUD_REGION) or C(ALICLOUD_REGION_ID)
+    C(ALICLOUD_REGION) or C(ALICLOUD_REGION_ID),
+    C(ALICLOUD_SECURITY_TOKEN)
   - C(ALICLOUD_REGION) or C(ALICLOUD_REGION_ID) can be typically be used to specify the
     ALICLOUD region, when required, but this can also be configured in the footmark config file
 """
