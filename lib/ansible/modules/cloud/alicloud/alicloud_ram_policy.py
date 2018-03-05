@@ -425,7 +425,7 @@ def get_ali_connection_info(module):
 
 def ali_policy_list(module,clt):
     #policy_type: System or Custom
-    required_vars = ['command']
+    required_vars = ['state']
     valid_vars = ['policy_type']
     params = validate_parameters(required_vars, valid_vars, module)
     policy_list_req=ListPoliciesRequest.ListPoliciesRequest()
