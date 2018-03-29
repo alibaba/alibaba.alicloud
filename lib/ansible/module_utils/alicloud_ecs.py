@@ -35,6 +35,7 @@ try:
     import footmark.vpc
     import footmark.rds
     import footmark.ess
+    import footmark.ram
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -156,3 +157,17 @@ def ess_connect(module):
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return ess
+
+
+def ram_connect(module):
+    """ Return an ram connection"""
+
+    region, ram_params = get_acs_connection_info(module)
+    # If we have a region specified, connect to its endpoint.
+    if region:
+        try:
+            ram = connect_to_acs(footmark.ram, region, **ram_params)
+        except AnsibleACSError as e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return ram
