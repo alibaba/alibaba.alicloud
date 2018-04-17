@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import absolute_import, division, print_function
+metaclass = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -27,17 +29,18 @@ DOCUMENTATION = '''
 ---
 module: alicloud_access_key
 short_description: ansible can manage aliyun access_key through this module 
-version_added: "2.5"
+version_added: "2.6"
 description:
-    - "This module allows the user to manage access-keys. Includes those commands:'present', 'absent'
+    - This module allows the user to manage access-keys. Includes those commands:'present', 'absent'
 options:
   state:
     description:
-      -  Create,delete or update the access_key of the user. List all access_keys of a user.
-    choices: [ 'present','list','absent']
+      -  Create,delete or update the access_key of the user. 
+    choices: [ 'present', 'absent']
   user_name:
     description:
       - The user name. A name is created from the specified user.
+    required: true
     aliases: [ 'name' ]
   access_key_id：
     description:
@@ -45,11 +48,12 @@ options:
   is_active:
     description:
       - The access_key's status can be True or False.
+    type: bool
+    default: 'True'
 extends_documentation_fragment:
     - alicloud
 author:
     - Zhu Wei (@zhuweif)
-
 '''
 
 EXAMPLES = '''
@@ -72,7 +76,7 @@ EXAMPLES = '''
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
-        user_name:'{{ user_name }}'
+        user_name: '{{ user_name }}'
         state: 'present'
       register: result
     - debug: var=result
@@ -90,18 +94,13 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-changed:
-    description: current operation whether changed the resource
-    returned: when success
-    type: bool
-    sample: true
 access_key:
     description: the access_key's headers after create access_key
     returned: on present
     type: dict
     sample: {
-        "access_key_id": "0wNEpMMlzy7szvai",
-        "access_key_secret": "PupkTg8jdmau1cXxYacgE736PJj4cA",
+        "access_key_id": "abc12345",
+        "access_key_secret": "abc12345",
         "status": "Active",
         "create_status": "2015-01-23T12:33:18Z"
     }
@@ -142,7 +141,7 @@ def ali_access_key_del(module,ram):
     try:
         changed=ram.delete_access_key(user_name=module.params.get('user_name'),access_key_id=module.params.get('access_key_id'))
     except Exception as e:
-        module.fail_json(msg="Failed to delete access_key {0}with error {1}".format(module.params.get('access_key_id'),e))
+        module.fail_json(msg="Failed to delete access_key {0} with error {1}".format(module.params.get('access_key_id'),e))
     module.exit_json(changed=changed)
 
 def validate_parameters(required_vars, valid_vars, module):
@@ -164,9 +163,8 @@ def validate_parameters(required_vars, valid_vars, module):
                 if module.params.get(k) is False:
                     pass
                 else:
-                    module.fail_json(msg="Parameter %s is not valid for %s command" % (k, state))
+                    module.fail_json(msg="Parameter {0} is not valid for {1} command".format(k, state))
     return params
-
 
 def main():
     argument_spec = ecs_argument_spec()
@@ -174,12 +172,14 @@ def main():
         state=dict(
             choices=['present', 'absent'],required=True),
         user_name = dict(required=True),
-        access_key_ids = dict(required=False),
-        is_active = dict(required=False),
+        access_key_id = dict(required=False),
+        is_active = dict(default=True, required=False),
     ))
+    if HAS_FOOTMARK is False:
+        module.fail_json(msg="Package 'footmark' required for the module alicloud_access_key.")
     invocations = {
         'present': ali_access_key_create,
-         'absent': ali_access_key_del,
+        'absent': ali_access_key_del,
     }
     module = AnsibleModule(argument_spec=argument_spec)
     ram = ram_connect(module)
