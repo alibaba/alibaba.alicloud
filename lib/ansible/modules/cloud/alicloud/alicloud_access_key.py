@@ -35,7 +35,8 @@ description:
 options:
   state:
     description:
-      -  Create,delete or update the access_key of the user. 
+      -  Create, delete or update the access_key of the user. 
+    default: 'present'
     choices: [ 'present', 'absent']
   user_name:
     description:
@@ -133,6 +134,7 @@ def ali_access_key_create(module,ram):
     except Exception as e:
         module.fail_json(msg="Create or update access_key got an error: {0}".format(e))
 
+
 def ali_access_key_del(module,ram):
     required_vars = ['user_name','access_key_id']
     valid_vars = ['']
@@ -143,6 +145,7 @@ def ali_access_key_del(module,ram):
     except Exception as e:
         module.fail_json(msg="Failed to delete access_key {0} with error {1}".format(module.params.get('access_key_id'),e))
     module.exit_json(changed=changed)
+
 
 def validate_parameters(required_vars, valid_vars, module):
     state = module.params.get('state')
@@ -166,14 +169,16 @@ def validate_parameters(required_vars, valid_vars, module):
                     module.fail_json(msg="Parameter {0} is not valid for {1} command".format(k, state))
     return params
 
+
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(
-            choices=['present', 'absent'],required=True),
-        user_name = dict(required=True),
-        access_key_id = dict(required=False),
-        is_active = dict(default=True, required=False),
+        state=dict(default='present', choices=[
+            'present', 'absent'
+        ]),
+        user_name = dict(type='str', required=True),
+        access_key_id = dict(type='str', required=False),
+        is_active = dict(type='bool', default=True, required=False),
     ))
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for the module alicloud_access_key.")
@@ -184,6 +189,7 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec)
     ram = ram_connect(module)
     invocations[module.params.get('state')](module, ram)
+    
 
 if __name__ == '__main__':
     main()
