@@ -87,8 +87,8 @@ EXAMPLES = '''
         alicloud_access_key: '{{ alicloud_access_key }}'
         alicloud_secret_key: '{{ alicloud_secret_key }}'
         alicloud_region: '{{ alicloud_region }}'
-        user_name:'{{ user_name }}'
-        access_key_ids:'{{ access_key_ids }}'
+        user_name: '{{ user_name }}'
+        access_key_id: '{{ access_key_id }}'
         state: 'absent'
       register: result
     - debug: var=result
@@ -121,12 +121,12 @@ except ImportError:
 def ali_access_key_create(module,ram):
     #user_name
     required_vars = ['user_name']
-    valid_vars = ['access_key_id','is_active']
+    valid_vars = ['access_key_id', 'is_active']
     params=validate_parameters(required_vars, valid_vars, module)
     changed = False
     try:
         if params['access_key_id']:
-            changed=ram.update_access_key(user_name=module.params.get('user_name'), access_key_id=params['access_key_id'],is_active=params['is_active'])
+            changed=ram.update_access_key(user_name=module.params.get('user_name'), access_key_id=params['access_key_id'], is_active=params['is_active'])
             module.exit_json(changed=changed)
         else:
             result = ram.create_access_key(user_name=module.params.get('user_name'))
@@ -135,13 +135,13 @@ def ali_access_key_create(module,ram):
         module.fail_json(msg="Create or update access_key got an error: {0}".format(e))
 
 
-def ali_access_key_del(module,ram):
-    required_vars = ['user_name','access_key_id']
+def ali_access_key_del(module, ram):
+    required_vars = ['user_name', 'access_key_id']
     valid_vars = ['']
     validate_parameters(required_vars, valid_vars, module)
     changed = False
     try:
-        changed=ram.delete_access_key(user_name=module.params.get('user_name'),access_key_id=module.params.get('access_key_id'))
+        changed=ram.delete_access_key(user_name=module.params.get('user_name'), access_key_id=module.params.get('access_key_id'))
     except Exception as e:
         module.fail_json(msg="Failed to delete access_key {0} with error {1}".format(module.params.get('access_key_id'),e))
     module.exit_json(changed=changed)
@@ -151,10 +151,10 @@ def validate_parameters(required_vars, valid_vars, module):
     state = module.params.get('state')
     for v in required_vars:
         if not module.params.get(v):
-            module.fail_json(msg="Parameter %s required for %s state" % (v, state))
+            module.fail_json(msg="Parameter {0} required for {1} state".format(v, state))
     optional_params = {
-        'access_key_id' : 'access_key_id',
-        'is_active' : 'is_active'
+        'access_key_id': 'access_key_id',
+        'is_active': 'is_active'
     }
 
     params = {}
@@ -173,12 +173,12 @@ def validate_parameters(required_vars, valid_vars, module):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(default='present', choices=[
+        state=dict(type='str', default='present', choices=[
             'present', 'absent'
         ]),
         user_name = dict(type='str', required=True),
-        access_key_id = dict(type='str', required=False),
-        is_active = dict(type='bool', default=True, required=False),
+        access_key_id = dict(type='str'),
+        is_active = dict(type='bool', default=True),
     ))
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for the module alicloud_access_key.")
@@ -189,7 +189,7 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec)
     ram = ram_connect(module)
     invocations[module.params.get('state')](module, ram)
-    
+
 
 if __name__ == '__main__':
     main()

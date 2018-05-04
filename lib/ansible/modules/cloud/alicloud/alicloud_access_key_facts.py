@@ -76,12 +76,12 @@ access_keys:
     type: list
     sample: [
         {
-          "access_key_id": "0wNEpMMlzy7szvai",
+          "access_key_id": "1234567",
           "status": "Active",
           "create_date": "2015-01-23T12:33:18Z"
         },
         {
-          "access_key_id": "WnIWUruvfaDT37vQ",
+          "access_key_id": "45678910",
           "status": "Inactive",
           "create_date": "2015-03-24T21:12:21Z"
         }
@@ -130,14 +130,13 @@ def main():
 
     user_name = module.params['user_name']
     result = []
-    ids = []
     try:
         ram = ram_connect(module)
         for accesskey in ram.list_access_keys(user_name=user_name):
             result.append(get_info(accesskey))
             module.exit_json(changed=False, access_keys=result, total=len(result))
     except ECSResponseError as e:
-        module.fail_json(msg='Error in describe access_keys: %s' % str(e))
+        module.fail_json(msg='Error in describe access_keys: {0}'.format(e))
 
 
 if __name__ == '__main__':
