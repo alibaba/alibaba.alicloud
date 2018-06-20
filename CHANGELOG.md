@@ -2,6 +2,10 @@
 
 ## 1.5.0 (unrelease)
 
+IMPROVEMENTS:
+
+- Improve README ([#88](https://github.com/alibaba/ansible-provider/pull/88))
+
 ## 1.3.2 (January 23, 2018)
 
 BUG FIXED:
