@@ -4,23 +4,23 @@ Ansible Alicloud Module is a new ansible module, and you can manage Alicloud ECS
 ## lib/ansible/modules/cloud/alicloud
 There are several files in the module directory, and these files describe some function that can operate alicloud products.
 
-- `alicloud_instance.py`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
-- `alicloud_disk.py`: Create, Attach, Detach or Delete a disk in ECS
-- `alicloud_security_group.py`: Create or Delete a Security Group
-- `alicloud_vpc.py`: Create or Delete a Vpc.
-- `alicloud_vswitch.py`: Create or Delete a VSwitch.
-- `alicloud_route_entry.py`: Create or Delete a route entry.
-- `alicloud_slb_lb.py`: Create or Delete a Load balancer.
-- `alicloud_slb_listener.py`: Create or Delete a listener for one Load balancer.
-- `alicloud_slb_server.py`: Add or Remove backend server to/from Load balancer.
-- `alicloud_ess_group.py`: Create or Delete a scaling group.
-- `alicloud_ess_configuration.py`: Create or Delete a scaling configuration.
-- `alicloud_ess_instance.py`: Add or Remove ECS instnaces in a specified scaling group.
-- `alicloud_ess_task.py`: Create or Delete a scheduled task for scaling activity.
-- `alicloud_ess_rule.py`: Create or Delete a scaling rule.
-
-- `alicloud_bucket.py`: Create or Delete an OSS bucket.
-- `alicloud_bucket_object.py`: Upload or Download an object to/from an OSS bucket.
+- `ali_instance.py`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
+- `ali_disk.py`: Create, Attach, Detach or Delete a disk in ECS
+- `ali_security_group.py`: Create or Delete a Security Group
+- `ali_vpc.py`: Create or Delete a Vpc.
+- `ali_vswitch.py`: Create or Delete a VSwitch.
+- `ali_route_entry.py`: Create or Delete a route entry.
+- `ali_slb_lb.py`: Create or Delete a Load balancer.
+- `ali_slb_listener.py`: Create or Delete a listener for one Load balancer.
+- `ali_slb_server.py`: Add or Remove backend server to/from Load balancer.
+- `ali_ess_group.py`: Create or Delete a scaling group.
+- `ali_ess_configuration.py`: Create or Delete a scaling configuration.
+- `ali_ess_instance.py`: Add or Remove ECS instnaces in a specified scaling group.
+- `ali_ess_task.py`: Create or Delete a scheduled task for scaling activity.
+- `ali_ess_rule.py`: Create or Delete a scaling rule.
+- `ali_eni.py`: Create or Delete a network interface.
+- `ali_bucket.py`: Create or Delete an OSS bucket.
+- `ali_bucket_object.py`: Upload or Download an object to/from an OSS bucket.
 
 ## lib/ansible/module_utils
 In the module utils directory, the file alicloud_ecs.py identifies and gains playbook params, and provides this params to modules/*.py. In addition, this file implements connection between ansible and Alicloud API via footmark.

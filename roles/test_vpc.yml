@@ -1,5 +1,5 @@
 # This Playbook contains test scenario for vpc
-# Playbook created by : Shrutika M
+# Playbook created by : Guimin He
 
 - name: Create VPC
   hosts: localhost

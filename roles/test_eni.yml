@@ -1,0 +1,215 @@
+# This Playbook contains test scenario for instance in classic network type
+# Playbook created by : Guimin He
+
+- name: Testing network interface scenarions
+  hosts: localhost
+  connection: local
+  vars:
+    # general
+    alicloud_region: cn-beijing
+    alicloud_zone: cn-beijing-a
+    name: ansible-test-for-eni
+    description: ansible test for network interface
+    vpc_cidr: 10.0.0.0/8
+    vsw_cidr: 10.0.13.0/24
+    # create instance
+    image: centos_6_8_64_40G_base_20170222.vhd
+    type: ecs.sn1ne.xlarge
+    password: Test12345
+    count: 1
+    allocate_public_ip: True
+    internet_charge_type: PayByBandwidth
+    max_bandwidth_out: 10
+
+    eni_ip: 10.0.13.10
+    inboundRules:
+      - proto: tcp
+        port_range: 22/22
+        cidr_ip: 0.0.0.0/0
+        priority: 1
+
+      - proto: tcp
+        port_range: 80/80
+        cidr_ip: 0.0.0.0/0
+        priority: 1
+
+      - proto: udp
+        port_range: 10988/10989
+        cidr_ip: 47.89.23.33/32
+        priority: 2
+
+    outboundRules:
+      - proto: tcp
+        port_range: 80/80
+        cidr_ip: 192.168.0.54/32
+        priority: 1
+
+      - proto: tcp
+        port_range: 8080/8085
+        cidr_ip: 47.89.23.33/32
+        priority: 1
+
+      - proto: udp
+        port_range: 10989/10997
+        cidr_ip: 47.89.23.33/32
+        priority: 2
+
+  tasks:
+    - name: get all enis
+      ali_eni_facts:
+        region: '{{alicloud_region}}'
+        eni_ids:
+          - eni-2ze70o39tdx2r0o2834h
+        filters:
+          NetworkInterfaceName: '{{name}}'
+
+    - name: get all vpcs
+      ali_vpc_facts:
+        region: '{{alicloud_region}}'
+        vpc_name: '{{name}}'
+      register: vpcs
+
+    - name: Create a vpc
+      ali_vpc:
+        region: '{{alicloud_region}}'
+        name: '{{name}}'
+        cidr_block: '{{vpc_cidr}}'
+      when: not vpcs.vpcs
+      register: vpc
+
+    - name: modify a vpc
+      ali_vpc:
+        region: '{{alicloud_region}}'
+        vpc_id: '{{vpcs.vpcs.0.id}}'
+        name: '{{name}}'
+        cidr_block: '{{vpc_cidr}}'
+      when: vpcs.vpcs
+      register: vpc
+
+    - name: Create a vswitch
+      ali_vswitch:
+        region: '{{alicloud_region}}'
+        availability_zone: '{{alicloud_zone}}'
+        name: '{{name}}'
+        cidr_block: '{{vsw_cidr}}'
+        vpc_id: '{{vpc.vpc.id}}'
+      when: vpc.vpc
+      register: vsw
+
+    - name: get existing groups
+      ali_security_group_facts:
+        region: '{{alicloud_region}}'
+        group_name: '{{ name }}'
+        filters:
+          vpc_id: '{{vpc.vpc.id}}'
+      when: vpc.vpc
+      register: sgs
+
+    - name: Creating security group
+      ali_security_group:
+        region: '{{alicloud_region}}'
+        name: '{{name}}'
+        description: '{{description}}'
+        vpc_id: '{{vpc.vpc.vpc_id}}'
+        rules: '{{ inboundRules }}'
+        rules_egress: '{{ outboundRules }}'
+      when: not sgs.groups
+      register: sg
+
+    - name: get existing group
+      ali_security_group:
+        region: '{{alicloud_region}}'
+        group_id: '{{sgs.groups.0.id}}'
+      when: sgs.groups
+      register: sg
+
+    - name: Creating an ECS instance
+      ali_instance:
+        region: '{{alicloud_region}}'
+        image: '{{image}}'
+        type: '{{type}}'
+        instance_name: '{{name}}'
+        description: '{{description}}'
+        vswitch_id: '{{vsw.vswitch.id}}'
+        security_groups:
+          - '{{sg.group.id}}'
+      register: instance
+
+    - name: Creating an ENI
+      ali_eni:
+        region: '{{alicloud_region}}'
+        vswitch_id: '{{vsw.vswitch.id}}'
+        security_groups:
+          - '{{sg.group.id}}'
+        name: '{{name}}'
+        description: '{{description}}'
+        private_ip_address: '{{eni_ip}}'
+      register: eni
+
+    - name: Attaching eni
+      ali_eni:
+        region: '{{alicloud_region}}'
+        eni_id: '{{eni.interface.id}}'
+        instance_id: '{{instance.ids[0]}}'
+        attached: True
+
+    - name: Detaching eni
+      ali_eni:
+        region: '{{alicloud_region}}'
+        vswitch_id: '{{vsw.vswitch.id}}'
+        private_ip_address: '{{eni_ip}}'
+        instance_id: '{{instance.ids[0]}}'
+        attached: False
+
+    - name: Creating another security group
+      ali_security_group:
+        region: '{{alicloud_region}}'
+        name: '{{name}}-2'
+        description: '{{description}}'
+        vpc_id: '{{vpc.vpc.id}}'
+      register: sg2
+
+    - name: Modify eni
+      ali_eni:
+        region: '{{alicloud_region}}'
+        vswitch_id: '{{vsw.vswitch.id}}'
+        private_ip_address: '{{eni_ip}}'
+        name: '{{name}}'
+        security_groups:
+          - '{{sg.group.id}}'
+          - '{{sg2.group.id}}'
+
+    - name: Delete eni
+      ali_eni:
+        region: '{{alicloud_region}}'
+        vswitch_id: '{{vsw.vswitch.id}}'
+        private_ip_address: '{{eni_ip}}'
+        state: absent
+
+    - name: Terminating ECS instance
+      ali_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ instance.ids }}'
+        force: True
+        state: 'absent'
+
+    - name: Deleting security group
+      ali_security_group:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ item }}'
+        state: absent
+      with_items:
+        - '{{ sg.group.id }}'
+        - '{{ sg2.group.id }}'
+
+    - name: Deleting vswitch
+      ali_vswitch:
+        alicloud_region: '{{ alicloud_region }}'
+        vswitch_id: '{{ vsw.vswitch.id }}'
+        state: absent
+
+    - name: Deleting vpc
+      ali_vpc:
+        alicloud_region: '{{ alicloud_region }}'
+        vpc_id: '{{ vpc.vpc.id }}'
+        state: absent
