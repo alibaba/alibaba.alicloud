@@ -1,9 +1,12 @@
 # Ansible-Alicloud Change Log
 
-## 1.5.0 (unrelease)
+## 1.5.0 (July 4, 2018)
 
 IMPROVEMENTS:
 
+- * **New Module:** ali_eni ([#100](https://github.com/alibaba/ansible-provider/pull/100))
+- * **New Module:** ali_eni_facts ([#100](https://github.com/alibaba/ansible-provider/pull/100))
+- Rename all module prefix and use 'ali' instead ([#100](https://github.com/alibaba/ansible-provider/pull/100))
 - Improve README ([#88](https://github.com/alibaba/ansible-provider/pull/88))
 
 ## 1.3.2 (January 23, 2018)

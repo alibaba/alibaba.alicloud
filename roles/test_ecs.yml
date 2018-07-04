@@ -1,5 +1,5 @@
 # This Playbook contains test scenario for instance in classic network type
-# Playbook created by : Shrutika M
+# Playbook created by : Guimin He
 
 - name: Testing Classic network type scenarions
   hosts: localhost
