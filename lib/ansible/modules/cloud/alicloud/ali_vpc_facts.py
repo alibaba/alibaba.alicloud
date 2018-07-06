@@ -26,7 +26,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: alicloud_vpc_facts
+module: ali_vpc_facts
 version_added: "1.5.0"
 short_description: Gather facts on vpcs of Alibaba Cloud.
 description:

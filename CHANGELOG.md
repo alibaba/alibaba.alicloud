@@ -1,12 +1,19 @@
 # Ansible-Alicloud Change Log
 
+## 1.5.1 (Unreleased)
+
+BUG FIXED:
+
+- Correct module docs ([#103](https://github.com/alibaba/ansible-provider/pull/103))
+
+
 ## 1.5.0 (July 4, 2018)
 
 IMPROVEMENTS:
 
-- * **New Module:** ali_eni ([#100](https://github.com/alibaba/ansible-provider/pull/100))
-- * **New Module:** ali_eni_facts ([#100](https://github.com/alibaba/ansible-provider/pull/100))
-- Rename all module prefix and use 'ali' instead ([#100](https://github.com/alibaba/ansible-provider/pull/100))
+- **New Module:** ali_eni ([#102](https://github.com/alibaba/ansible-provider/pull/102))
+- **New Module:** ali_eni_facts ([#102](https://github.com/alibaba/ansible-provider/pull/102))
+- Rename all module prefix and use 'ali' instead ([#102](https://github.com/alibaba/ansible-provider/pull/102))
 - Improve README ([#88](https://github.com/alibaba/ansible-provider/pull/88))
 
 IMPROVEMENTS:
@@ -47,11 +54,11 @@ IMPROVEMENTS:
 
 IMPROVEMENTS:
 
-    * alicloud_slb_lb: remove status and add start/stop slb instance ([#78](https://github.com/alibaba/ansible-provider/pull/78))
+ * alicloud_slb_lb: remove status and add start/stop slb instance ([#78](https://github.com/alibaba/ansible-provider/pull/78))
 
 BUG FIXED:
 
-    * alicloud_slb_listener: fix listener not found ([#78](https://github.com/alibaba/ansible-provider/pull/78))
+ * alicloud_slb_listener: fix listener not found ([#78](https://github.com/alibaba/ansible-provider/pull/78))
 
 
 ## 1.1.1 (November 13, 2017)

@@ -26,7 +26,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = """
 ---
-module: _alicloud_eip
+module: alicloud_eip
 version_added: "1.0.9"
 short_description: Create eip address and bind it to ECS or SLB instance.
 deprecated:

@@ -23,7 +23,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = """
 ---
-module: _alicloud_vpc
+module: alicloud_vpc
 version_added: "1.0.9"
 short_description: Create, Query or Delete Vpc. Query Vswitch.
 deprecated:
