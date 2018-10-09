@@ -75,7 +75,7 @@ class EcsInventory(object):
         self.cache_path_index = ""
         self.cache_max_age = 0
 
-        self.nested_groups = True
+        self.nested_groups = False
         self.replace_dash_in_groups = True
 
         self.expand_csv_tags = False
