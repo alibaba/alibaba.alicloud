@@ -76,6 +76,7 @@ class EcsInventory(object):
         self.cache_max_age = 0
 
         self.nested_groups = True
+        self.replace_dash_in_groups = True
 
         self.expand_csv_tags = False
 
@@ -312,6 +313,8 @@ class EcsInventory(object):
         if not hostname:
             hostname = dest
 
+        hostname = self.to_safe(hostname).lower()
+
         # if we only want to include hosts that match a pattern, skip those that don't
         if self.pattern_include and not self.pattern_include.match(hostname):
             return
@@ -351,21 +354,21 @@ class EcsInventory(object):
 
         # Inventory: Group by instance type
         if self.group_by_instance_type:
-            key = 'type_' + instance.instance_type
+            key = self.to_safe('type_' + instance.instance_type)
             self.push(self.inventory, key, hostname)
             if self.nested_groups:
                 self.push_group(self.inventory, 'types', key)
 
         # Inventory: Group by VPC
         if self.group_by_vpc_id and instance.vpc_id:
-            key = 'vpc_id_' + instance.vpc_id
+            key = self.to_safe('vpc_id_' + instance.vpc_id)
             self.push(self.inventory, key, hostname)
             if self.nested_groups:
                 self.push_group(self.inventory, 'vpcs', key)
 
         # Inventory: Group by vswitch
         if self.group_by_vswitch_id and instance.vswitch_id:
-            key = 'subnet_' + instance.vswitch_id
+            key = self.to_safe('subnet_' + instance.vswitch_id)
             self.push(self.inventory, key, hostname)
             if self.nested_groups:
                 self.push_group(self.inventory, 'subnets', key)
@@ -373,7 +376,7 @@ class EcsInventory(object):
         # Inventory: Group by security group
         if self.group_by_security_group:
             for group in instance.groups:
-                key = "security_group_" + group.id
+                key = self.to_safe("security_group_" + group.id)
                 self.push(self.inventory, key, hostname)
                 if self.nested_groups:
                     self.push_group(self.inventory, 'security_groups', key)
@@ -387,15 +390,15 @@ class EcsInventory(object):
                     values = [v]
 
                 for v in values:
-                    key = "tag_" + k
+                    key = self.to_safe("tag_" + k)
                     if v:
-                        key += "=" + v
+                        key = self.to_safe("tag_" + k + "=" + v)
 
                     self.push(self.inventory, key, hostname)
                     if self.nested_groups:
-                        self.push_group(self.inventory, 'tags', "tag_" + k)
+                        self.push_group(self.inventory, 'tags', self.to_safe("tag_" + k))
                         if v:
-                            self.push_group(self.inventory, "tag_" + k, key)
+                            self.push_group(self.inventory, self.to_safe("tag_" + k), key)
 
         # Global Tag: instances without tags
         if self.group_by_tag_none and len(instance.tags) == 0:
@@ -513,6 +516,13 @@ class EcsInventory(object):
         cache = open(filename, 'w')
         cache.write(json_data)
         cache.close()
+
+    def to_safe(self, word):
+        ''' Converts 'bad' characters in a string to underscores so they can be used as Ansible groups '''
+        regex = r"[^A-Za-z0-9\_"
+        if not self.replace_dash_in_groups:
+            regex += r"\-"
+        return re.sub(regex + "]", "_", word)
 
     def json_format_dict(self, data, pretty=False):
         ''' Converts a dict to a JSON object and dumps it as a formatted string '''

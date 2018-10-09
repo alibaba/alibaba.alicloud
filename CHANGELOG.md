@@ -2,10 +2,14 @@
 
 ## 1.5.1 (Unreleased)
 
+IMPROVEMENTS:
+
+- Add to_safe method for dynamic inventory ([#112](https://github.com/alibaba/ansible-provider/pull/112))
+
 BUG FIXED:
 
 - Correct module docs ([#103](https://github.com/alibaba/ansible-provider/pull/103))
-- Fix nested_groups bug ([#104](https://github.com/alibaba/ansible-provider/pull/104))
+- Fix nested_groups bug ([#111](https://github.com/alibaba/ansible-provider/pull/111))
 
 
 ## 1.5.0 (July 4, 2018)
