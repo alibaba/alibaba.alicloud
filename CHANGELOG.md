@@ -5,6 +5,7 @@
 BUG FIXED:
 
 - Correct module docs ([#103](https://github.com/alibaba/ansible-provider/pull/103))
+- Fix nested_groups bug ([#104](https://github.com/alibaba/ansible-provider/pull/104))
 
 
 ## 1.5.0 (July 4, 2018)
