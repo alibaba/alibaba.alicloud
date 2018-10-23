@@ -1,4 +1,12 @@
 ---
+- name: Get the existing groups
+  ali_security_group_facts:
+    region: '{{alicloud_region}}'
+    group_name: '{{ group_name }}'
+    filters:
+      vpc_id: '{{vpcs.vpcs.0.id}}'
+  register: sgs
+
 - name: Creating an ECS instance
   ali_instance:
     alicloud_region: '{{ alicloud_region }}'
@@ -16,7 +24,7 @@
     max_bandwidth_out: '{{ max_bandwidth_out }}'
     instance_tags: '{{ instance_tags }}'
 
-    security_groups: ['{{ group.group.id }}']
+    security_groups: ['{{ sgs.groups.0.id }}']
     vswitch_id: '{{ vswitch.vswitch.id }}'
 
     system_disk_category: '{{ system_disk_category }}'
@@ -24,5 +32,5 @@
 
     state: 'present'
     count: '{{ number_of_instances }}'
-
-  register: instance_details
+  when: group.group
+  register: instance
