@@ -7,5 +7,5 @@
     - vpc
     - vswitch
     - security_group
-    - ecs_instance
-    - ecs_disk
+    - instance
+    - disk

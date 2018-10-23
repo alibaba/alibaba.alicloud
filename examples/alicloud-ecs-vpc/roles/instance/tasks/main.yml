@@ -1,6 +1,6 @@
 ---
 - name: Creating an ECS instance
-  alicloud_instance:
+  ali_instance:
     alicloud_region: '{{ alicloud_region }}'
     alicloud_zone: '{{ alicloud_zone }}'
     image: '{{ image_id }}'
@@ -16,12 +16,13 @@
     max_bandwidth_out: '{{ max_bandwidth_out }}'
     instance_tags: '{{ instance_tags }}'
 
-    group_id: '{{ group_details.group_id }}'
-    vswitch_id: '{{ vswitch_details.vswitch_id }}'
+    security_groups: ['{{ group.group.id }}']
+    vswitch_id: '{{ vswitch.vswitch.id }}'
 
     system_disk_category: '{{ system_disk_category }}'
     system_disk_size: '{{ system_disk_size }}'
 
     state: 'present'
     count: '{{ number_of_instances }}'
+
   register: instance_details
