@@ -1,11 +1,28 @@
 ---
+- name: Get existing security group
+  ali_security_group_facts:
+    region: '{{alicloud_region}}'
+    group_name: '{{ group_name }}'
+    filters:
+      vpc_id: '{{vpcs.vpcs.0.id}}'
+  when: vpc.vpc
+  register: sgs
+
 - name: Creating security group
-  alicloud_security_group:
+  ali_security_group:
     alicloud_region: '{{ alicloud_region }}'
     state: 'present'
     name: '{{ group_name }}'
     description: '{{ group_description }}'
-    vpc_id: '{{ vpc_details.vpc_id }}'
+    vpc_id: '{{ vpcs.vpcs.0.id }}'
     rules: '{{ group_inboundRules }}'
     rules_egress: '{{ group_outboundRules }}'
-  register: group_details
+  when: not sgs.groups
+  register: group
+
+- name: Get existing security group details
+  ali_security_group:
+    region: '{{alicloud_region}}'
+    group_id: '{{sgs.groups.0.id}}'
+  when: sgs.groups
+  register: group

@@ -4,6 +4,7 @@
 
 IMPROVEMENTS:
 
+- Improve example/alicloud-ecs-vpc ([#114](https://github.com/alibaba/ansible-provider/pull/114))
 - Change nested_groups default to False ([#113](https://github.com/alibaba/ansible-provider/pull/113git ))
 - Add to_safe method for dynamic inventory ([#112](https://github.com/alibaba/ansible-provider/pull/112))
 
