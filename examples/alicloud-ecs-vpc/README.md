@@ -1,3 +1,4 @@
+## WordPress+Nginx+PHP-FPM Deployment
 ## Alicloud VPC + VSwitch + Security Group + Instance + Disk Cluster Building
 
 - Requires Ansible 1.2 or newer
