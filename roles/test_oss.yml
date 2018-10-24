@@ -19,7 +19,7 @@
 
   tasks:
     - name: create oss bucket
-      alicloud_bucket:
+      ali_oss_bucket:
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         permission: '{{ permission }}'
@@ -28,7 +28,7 @@
     - debug: var=create_bucket_result
 
     - name: list oss buckets
-      alicloud_bucket:
+      ali_oss_bucket:
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         permission: '{{ permission }}'
@@ -37,7 +37,7 @@
     - debug: var=list_buckets
 
     - name: upload content to bucket
-      alicloud_bucket_object:
+      ali_oss_object:
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         content: '{{ content }}'
@@ -48,7 +48,7 @@
     - debug: var=upload_result
 
     - name: upload object via file
-      alicloud_bucket_object:
+      ali_oss_object:
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         file_name: '{{ file_name }}'
@@ -60,7 +60,7 @@
     - debug: var=file_upload_result
 
     - name: download object
-      alicloud_bucket_object:
+      ali_oss_object:
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         file_name: '{{ download_file }}'
@@ -72,7 +72,7 @@
     - debug: var=download_result
 
     - name: list bucket objects
-      alicloud_bucket_object:
+      ali_oss_object:
         alicloud_region: '{{ alicloud_region }}'
         mode: list
         bucket: '{{ bucket }}'
@@ -80,7 +80,7 @@
     - debug: var=list_result
 
     - name: delete bucket object
-      alicloud_bucket_object:
+      ali_oss_object:
         alicloud_region: '{{ alicloud_region }}'
         mode: delete
         bucket: '{{ bucket }}'
@@ -89,7 +89,7 @@
     - debug: var=delete_objects_result
 
     - name: delete oss bucket
-      alicloud_bucket:
+      ali_oss_bucket:
         alicloud_region: '{{ alicloud_region }}'
         bucket: '{{ bucket }}'
         state: absent
