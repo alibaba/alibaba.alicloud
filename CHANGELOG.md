@@ -4,6 +4,7 @@
 
 IMPROVEMENTS:
 
+- Add destroy.yml for examples/alicloud_ecs_vpc ([#117](https://github.com/alibaba/ansible-provider/pull/117))
 - Improve roles test cases ([#116](https://github.com/alibaba/ansible-provider/pull/116))
 - Improve example/alicloud-ecs-vpc ([#114](https://github.com/alibaba/ansible-provider/pull/114), [#115](https://github.com/alibaba/ansible-provider/pull/115))
 - Change nested_groups default to False ([#113](https://github.com/alibaba/ansible-provider/pull/113git ))

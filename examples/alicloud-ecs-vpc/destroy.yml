@@ -1,0 +1,93 @@
+---
+- name: Destroy the existing alicloud vpc cluster
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Get the existing instances
+      ali_instance_facts:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        instance_names:
+          - '{{ instance_name }}'
+      register: instances
+
+    - name: Delete the existing instances
+      ali_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        instance_ids:
+          - '{{ instances.instances.0.id }}'
+          - '{{ instances.instances.1.id }}'
+        force: true
+        state: absent
+      when: instances.instances
+
+    - name: Get the existing disks
+      ali_disk_facts:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        disk_names:
+          - '{{ disk_name }}-0'
+          - '{{ disk_name }}-1'
+      register: disks
+
+    - name: Delete the existing disk 0
+      ali_disk:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        disk_id: '{{ disks.disks.0.id }}'
+        state: absent
+      when: disks.disks
+
+    - name: Delete the existing disk 1
+      ali_disk:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        disk_id: '{{ disks.disks.1.id}}'
+        state: absent
+      when: disks.disks
+
+    - name: Get the existing vpc
+      ali_vpc_facts:
+        region: '{{alicloud_region}}'
+        vpc_name: '{{vpc_name}}'
+      register: vpcs
+
+    - name: Get the existing groups
+      ali_security_group_facts:
+        region: '{{alicloud_region}}'
+        filters:
+          vpc_id: '{{vpcs.vpcs.0.id}}'
+      when: vpcs.vpcs
+      register: sgs
+
+    - name: Delete the existing security groups
+      ali_security_group:
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ sgs.groups.0.id}}'
+        state: absent
+      when: sgs.groups
+
+    - name: Get the existing vswitches
+      ali_vswitch_facts:
+        region: '{{alicloud_region}}'
+        filters:
+          vpc_id: '{{vpcs.vpcs.0.id}}'
+      when: vpcs.vpcs
+      register: vsws
+
+    - name: Delete the existing vswitch
+      ali_vswitch:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        vswitch_id: '{{ vsws.vswitches.0.id }}'
+        state: absent
+      when: vsws.vswitches
+
+    - name: Delete the existing vpc
+      ali_vpc:
+        alicloud_region: '{{ alicloud_region }}'
+        vpc_id: '{{ vpcs.vpcs.0.id}}'
+        state: absent
+      when: vpcs.vpcs
