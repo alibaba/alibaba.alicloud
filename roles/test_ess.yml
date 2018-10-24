@@ -77,7 +77,7 @@
 
   tasks:
     - name: Create VPC
-      alicloud_vpc:
+      ali_vpc:
         alicloud_region: '{{ alicloud_region }}'
         cidr_block: '{{ cidr_block }}'
         vpc_name: '{{ name }}'
@@ -86,7 +86,7 @@
 
     # Create Vswitch
     - name: Create VSwitch
-      alicloud_vswitch:
+      ali_vswitch:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         cidr_block: '{{ vsw_cidr }}'
@@ -96,7 +96,7 @@
     - debug: var=subnet
 
     - name: Creating security group
-      alicloud_security_group:
+      ali_security_group:
         alicloud_region: '{{ alicloud_region }}'
         name: '{{ name }}'
         vpc_id: '{{ vpc.vpc_id }}'
@@ -106,7 +106,7 @@
     - debug: var=securitygroup
 
     - name: Create scaling group
-      alicloud_ess_group:
+      ali_ess_group:
         alicloud_region: '{{ alicloud_region }}'
         max_size: '{{ max_size }}'
         min_size: '{{ min_size }}'
@@ -117,7 +117,7 @@
     - debug: var=essgroup
 
     - name: Create scaling configuration
-      alicloud_ess_configuration:
+      ali_ess_configuration:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ essgroup.id }}'
         name: '{{ name }}'
@@ -133,7 +133,7 @@
     - debug: var=configuration
 
     - name: Create scaling configuration 2
-      alicloud_ess_configuration:
+      ali_ess_configuration:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ essgroup.id }}'
         name: '{{ name }}-2'
@@ -149,7 +149,7 @@
     - debug: var=configuration2
 
     - name: Creating an ECS instance
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         image: '{{ image }}'
         type: '{{ type }}'
@@ -168,34 +168,34 @@
     - debug: var=instance
 
     - name: active scaling group
-      alicloud_ess_group:
+      ali_ess_group:
         alicloud_region: '{{ alicloud_region }}'
         configuration_id: '{{ configuration.id }}'
         id: '{{ essgroup.id }}'
         state: active
 
     - name: remove auto-created instances
-      alicloud_ess_instance:
+      ali_ess_instance:
         alicloud_region: '{{ alicloud_region }}'
         creation_type: 'AutoCreated'
         group_id: '{{ essgroup.id }}'
         state: absent
 
     - name: add instances
-      alicloud_ess_instance:
+      ali_ess_instance:
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ instance.instance_ids }}'
         group_id: '{{ essgroup.id }}'
 
     - name: remove instances
-      alicloud_ess_instance:
+      ali_ess_instance:
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ instance.instance_ids }}'
         group_id: '{{ essgroup.id }}'
         state: absent
 
     - name: create a scaling rule
-      alicloud_ess_rule:
+      ali_ess_rule:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ essgroup.id }}'
         adjustment_type: '{{adjustment_type}}'
@@ -206,7 +206,7 @@
     - debug: var=rule
 
     - name: modify a scaling rule
-      alicloud_ess_rule:
+      ali_ess_rule:
         alicloud_region: '{{ alicloud_region }}'
         cooldown: 800
         name: '{{name}}'
@@ -214,7 +214,7 @@
     - debug: var=rule
 
     - name: create a scheduled task
-      alicloud_ess_task:
+      ali_ess_task:
         alicloud_region: '{{ alicloud_region }}'
         name: '{{ name }}'
         rule_id: '{{ rule.id }}'
@@ -227,7 +227,7 @@
     - debug: var=task
 
     - name: modify a scheduled task
-      alicloud_ess_task:
+      ali_ess_task:
         alicloud_region: '{{ alicloud_region }}'
         name: '{{ name }}'
         description: "test modify task"
@@ -236,62 +236,62 @@
     - debug: var=modifytask
 
     - name: delete a scheduled task
-      alicloud_ess_task:
+      ali_ess_task:
         alicloud_region: '{{ alicloud_region }}'
         name: '{{ name }}'
         state: absent
 
     - name: delete a scaling rule
-      alicloud_ess_rule:
+      ali_ess_rule:
         alicloud_region: '{{ alicloud_region }}'
         name: '{{ name }}'
         state: absent
 
     - name: inactive scaling group
-      alicloud_ess_group:
+      ali_ess_group:
         alicloud_region: '{{ alicloud_region }}'
         id: '{{ essgroup.id }}'
         state: inactive
 
     - name: delete scaling configuration
-      alicloud_ess_configuration:
+      ali_ess_configuration:
         alicloud_region: '{{ alicloud_region }}'
         id: '{{ configuration2.id }}'
         state: absent
 
     - name: remove all of ECS instances
-      alicloud_ess_instance:
+      ali_ess_instance:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ essgroup.id }}'
         state: absent
 
     - name: delete scaling group
-      alicloud_ess_group:
+      ali_ess_group:
         alicloud_region: '{{ alicloud_region }}'
         id: '{{ essgroup.id }}'
         state: absent
 
     - name: Delete ECS instance
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ instance.instance_ids }}'
         force: True
         state: 'absent'
 
     - name: Deleting security group
-      alicloud_security_group:
+      ali_security_group:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ securitygroup.group_id }}'
         state: absent
 
     - name: Deleting subnet
-      alicloud_vswitch:
+      ali_vswitch:
         alicloud_region: '{{ alicloud_region }}'
         vswitch_id: '{{ subnet.vswitch_id }}'
         state: absent
 
     - name: Deleting vpc
-      alicloud_vpc:
+      ali_vpc:
         alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ vpc.vpc_id }}'
         state: absent

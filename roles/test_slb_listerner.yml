@@ -10,14 +10,14 @@
 
   tasks:
     - name: create server load balancer
-      alicloud_slb_lb:
+      ali_slb_lb:
         alicloud_region: '{{ alicloud_region }}'
         name: "test-alb-ansible"
         state: present
       register: slb
 
     - name: Creating tcp listener
-      alicloud_slb_listener:
+      ali_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
         protocol: tcp
         load_balancer_id: '{{ slb.load_balancer.id }}'
@@ -29,21 +29,21 @@
       register: tcp
    
     - name: stop listener
-      alicloud_slb_listener:
+      ali_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ slb.load_balancer.id }}'
         listener_port: 443
         state: stopped
 
     - name: delete listener
-      alicloud_slb_listener:
+      ali_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ slb.load_balancer.id }}'
         listener_port: 443
         state: absent
 
     - name: Creating http listener
-      alicloud_slb_listener:
+      ali_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
         protocol: http
         load_balancer_id: '{{ slb.load_balancer.id }}'
@@ -55,21 +55,21 @@
       register: tcp
 
     - name: stop listener
-      alicloud_slb_listener:
+      ali_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ slb.load_balancer.id }}'
         listener_port: 80
         state: stopped
 
     - name: delete listener
-      alicloud_slb_listener:
+      ali_slb_listener:
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ slb.load_balancer.id }}'
         listener_port: 80
         state: absent
 
     - name: delete load balancer
-      alicloud_slb_lb:
+      ali_slb_lb:
         alicloud_region: '{{ alicloud_region }}'
         load_balancer_id: '{{ slb.load_balancer.id }}'
         state: absent

@@ -85,7 +85,7 @@
 
   tasks:
     - name: Creating an ECS instance
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         image: '{{ image }}'
@@ -105,7 +105,7 @@
     - debug: var=createinstanceresult
 
     - name: Modifying instance attribute
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ createinstanceresult["instance_ids"] }}'
         password: 'Changed123'
@@ -114,7 +114,7 @@
     - debug: var=modifyinstanceresult
 ###
     - name: Creating disk
-      alicloud_disk:
+      ali_disk:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         disk_name: '{{ disk_name }}'
@@ -126,7 +126,7 @@
     - debug: var=creatediskresult
 
     - name: Attaching disk
-      alicloud_disk:
+      ali_disk:
         alicloud_region: '{{ alicloud_region }}'
         instance_id: '{{ createinstanceresult["instance_ids"][0] }}'
 #        instance_id: 'i-2ze28xi2fcstau0axqag'
@@ -137,14 +137,14 @@
     - debug: var=attachingdiskresult
 
     - name: Detaching disk
-      alicloud_disk:
+      ali_disk:
         alicloud_region: '{{ alicloud_region }}'
         disk_id: '{{ creatediskresult.disk_id }}'
       register: detachingdiskresult
     - debug: var=detachingdiskresult
 
     - name: Deleting disk
-      alicloud_disk:
+      ali_disk:
         alicloud_region: '{{ alicloud_region }}'
         disk_id: '{{ creatediskresult.disk_id }}'
         state: absent
@@ -152,7 +152,7 @@
     - debug: var=deletingdiskresult
 
     - name: Creating security group
-      alicloud_security_group:
+      ali_security_group:
         alicloud_region: '{{ alicloud_region }}'
         name: '{{ sg_name }}'
         description: '{{description}}'
@@ -173,7 +173,7 @@
     - debug: var=quetysgeresult
 #
     - name: Adding ecs instance to security group
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ createsgeresult.group_id }}'
 #        group_id: 'sg-2ze4xsw00gvnwihb7mcw'
@@ -184,7 +184,7 @@
     - debug: var=joiningsgeresult
 
     - name: Removing ecs instance from security group
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ createsgeresult.group_id }}'
 #        group_id: 'sg-2ze4xsw00gvnwihb7mcw'
@@ -195,7 +195,7 @@
     - debug: var=leavingsgeresult
 
     - name: Deleting security group
-      alicloud_security_group:
+      ali_security_group:
         alicloud_region: '{{ alicloud_region }}'
         group_id: '{{ createsgeresult.group_id }}'
 #        group_id: 'sg-2ze4xsw00gvnwihb7mcw'
@@ -204,7 +204,7 @@
     - debug: var=deletesggeresult
 
     - name: Restarting ECS instance
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ createinstanceresult["instance_ids"] }}'
         state: 'restarted'
@@ -212,19 +212,19 @@
     - debug: var=restartresult
 
     - name: Find all instances in the specified region and instance_ids
-      alicloud_instance_facts:
+      ali_instance_facts:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_ids: '{{ createinstanceresult["instance_ids"] }}'
       register: all_instances
 
     - name: Find all disks in the specified region
-      alicloud_disk_facts:
+      ali_disk_facts:
         alicloud_zone: "{{ alicloud_zone }}"
         alicloud_region: "{{ alicloud_region }}"
       register: all_disks
 
     - name: Find all instance types based on the specified zone and families
-      alicloud_instance_type_facts:
+      ali_instance_type_facts:
         alicloud_region: "{{ alicloud_region }}"
         alicloud_zone: "{{ alicloud_zone }}"
         instance_type_families:
@@ -232,7 +232,7 @@
           - "ecs.m1"
 
     - name: Terminating ECS instance
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ createinstanceresult["instance_ids"] }}'
         force: True

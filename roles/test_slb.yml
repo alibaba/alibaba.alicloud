@@ -21,7 +21,7 @@
 
   tasks:
     - name: Creating an ECS instance for Backend Server
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         image: '{{ image }}'
@@ -36,7 +36,7 @@
     - debug: var=create_instance_result
 
     - name: Set Backend Servers of SLB
-      alicloud_slb_server:
+      ali_slb_server:
         load_balancer_id: lb-2zeyfm5a14c9ffxvxmvco
         state: present
         backend_servers:
@@ -48,7 +48,7 @@
     - debug: var=set_backend_server_result
 
     - name: Describe Backend Servers of SLB
-      alicloud_slb_server:
+      ali_slb_server:
         load_balancer_id: lb-2zeyfm5a14c9ffxvxmvco
         state: current
         ports: 80
@@ -56,7 +56,7 @@
     - debug: var=describe_backend_server_result
 
     - name: Remove Backend Servers of SLB
-      alicloud_slb_server:
+      ali_slb_server:
         load_balancer_id: '{{ load_balancer_id }}'
         state: absent
         backend_servers: '{{ create_instance_result.instance_ids[0] }}'
@@ -64,7 +64,7 @@
     - debug: var=remove_backend_server_result
 #
     - name: Deleting ECS instance
-      alicloud_instance:
+      ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{ create_instance_result.instance_ids }}'
         state: 'absent'
