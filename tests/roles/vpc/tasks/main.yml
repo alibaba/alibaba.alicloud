@@ -1,0 +1,26 @@
+---
+- name: Get the existing vpc
+  ali_vpc_facts:
+    vpc_name: '{{name}}-vpc'
+  register: vpcs
+
+- name: Create a new alicloud VPC resource
+  ali_vpc:
+    state: 'present'
+    cidr_block: '{{ vpc_cidr }}'
+    vpc_name: '{{ name }}-vpc'
+    description: '{{ vpc_description }}'
+  when: not vpcs.vpcs
+  register: vpc
+
+- name: Get the existing vpc
+  ali_vpc_facts:
+    vpc_name: '{{name}}-vpc'
+  register: vpcs
+
+- name: Delete the existing vpc
+  ali_vpc:
+    id: '{{ item.id }}'
+    state: 'absent'
+  when: delete and vpcs.vpcs
+  with_items: '{{ vpcs.vpcs }}'

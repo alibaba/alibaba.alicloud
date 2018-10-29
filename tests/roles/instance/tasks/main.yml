@@ -1,0 +1,50 @@
+---
+- name: Get the existing ECS instances
+  ali_instance_facts:
+    instance_names: ['{{ name }}-instance']
+    filters:
+      vpc_id: '{{ vpcs.vpcs.0.id }}'
+    tags: '{{ tags }}'
+  register: instances
+
+- name: Creating an ECS instance
+  ali_instance:
+    image: '{{ image_id }}'
+    type: '{{ instance_type }}'
+    instance_name: '{{ name }}-instance'
+    description: '{{ instance_description }}'
+    host_name: '{{ host_name }}'
+    password: '{{ password }}'
+
+    allocate_public_ip: '{{ allocate_public_ip }}'
+    internet_charge_type: '{{ internet_charge_type }}'
+    max_bandwidth_in: '{{ max_bandwidth_in }}'
+    max_bandwidth_out: '{{ max_bandwidth_out }}'
+
+    security_groups: ['{{ sgs.groups.0.id }}']
+    vswitch_id: '{{ vswitches.vswitches.0.id }}'
+
+    system_disk_category: '{{ system_disk_category }}'
+    system_disk_size: '{{ system_disk_size }}'
+
+    state: 'present'
+    count: '{{ number_of_instances }}'
+
+    tags: '{{ tags }}'
+  when: not instances.instances
+  register: instance
+
+- name: Get the existing ECS instances
+  ali_instance_facts:
+    instance_names: ['{{ name }}-instance']
+    filters:
+      vpc_id: '{{ vpcs.vpcs.0.id }}'
+    tags: '{{ tags }}'
+  register: instances
+
+#- name: Delete the existing ECS instances
+#  ali_instance:
+#    state: 'absent'
+#    ids: '{{ instances.ids }}'
+#    force: True
+#  when: delete and instances.ids

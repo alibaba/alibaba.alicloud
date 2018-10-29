@@ -50,6 +50,13 @@ options:
       description:
         - A hash/dictionaries of instance tags. C({"key":"value"})
       aliases: ["tags"]
+    filters:
+    description:
+      - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
+        The filter keys can be all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/25506.htm) for parameter details.
+        Filter keys can be same as request parameter name or be lower case and use underscores (_) or dashes (-) to
+        connect different words in one parameter. 'InstanceIds' should be a list. 'Tag.n.Key' and 'Tag.n.Value' should
+        be a dict and using 'tags' instead.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -336,8 +343,6 @@ ids:
     sample: [i-12345er, i-3245fs]
 '''
 
-# import time
-# import sys
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect
 
@@ -356,7 +361,8 @@ def main():
         availability_zone=dict(aliases=['alicloud_zone']),
         instance_ids=dict(type='list', aliases=['ids']),
         instance_names=dict(type='list', aliases=['names']),
-        instance_tags=dict(type='list', aliases=['tags']),
+        instance_tags=dict(type='dict', aliases=['tags']),
+        filters=dict(type='dict')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -375,17 +381,22 @@ def main():
         module.fail_json(msg='instance_ids should be a list of instances, aborting')
 
     if names and (not isinstance(names, list) or len(names) < 1):
-        module.fail_json(msg='instance_ids should be a list of instances, aborting')
+        module.fail_json(msg='instance_names should be a list of instances, aborting')
 
-    if names:
-        for name in names:
-            for inst in ecs.get_all_instances(zone_id=zone_id, instance_ids=ids, instance_name=name):
-                instances.append(inst.read())
-                instance_ids.append(inst.id)
-    else:
-        for inst in ecs.get_all_instances(zone_id=zone_id, instance_ids=ids):
-            instances.append(inst.read())
-            instance_ids.append(inst.id)
+    filters = module.params['filters']
+    if ids:
+        filters['instance_ids'] = ids
+    if module.params['instance_tags']:
+        filters['tags'] = module.params['instance_tags']
+    if zone_id:
+        filters['zone_id'] = zone_id
+
+    for inst in ecs.describe_instances(**filters):
+        if names:
+            if inst.instance_name not in names:
+                continue
+        instances.append(inst.read())
+        instance_ids.append(inst.id)
 
     module.exit_json(changed=False, ids=instance_ids, instances=instances)
 

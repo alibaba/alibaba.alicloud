@@ -1,0 +1,30 @@
+---
+- name: Get the existing vswitch
+  ali_vswitch_facts:
+    vswitch_name: '{{ name }}-vswitch'
+    filters:
+      vpc_id: '{{vpcs.vpcs.0.id}}'
+  register: vswitches
+
+- name: Create a new alicloud VSwitch resource
+  ali_vswitch:
+    alicloud_zone: '{{ availability_zone }}'
+    cidr_block: '{{ vswitch_cidr }}'
+    vswitch_name: '{{ name }}-vswitch'
+    description: '{{ vswitch_description }}'
+    vpc_id: '{{vpcs.vpcs.0.id}}'
+  when: not vswitches.vswitches
+  register: vswitch
+
+- name: Get the existing vswitch
+  ali_vswitch_facts:
+    filters:
+      vpc_id: '{{vpcs.vpcs.0.id}}'
+  register: vswitches
+
+#- name: Delete the existing vswitch
+#  ali_vswitch:
+#    id: '{{ item.id }}'
+#    state: 'absent'
+#  when: delete and vswitches.vswitches
+#  loop: vswitches.vswitches
