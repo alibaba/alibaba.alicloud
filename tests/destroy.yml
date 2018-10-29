@@ -16,10 +16,12 @@
       ali_instance:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
-        instance_ids: '{{ instances.ids }}'
+        instance_ids:
+          - '{{ instances.instances.0.id }}'
+          - '{{ instances.instances.1.id }}'
         force: true
         state: absent
-      when: instances.ids
+      when: instances.instances
 
     - name: Get the existing disks
       ali_disk_facts:

@@ -45,7 +45,7 @@ options:
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
-        The filter keys can be all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35748.htm) for parameter details.
+        The filter keys can be all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/25556.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscores (_) or dashes (-) to
         connect different words in one parameter. "Tag.n.Key" and "Tag.n.Value" use new filter 'tags' instead and
         it should be a dict.
@@ -216,7 +216,7 @@ def main():
     changed = False
     result = []
     try:
-        security_groups = ecs.get_all_security_groups(module.params)
+        security_groups = ecs.describe_security_groups(**module.params["filters"])
         group_ids = []
         for sg in security_groups:
             if group_ids and sg.security_group_id not in group_ids:
@@ -226,7 +226,7 @@ def main():
             result.append(sg.read())
             group_ids.append(sg.id)
     except ECSResponseError as e:
-        module.fail_json(msg='Error in get_all_security_groups: {0}'.format(e))
+        module.fail_json(msg='Error in describe_security_groups: {0}'.format(e))
 
     module.exit_json(changed=changed, ids=group_ids, groups=result)
 

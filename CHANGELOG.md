@@ -4,6 +4,9 @@
 
 IMPROVEMENTS:
 
+- Add purge_tags for ali_instance ([#119](https://github.com/alibaba/ansible-provider/pull/119))
+- Improve ali_instance, ali_instance_facts, ali_security_group and ali_ali_security_group_facts using footmark 1.6.0 ([#119](https://github.com/alibaba/ansible-provider/pull/119))
+- Add ali_instance test case ([#119](https://github.com/alibaba/ansible-provider/pull/119))
 - Add destroy.yml for examples/alicloud_ecs_vpc ([#117](https://github.com/alibaba/ansible-provider/pull/117))
 - Improve roles test cases ([#116](https://github.com/alibaba/ansible-provider/pull/116))
 - Improve example/alicloud-ecs-vpc ([#114](https://github.com/alibaba/ansible-provider/pull/114), [#115](https://github.com/alibaba/ansible-provider/pull/115))

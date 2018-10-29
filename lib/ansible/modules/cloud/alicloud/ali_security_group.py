@@ -558,12 +558,12 @@ def main():
 
     try:
         if group_id:
-            security_groups = ecs.get_all_security_groups()
+            security_groups = ecs.describe_security_groups()
             for sg in security_groups:
                 if sg.security_group_id == group_id:
                     group = sg
     except ECSResponseError as e:
-        module.fail_json(msg='Error in get_all_security_groups: %s' % str(e))
+        module.fail_json(msg='Error in describe_security_groups: %s' % str(e))
 
     if state == 'absent':
         if not group:
@@ -576,8 +576,8 @@ def main():
     if not group:
         try:
             client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
-            group = ecs.create_security_group(group_name=group_name, description=description, vpc_id=vpc_id,
-                                              group_tags=group_tags, client_token=client_token)
+            group = ecs.create_security_group(security_group_name=group_name, description=description, vpc_id=vpc_id,
+                                              tags=group_tags, client_token=client_token)
             changed = True
 
         except ECSResponseError as e:
