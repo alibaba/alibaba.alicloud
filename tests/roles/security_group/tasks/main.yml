@@ -23,10 +23,3 @@
     filters:
       vpc_id: '{{vpcs.vpcs.0.id}}'
   register: sgs
-
-#- name: Delete the existing security group
-#  ali_security_group:
-#    state: 'absent'
-#    id: '{{item.id}}'
-#  when: delete and sgs.groups
-#  loop: sgs.groups

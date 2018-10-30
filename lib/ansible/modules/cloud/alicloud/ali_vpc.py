@@ -204,7 +204,7 @@ def main():
         user_cidrs=dict(type='list'),
         vpc_name=dict(aliases=['name']),
         description=dict(),
-        vpc_id=dict(),
+        vpc_id=dict(aliases=['id']),
         is_default=dict(type='bool'),
     ))
 
@@ -232,7 +232,7 @@ def main():
 
     if vpc_id:
         try:
-            vpc = vpc_conn.get_vpc_attribute(vpc_id)
+            vpc = vpc_conn.describe_vpc_attribute(vpc_id=vpc_id)
         except VPCResponseError as e:
             module.fail_json(msg='Retrieving vpc by id {0} got an error: {1}'.format(vpc_id, e))
 
@@ -249,7 +249,7 @@ def main():
         params = module.params
         params['client_token'] = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
         try:
-            vpc = vpc_conn.create_vpc(params)
+            vpc = vpc_conn.create_vpc(**params)
             module.exit_json(changed=True, vpc=vpc.get().read())
         except VPCResponseError as e:
             module.fail_json(msg='Unable to create vpc, error: {0}'.format(e))
@@ -258,11 +258,9 @@ def main():
         vpc_name = vpc.vpc_name
     if not description:
         description = vpc.description
-    if not user_cidrs:
-        user_cidrs = vpc.user_cidrs['user_cidr']
 
     try:
-        if vpc.modify(vpc_name, description, user_cidrs):
+        if vpc.modify(vpc_name, description):
             changed = True
         module.exit_json(changed=changed, vpc=vpc.get().read())
     except VPCResponseError as e:

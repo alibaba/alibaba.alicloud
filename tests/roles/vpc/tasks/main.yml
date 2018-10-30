@@ -17,10 +17,3 @@
   ali_vpc_facts:
     vpc_name: '{{name}}-vpc'
   register: vpcs
-
-- name: Delete the existing vpc
-  ali_vpc:
-    id: '{{ item.id }}'
-    state: 'absent'
-  when: delete and vpcs.vpcs
-  with_items: '{{ vpcs.vpcs }}'
