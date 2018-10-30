@@ -4,6 +4,7 @@
 
 IMPROVEMENTS:
 
+- Add alias for security_groups and availability_zone ([#122](https://github.com/alibaba/ansible-provider/pull/122))
 - Improve ali_vpc, ali_vpc_facts, ali_vswitch and ali_vswitch_facts using footmark 1.6.0 ([#121](https://github.com/alibaba/ansible-provider/pull/121))
 - Add ali_vpc and ali_vswitch test case ([#121](https://github.com/alibaba/ansible-provider/pull/121))
 - Add purge_tags for ali_instance ([#119](https://github.com/alibaba/ansible-provider/pull/119))
