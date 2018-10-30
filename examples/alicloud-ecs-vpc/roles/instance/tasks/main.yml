@@ -32,5 +32,5 @@
 
     state: 'present'
     count: '{{ number_of_instances }}'
-  when: group.group
+  when: sgs.groups
   register: instance

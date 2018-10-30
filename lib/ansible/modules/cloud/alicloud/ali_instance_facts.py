@@ -384,6 +384,8 @@ def main():
         module.fail_json(msg='instance_names should be a list of instances, aborting')
 
     filters = module.params['filters']
+    if not filters:
+        filters = {}
     if ids:
         filters['instance_ids'] = ids
     if module.params['instance_tags']:

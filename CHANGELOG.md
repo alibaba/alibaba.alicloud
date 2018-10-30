@@ -15,6 +15,7 @@ IMPROVEMENTS:
 
 BUG FIXED:
 
+- Fix ali_instance_facts filter is None bug ([#120](https://github.com/alibaba/ansible-provider/pull/120))
 - Correct module docs ([#103](https://github.com/alibaba/ansible-provider/pull/103))
 - Fix nested_groups bug ([#111](https://github.com/alibaba/ansible-provider/pull/111))
 
