@@ -173,6 +173,8 @@ def main():
         module.fail_json(msg="Package 'footmark' required for this module.")
 
     filters = module.params['filters']
+    if not filters:
+        filters = {}
     if module.params['vpc_ids']:
         filters['vpc_ids'] = module.params['vpc_ids']
     name = module.params['vpc_name']
@@ -180,7 +182,7 @@ def main():
     try:
         vpcs = []
         ids = []
-        for vpc in vpc_connect(module).get_all_vpcs(filters):
+        for vpc in vpc_connect(module).describe_vpcs(**filters):
             if name and vpc.vpc_name != name:
                 continue
             vpcs.append(vpc.read())

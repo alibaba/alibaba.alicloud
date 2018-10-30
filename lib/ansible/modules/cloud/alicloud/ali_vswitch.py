@@ -35,11 +35,11 @@ options:
       -  Create or delete vswitch.
     choices: ['present', 'absent']
     default: 'present'
-  availability_zone:
+  zone_id:
     description:
       - Aliyun availability zone ID which to launch the vswitch or list vswitches.
         It is required when creating a vswitch.
-    aliases: [ 'alicloud_zone' ]
+    aliases: [ 'availability_zone', 'alicloud_zone' ]
   vpc_id:
     description:
       - The ID of a VPC to which that Vswitch belongs. It is required when creating a vswitch.
@@ -132,7 +132,7 @@ vswitch:
             returned: always
             type: string
             sample: "10.0.0.0/16"
-        availability_zone:
+        zone_id:
             description: Availability zone of the VSwitch
             returned: always
             type: string
@@ -207,7 +207,7 @@ def uniquely_find_vswitch(connection, module):
         if not vswitch_id and not cidr_block and not vpc_id:
             return None
 
-        vsws = connection.get_all_vswitches(module.params)
+        vsws = connection.describe_vswitches(**module.params)
         for v in vsws:
             if vswitch_id and v.vswitch_id == vswitch_id:
                 return v
@@ -225,7 +225,7 @@ def main():
         state=dict(type='str', default='present', choices=['present', 'absent']),
         cidr_block=dict(type='str'),
         description=dict(type='str'),
-        availability_zone=dict(aliases=['alicloud_zone']),
+        zone_id=dict(aliases=['availability_zone','alicloud_zone']),
         vpc_id=dict(type='str'),
         vswitch_name=dict(aliases=['name', 'subnet_name']),
         vswitch_id=dict(type='str', aliases=['subnet_id', 'id']),
@@ -269,7 +269,7 @@ def main():
         try:
             params = module.params
             params['client_token'] = "Ansible-Alicloud-{0}-{1}".format(hash(str(module.params)), str(time.time()))
-            vswitch = vpc.create_vswitch(params)
+            vswitch = vpc.create_vswitch(**params)
             module.exit_json(changed=True, vswitch=vswitch.get().read())
         except VPCResponseError as e:
             module.fail_json(msg='Unable to create VSwitch, error: {0}'.format(e))

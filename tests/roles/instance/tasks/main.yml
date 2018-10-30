@@ -41,10 +41,3 @@
       vpc_id: '{{ vpcs.vpcs.0.id }}'
     tags: '{{ tags }}'
   register: instances
-
-#- name: Delete the existing ECS instances
-#  ali_instance:
-#    state: 'absent'
-#    ids: '{{ instances.ids }}'
-#    force: True
-#  when: delete and instances.ids

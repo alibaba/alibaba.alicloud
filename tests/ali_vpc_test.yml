@@ -1,0 +1,54 @@
+---
+- name: Validate module ali_vpc
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+
+  tasks:
+    - name: Changed. Create a new vpc with user_cidrs
+      ali_vpc:
+        cidr_block: '{{ vpc_cidr }}'
+        vpc_name: '{{ name }}-vpc'
+        description: '{{ vpc_description }}'
+        user_cidrs:
+          - 172.16.100.0/24
+          - 172.16.101.0/24
+
+    - name: Get the existing vpc
+      ali_vpc_facts:
+        vpc_name: '{{name}}-vpc'
+      register: vpcs
+
+    - name: Changed. Modifying name.
+      ali_vpc:
+        vpc_id: '{{ item.id}}'
+        name: '{{ name }}-vpc-modified'
+      with_items: '{{vpcs.vpcs}}'
+
+    - name: Changed. Modify description.
+      ali_vpc:
+        vpc_id: '{{ item.id}}'
+        description: '{{ vpc_description }}-vpc-modified'
+      with_items: '{{vpcs.vpcs}}'
+
+    - name: Not Changed. No any attribute changed.
+      ali_vpc:
+        vpc_id: '{{ item.id}}'
+        name: '{{ name }}-vpc-modified'
+        description: '{{ vpc_description }}-vpc-modified'
+      with_items: '{{vpcs.vpcs}}'
+
+    - name: Changed. Go back init value.
+      ali_vpc:
+        vpc_id: '{{ item.id}}'
+        name: '{{ name }}-vpc'
+        description: '{{ vpc_description }}'
+      with_items: '{{vpcs.vpcs}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        vpc_id: '{{item.id}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'

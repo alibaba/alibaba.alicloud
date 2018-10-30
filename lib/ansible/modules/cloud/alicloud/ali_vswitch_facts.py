@@ -193,6 +193,8 @@ def main():
         module.fail_json(msg="Package 'footmark' required for this module.")
 
     filters = module.params['filters']
+    if not filters:
+        filters = {}
     if module.params['vswitch_ids']:
         filters['vswitch_ids'] = module.params['vswitch_ids']
     name = module.params['vswitch_name']
@@ -201,7 +203,7 @@ def main():
     try:
         vswitches = []
         ids = []
-        for vsw in vpc_connect(module).get_all_vswitches(filters):
+        for vsw in vpc_connect(module).describe_vswitches(**filters):
             if name and vsw.vswitch_name != name:
                 continue
             if cidr_block and vsw.cidr_block != cidr_block:
