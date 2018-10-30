@@ -54,6 +54,7 @@ options:
     security_groups:
       description:
         - A list of security group IDs.
+      aliases: ['group_ids']
     vswitch_id:
       description:
         - The subnet ID in which to launch the instances (VPC).
@@ -632,8 +633,8 @@ def modify_instance(module, instance):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        security_groups=dict(type='list'),
-        availability_zone=dict(type='str', aliases=['alicloud_zone']),
+        security_groups=dict(type='list', aliases=['group_ids']),
+        availability_zone=dict(type='str', aliases=['alicloud_zone', 'zone_id']),
         instance_type=dict(type='str', aliases=['type']),
         image_id=dict(type='str', aliases=['image']),
         count=dict(type='int', default=1),

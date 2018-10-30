@@ -108,3 +108,4 @@ var/
 *~reback
 *.cache
 *.index
+*.bak
