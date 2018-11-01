@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_instance
-version_added: "1.5.0"
+version_added: "2.8"
 short_description: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group.
 description:
     - Create, start, stop, restart, modify or terminate ecs instances.
@@ -42,7 +42,7 @@ options:
       description:
         - Aliyun availability zone ID in which to launch the instance.
           If it is not specified, it will be allocated by system automatically.
-      aliases: ['alicloud_zone']
+      aliases: ['alicloud_zone', 'zone_id']
     image_id:
       description:
         - Image ID used to launch instances. Required when C(state=present) and creating new ECS instances.
@@ -170,7 +170,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "footmark >= 1.7.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -590,7 +590,7 @@ def create_instance(module, ecs, exact_count):
                                          system_disk_description=system_disk_description, vswitch_id=vswitch_id,
                                          count=exact_count, allocate_public_ip=allocate_public_ip,
                                          instance_charge_type=instance_charge_type, period=period, period_unit="Month",
-                                         auto_renew_period=auto_renew_period, key_pair_name=key_name,
+                                         auto_renew=auto_renew, auto_renew_period=auto_renew_period, key_pair_name=key_name,
                                          user_data=user_data, client_token=client_token)
 
     except Exception as e:
