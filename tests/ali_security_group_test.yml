@@ -1,0 +1,259 @@
+---
+- name: Validate module ali_vpc
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - security_group
+
+  tasks:
+    - name: Changed. Modifying name.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        name: '{{ name }}-security-group-modified'
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Modify description.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        description: '{{ vpc_description }}-security-group-modified'
+      with_items: '{{sgs.groups}}'
+
+    - name: Not Changed. No any attribute changed.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        name: '{{ name }}-security-group-modified'
+        description: '{{ vpc_description }}-security-group-modified'
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Go back init value.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        name: '{{ name }}-group'
+        description: '{{ group_description }}'
+      with_items: '{{sgs.groups}}'
+
+    - name: Creating a new security group for source/dest group
+      ali_security_group:
+        name: '{{ name }}-for-rule'
+        description: '{{ group_description }}-for-rule'
+        vpc_id: '{{vpcs.vpcs.0.id}}'
+      register: group
+
+    - name: Changed. Add three rules.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        purge_rules: False
+        rules:
+          - ip_protocol: icmp
+            port_range: -1/-1
+            dest_cidr_ip: 10.0.0.0/10
+            source_group_id: '{{group.group.id}}'
+            priority: 1
+
+          - ip_protocol: tcp
+            port_range: 8080/8080
+            source_cidr_ip: 10.0.0.0/11
+            dest_cidr_ip: 10.0.0.0/12
+            priority: 100
+
+          - ip_protocol: all
+            port_range: -1/-1
+            source_cidr_ip: 10.10.0.0/32
+            priority: 2
+      with_items: '{{sgs.groups}}'
+
+    - name: No Changed. There is no any changed rules.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        purge_rules: False
+        rules:
+          - ip_protocol: icmp
+            port_range: -1/-1
+            dest_cidr_ip: 10.0.0.0/10
+            source_group_id: '{{group.group.id}}'
+            priority: 1
+
+          - ip_protocol: tcp
+            port_range: 8080/8080
+            source_cidr_ip: 10.0.0.0/11
+            dest_cidr_ip: 10.0.0.0/12
+            priority: 100
+
+          - ip_protocol: all
+            port_range: -1/-1
+            source_cidr_ip: 10.10.0.0/32
+            priority: 2
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Purge rules.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        rules:
+          - ip_protocol: icmp
+            port_range: -1/-1
+            dest_cidr_ip: 10.0.0.0/10
+            source_group_id: '{{group.group.id}}'
+            priority: 1
+
+          - ip_protocol: tcp
+            port_range: 8080/8080
+            source_cidr_ip: 10.0.0.0/11
+            dest_cidr_ip: 10.0.0.0/12
+            priority: 100
+
+          - ip_protocol: all
+            port_range: -1/-1
+            source_cidr_ip: 10.10.0.0/32
+            priority: 2
+
+          - ip_protocol: tcp
+            port_range: 22/22
+            source_cidr_ip: 0.0.0.0/0
+            priority: 1
+      with_items: '{{sgs.groups}}'
+
+    - name: No Changed. There is no any purged rules.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        rules:
+          - ip_protocol: icmp
+            port_range: -1/-1
+            dest_cidr_ip: 10.0.0.0/10
+            source_group_id: '{{group.group.id}}'
+            priority: 1
+
+          - ip_protocol: tcp
+            port_range: 8080/8080
+            source_cidr_ip: 10.0.0.0/11
+            dest_cidr_ip: 10.0.0.0/12
+            priority: 100
+
+          - ip_protocol: all
+            port_range: -1/-1
+            source_cidr_ip: 10.10.0.0/32
+            priority: 2
+
+          - ip_protocol: tcp
+            port_range: 22/22
+            source_cidr_ip: 0.0.0.0/0
+            priority: 1
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Add three egress rules.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        purge_rules_egress: False
+        rules_egress:
+          - ip_protocol: icmp
+            port_range: -1/-1
+            source_cidr_ip: 10.0.0.0/10
+            dest_group_id: '{{group.group.id}}'
+            priority: 1
+
+          - ip_protocol: tcp
+            port_range: 8080/8080
+            source_cidr_ip: 10.0.0.0/11
+            dest_cidr_ip: 10.0.0.0/12
+            priority: 100
+
+          - ip_protocol: all
+            port_range: -1/-1
+            dest_cidr_ip: 10.10.0.0/32
+            priority: 2
+      with_items: '{{sgs.groups}}'
+
+    - name: No Changed. There is no any changed egress rules.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        purge_rules_egress: False
+        rules_egress:
+          - ip_protocol: icmp
+            port_range: -1/-1
+            source_cidr_ip: 10.0.0.0/10
+            dest_group_id: '{{group.group.id}}'
+            priority: 1
+
+          - ip_protocol: tcp
+            port_range: 8080/8080
+            source_cidr_ip: 10.0.0.0/11
+            dest_cidr_ip: 10.0.0.0/12
+            priority: 100
+
+          - ip_protocol: all
+            port_range: -1/-1
+            dest_cidr_ip: 10.10.0.0/32
+            priority: 2
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Purge egress rules.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        rules_egress:
+          - ip_protocol: icmp
+            port_range: -1/-1
+            source_cidr_ip: 10.0.0.0/10
+            dest_group_id: '{{group.group.id}}'
+            priority: 1
+
+          - ip_protocol: tcp
+            port_range: 8080/8080
+            source_cidr_ip: 10.0.0.0/11
+            dest_cidr_ip: 10.0.0.0/12
+            priority: 100
+
+          - ip_protocol: all
+            port_range: -1/-1
+            dest_cidr_ip: 10.10.0.0/32
+            priority: 2
+
+          - ip_protocol: tcp
+            port_range: 80/80
+            dest_cidr_ip: 192.168.0.54/32
+            priority: 1
+      with_items: '{{sgs.groups}}'
+
+    - name: No Changed. There is no purged egress rules.
+      ali_security_group:
+        group_id: '{{ item.id}}'
+        rules_egress:
+          - ip_protocol: icmp
+            port_range: -1/-1
+            source_cidr_ip: 10.0.0.0/10
+            dest_group_id: '{{group.group.id}}'
+            priority: 1
+
+          - ip_protocol: tcp
+            port_range: 8080/8080
+            source_cidr_ip: 10.0.0.0/11
+            dest_cidr_ip: 10.0.0.0/12
+            priority: 100
+
+          - ip_protocol: all
+            port_range: -1/-1
+            dest_cidr_ip: 10.10.0.0/32
+            priority: 2
+
+          - ip_protocol: tcp
+            port_range: 80/80
+            dest_cidr_ip: 192.168.0.54/32
+            priority: 1
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting the security groups
+      ali_security_group:
+        group_id: '{{item.id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting the source security group
+      ali_security_group:
+        group_id: '{{group.group.id}}'
+        state: absent
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        vpc_id: '{{item.id}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'
