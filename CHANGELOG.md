@@ -4,6 +4,7 @@
 
 IMPROVEMENTS:
 
+- Improve alicloud inventory based on footmark 1.6.3+ ([#124](https://github.com/alibaba/ansible-provider/pull/124))
 - Improve ali_security_group and support purge_rules and purge_rules_egress ([#123](https://github.com/alibaba/ansible-provider/pull/123))
 
 ## 1.6.0 (October 30, 2018)

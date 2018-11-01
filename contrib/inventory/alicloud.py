@@ -253,7 +253,7 @@ class EcsInventory(object):
                     continue
                 self.ecs_instance_filters[key] = value
             if tags:
-                self.ecs_instance_filters['instance_tags'] = tags
+                self.ecs_instance_filters['tags'] = tags
 
     def do_api_calls_update_cache(self):
         ''' Do API calls to each region, and save data in cache files '''
@@ -270,9 +270,9 @@ class EcsInventory(object):
         conn = connect_to_acs(footmark.ecs, region, **self.credentials)
 
         if self.ecs_instance_filters:
-            instances = conn.get_all_instances(**self.ecs_instance_filters)
+            instances = conn.describe_instances(**self.ecs_instance_filters)
         else:
-            instances = conn.get_all_instances()
+            instances = conn.describe_instances()
 
         for instance in instances:
             self.add_instance(instance, region)
@@ -280,7 +280,7 @@ class EcsInventory(object):
     def get_instance_by_id(self, region, instance_id):
         ''' Fetch ECS instances in a specified instance ID '''
 
-        instances = connect_to_acs(footmark.ecs, region, **self.credentials).get_all_instances(instance_ids=[instance_id])
+        instances = connect_to_acs(footmark.ecs, region, **self.credentials).describe_instances(instance_ids=[instance_id])
         if instances and len(instances) > 0:
             return instances[0]
 
@@ -375,8 +375,8 @@ class EcsInventory(object):
 
         # Inventory: Group by security group
         if self.group_by_security_group:
-            for group in instance.groups:
-                key = self.to_safe("security_group_" + group.id)
+            for group in instance.security_group_ids:
+                key = self.to_safe("security_group_" + group)
                 self.push(self.inventory, key, hostname)
                 if self.nested_groups:
                     self.push_group(self.inventory, 'security_groups', key)
