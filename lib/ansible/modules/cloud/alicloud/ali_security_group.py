@@ -24,7 +24,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_security_group
-version_added: "1.5.0"
+version_added: "2.8"
 short_description: Manage Alibaba Cloud Security Group and its rules.
 description:
   - Create and Delete Security Group, and it contains security group rules management.
@@ -49,94 +49,38 @@ options:
       - ID of the VPC to which the security group belongs.
   rules:
     description:
-      - List of hash/dictionaries firewall inbound rules to enforce in this group.
-    suboptions:
-        ip_protocol:
-          description:
-            - IP protocol
-          required: true
-          choices: ["tcp", "udp", "icmp", "gre", "all"]
-          aliases: ['proto']
-        port_range:
-          description:
-            - The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is -1/-1.
-          required: true
-        source_group_id:
-          description:
-            - The source security group id.
-          aliases: ['group_id']
-        source_group_owner_id:
-          description:
-            - The source security group owner id.
-          aliases: ['group_owner_id']
-        source_cidr_ip:
-          description:
-            - The source IP address range
-          aliases: ['cidr_ip']
-        policy:
-          description:
-            - Authorization policy
-          default: "accept"
-          choices: ["accept", "drop"]
-        priority:
-          description:
-            - Authorization policy priority
-          default: 1
-          choices: ["1~100"]
-        nic_type:
-          description:
-            - Network type
-          default: "internet"
-          choices: ["internet", "intranet"]
+      - List of hash/dictionaries firewall inbound rules to enforce in this group (see example). If none are supplied,
+        no inbound rules will be enabled. Each rule has several keys and refer to
+        https://www.alibabacloud.com/help/doc-detail/25554.htm. Each key should be format as under_score.
+        At present, the valid keys including "ip_protocol", "port_range", "source_port_range", "nic_type", "policy",
+        "dest_cidr_ip", "source_cidr_ip", "source_group_id", "source_group_owner_account", "source_group_owner_id",
+        "priority" and "description".
   rules_egress:
     description:
-      - List of hash/dictionaries firewall outbound rules to enforce in this group.
-        Keys allowed are:ip_protocol, port_range, dest_group_id, dest_group_owner_id, dest_cidr_ip, policy, priority,nic_type.
-        And these keys's attribution same as rules keys.
-    suboptions:
-        ip_protocol:
-          description:
-            - IP protocol
-          required: true
-          choices: ["tcp", "udp", "icmp", "gre", "all"]
-          aliases: ['proto']
-        port_range:
-          description:
-            - The range of port numbers. Tcp and udp's valid range is 1 to 65535, and other protocol's valid value is "-1/-1".
-          required: true
-        dest_group_id:
-          description:
-            - The destination security group id.
-          aliases: ['group_id']
-        dest_group_owner_id:
-          description:
-            - The destination security group owner id.
-          aliases: ['group_owner_id']
-        dest_cidr_ip:
-          description:
-            - The destination IP address range
-          aliases: ['cidr_ip']
-        policy:
-          description:
-            - Authorization policy
-          default: "accept"
-          choices: ["accept", "drop"]
-        priority:
-          description:
-            - Authorization policy priority
-          default: 1
-          choices: ["1~100"]
-        nic_type:
-          description:
-            - Network type
-          default: "internet"
-          choices: ["internet", "intranet"]
+      - List of hash/dictionaries firewall outbound rules to enforce in this group (see example). If none are supplied,
+        no outbound rules will be enabled. Each rule has several keys and refer to
+        https://www.alibabacloud.com/help/doc-detail/25560.htm. Each key should be format as under_score.
+        At present, the valid keys including "ip_protocol", "port_range", "source_port_range", "nic_type", "policy",
+        "dest_cidr_ip", "source_cidr_ip", "dest_group_id", "dest_group_owner_account", "dest_group_owner_id",
+        "priority" and "description".
+  purge_rules:
+    description:
+      - Purge existing rules on security group that are not found in rules
+    required: false
+    default: 'true'
+    aliases: []
+  purge_rules_egress:
+    description:
+      - Purge existing rules_egress on security group that are not found in rules_egress
+    required: false
+    default: 'true'
   group_id:
     description:
       - Security group ID. It is required when deleting or querying security group or performing rules authorization.
+    aliases: ['id']
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "footmark >= 1.7.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -310,24 +254,22 @@ group:
         permissions_egress:
             description: Outbound rules associated with the security group.
             sample:
-                - ip_protocol: -1
-                  ip_ranges:
-                    - create_time: "2018-06-28T08:45:59Z"
-                      description: "NOne"
-                      dest_cidr_ip: "192.168.0.54/32"
-                      dest_group_id: "None"
-                      dest_group_name: "None"
-                      dest_group_owner_account: "None"
-                      direction: "egress"
-                      ip_protocol: "TCP"
-                      nic_type: "intranet"
-                      policy: "Accept"
-                      port_range: "80/80"
-                      priority: 1
-                      source_cidr_ip: "None"
-                      source_group_id: "None"
-                      source_group_name: "None"
-                      source_group_owner_account: "None"
+                - create_time: "2018-06-28T08:45:59Z"
+                  description: "NOne"
+                  dest_cidr_ip: "192.168.0.54/32"
+                  dest_group_id: "None"
+                  dest_group_name: "None"
+                  dest_group_owner_account: "None"
+                  direction: "egress"
+                  ip_protocol: "TCP"
+                  nic_type: "intranet"
+                  policy: "Accept"
+                  port_range: "80/80"
+                  priority: 1
+                  source_cidr_ip: "None"
+                  source_group_id: "None"
+                  source_group_name: "None"
+                  source_group_owner_account: "None"
             type: list
             returned: always
 '''
@@ -345,185 +287,63 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def authorize_security_group(module, ecs, group_id, inbound_rules, outbound_rules):
-    """
-    authorize security group in ecs
-    :param module: Ansible module object
-    :param ecs: authenticated ecs connection object
-    :param group_id: Security Group Id for authorization
-    :param inbound_rules: Inbound rules for authorization
-    :param outbound_rules: Outbound rules for authorization
-    :param add_to_fail_result: message to add to failed message at the beginning, if two tasks are performed
-    :return: Returns changed state, security group id and custom message.
-    """
-
-    try:
-        changed = False
-        inbound_failed_rules, outbound_failed_rules, result = ecs.authorize_security_group(
-            group_id, inbound_rules, outbound_rules)
-
-        if 'error' in (''.join(str(result))).lower():
-            module.fail_json(changed=changed, msg="Authorizing SecurityGroup is failed, error: %s ; group_id: %s ; "
-                                                  "failed inbound rules: %s ; failed outbound rules: %s."
-                                                  % (str(result), group_id, inbound_failed_rules, outbound_failed_rules))
-        changed = True
-
-    except ECSResponseError as e:
-        module.fail_json(msg='Unable to authorize security group, error: {0}'.format(e))
-
-    return changed
+VALID_INGRESS_PARAMS = ["ip_protocol", "port_range", "source_port_range", "nic_type", "policy",
+                        "dest_cidr_ip","source_cidr_ip", "priority", "description",
+                        "source_group_id", "source_group_owner_account", "source_group_owner_id"]
+VALID_EGRESS_PARAMS = ["ip_protocol", "port_range", "source_port_range", "nic_type", "policy",
+                       "dest_cidr_ip","source_cidr_ip", "priority", "description",
+                       "dest_group_id", "dest_group_owner_account", "dest_group_owner_id"]
 
 
-def validate_format_sg_rules(module, inbound_rules=None, outbound_rules=None):
-    """
-    Validate and format security group for inbound and outbound rules
-    :param module: Ansible module object
-    :param inbound_rules: Inbound rules for authorization to validate and format
-    :param outbound_rules: Outbound rules for authorization to validate and format
-    :return:
-    """
-    # aliases for rule
-    ip_protocol_aliases = ('ip_protocol', 'proto')
-    inbound_cidr_ip_aliases = ('source_cidr_ip', 'cidr_ip')
-    outbound_cidr_ip_aliases = ('dest_cidr_ip', 'cidr_ip')
-    inbound_group_id_aliases = ('source_group_id', 'group_id')
-    outbound_group_id_aliases = ('dest_group_id', 'group_id')
-    inbound_group_owner_aliases = ('source_group_owner_id', 'group_owner_id')
-    outbound_group_owner_aliases = ('dest_group_owner_id', 'group_owner_id')
+def validate_group_rule_keys(module, rule, direction):
 
-    cidr_ip_aliases = {
-        "inbound": inbound_cidr_ip_aliases,
-        "outbound": outbound_cidr_ip_aliases,
-    }
+    if not isinstance(rule, dict):
+        module.fail_json(msg='Invalid rule parameter type [{0}].'.format(type(rule)))
 
-    group_id_aliases = {
-        "inbound": inbound_group_id_aliases,
-        "outbound": outbound_group_id_aliases,
-    }
+    VALID_PARAMS = VALID_INGRESS_PARAMS
+    if direction == "egress":
+        VALID_PARAMS  =VALID_EGRESS_PARAMS
 
-    group_owner_aliases = {
-        "inbound": inbound_group_owner_aliases,
-        "outbound": outbound_group_owner_aliases,
-    }
+    for k in rule:
+        if k not in VALID_PARAMS:
+            module.fail_json(msg="Invalid rule parameter '{0}' for rule: {1}. Supported parametes include: {2}".format(k, rule, VALID_PARAMS))
 
-    COMMON_VALID_PARAMS = ('proto', 'ip_protocol', 'cidr_ip', 'group_id', 'group_owner_id',
-                           'nic_type', 'policy', 'priority', 'port_range')
-    INBOUND_VALID_PARAMS = ('source_cidr_ip', 'source_group_id', 'source_group_owner_id')
-    OUTBOUND_VALID_PARAMS = ('dest_cidr_ip', 'dest_group_id', 'dest_group_owner_id')
-
-    rule_types = []
-
-    rule_choice = {
-        "inbound": inbound_rules,
-        "outbound": outbound_rules,
-    }
-    valid_params = {
-        "inbound": INBOUND_VALID_PARAMS,
-        "outbound": OUTBOUND_VALID_PARAMS,
-    }
-
-    if inbound_rules:
-        rule_types.append('inbound')
-
-    if outbound_rules:
-        rule_types.append('outbound')
-
-    for rule_type in rule_types:
-
-        rules = rule_choice.get(rule_type)
-        total_rules = 0
-        if rules:
-            total_rules = len(rules)
-
-        if total_rules != 0:
-
-            for rule in rules:
-
-                if not isinstance(rule, dict):
-                    module.fail_json(msg='Invalid rule parameter type [%s].' % type(rule))
-
-                for k in rule:
-                    if k not in COMMON_VALID_PARAMS and k not in valid_params.get(rule_type):
-                        module.fail_json(msg='Invalid rule parameter \'{}\''.format(k))
-
-                ip_protocol = get_alias_value(rule, ip_protocol_aliases)
-                if ip_protocol is None:
-                    module.fail_json(msg="Ip Protocol required for rule authorization")
-
-                port_range = get_alias_value(rule, ['port_range'])
-                if port_range is None:
-                    module.fail_json(msg="Port range is required for rule authorization")
-
-                # verifying whether group_id is provided and cidr_ip is not, so nic_type should be set to intranet
-                cidr_ip = get_alias_value(rule, cidr_ip_aliases.get(rule_type))
-                if cidr_ip is None:
-                    if get_alias_value(rule, group_id_aliases.get(rule_type)) is not None:
-                        if 'nic_type' in rule:
-                            if not rule['nic_type'] == "intranet":
-                                module.fail_json(msg="In mutual security group authorization (namely, "
-                                                     "GroupId is specified, while CidrIp is not specified), "
-                                                     "you must specify the nic_type as intranet")
-                        else:
-                            module.fail_json(msg="In mutual security group authorization (namely, "
-                                                 "GroupId is specified, while CidrIp is not specified), "
-                                                 "you must specify the nic_type as intranet")
-
-                # format rules to return for authorization
-                formatted_rule = {}
-
-                formatted_rule['ip_protocol'] = ip_protocol
-                formatted_rule['port_range'] = port_range
-
-                if cidr_ip:
-                    formatted_rule['cidr_ip'] = cidr_ip
-
-                group_id = get_alias_value(rule, group_id_aliases.get(rule_type))
-                if group_id:
-                    formatted_rule['group_id'] = group_id
-
-                group_owner_id = get_alias_value(rule, group_owner_aliases.get(rule_type))
-                if group_owner_id:
-                    formatted_rule['group_owner_id'] = group_owner_id
-
-                if 'nic_type' in rule:
-                    if rule['nic_type']:
-                        formatted_rule['nic_type'] = rule['nic_type']
-
-                if 'policy' in rule:
-                    if rule['policy']:
-                        formatted_rule['policy'] = rule['policy']
-
-                if 'priority' in rule:
-                    if rule['priority']:
-                        formatted_rule['priority'] = rule['priority']
-
-                rule.clear()
-                rule.update(formatted_rule)
+    if 'ip_protocol' not in rule:
+        module.fail_json(msg='ip_protocol is required.')
+    if 'port_range' not in rule:
+        module.fail_json(msg='port_range is required.')
+    # The system response will return upper protocol
+    rule['ip_protocol'] = str(rule['ip_protocol']).upper()
 
 
-def get_alias_value(dictionary, aliases):
-    """
-    Get alias or key value from a dictionary
-    :param dictionary: a dictionary to check in for keys/aliases
-    :param aliases: list of aliases to find in dictionary to retrieve value
-    :return: returns value of found alias else None
-    """
+def purge_rules(module, group, existing_rule, rules, direction):
 
-    if (dictionary and aliases) is not None:
-        for alias in aliases:
-            if alias in dictionary:
-                return dictionary[alias]
-        return None
-    else:
-        return None
+    if not isinstance(existing_rule, dict):
+        module.fail_json(msg='Invalid existing rule type [{0}].'.format(type(existing_rule)))
 
+    if not isinstance(rules, list):
+        module.fail_json(msg='Invalid rules type [{0}]. The specified rules should be a list.'.format(type(rules)))
 
-def get_group_basic(group):
-    """
-    Parse security group basic information.
-    returns it as a dictionary
-    """
-    return {'id': group.id, 'name': group.name, 'vpc_id': group.vpc_id}
+    VALID_PARAMS = VALID_INGRESS_PARAMS
+    if direction == "egress":
+        VALID_PARAMS = VALID_EGRESS_PARAMS
+
+    # Find the rules which is not in the specified rules
+    find = False
+    for rule in rules:
+        for key in VALID_PARAMS:
+            if not rule.get(key):
+                continue
+            if existing_rule.get(key) != rule.get(key):
+                find = False
+                break
+            find = True
+        if find:
+            break
+    # If it is not found, there will not purge anythind
+    if not find:
+        return group.revoke(existing_rule, direction)
+    return False
 
 
 def main():
@@ -536,20 +356,20 @@ def main():
         group_tags=dict(type='list', aliases=['tags']),
         rules=dict(type='list'),
         rules_egress=dict(type='list'),
-        group_id=dict(type='str')
+        purge_rules=dict(type='bool', default=True),
+        purge_rules_egress=dict(type='bool', default=True),
+        group_id=dict(type='str', aliases=['id'])
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
 
     if HAS_FOOTMARK is False:
-        module.fail_json(msg='footmark required for the module ali_security_group.')
+        module.fail_json(msg='footmark is required for the module ali_security_group.')
 
     ecs = ecs_connect(module)
 
     state = module.params['state']
     group_name = module.params['group_name']
-    description = module.params['description']
-    vpc_id = module.params['vpc_id']
     group_id = module.params['group_id']
     group_tags = module.params['group_tags']
 
@@ -558,12 +378,9 @@ def main():
 
     try:
         if group_id:
-            security_groups = ecs.describe_security_groups()
-            for sg in security_groups:
-                if sg.security_group_id == group_id:
-                    group = sg
+            group = ecs.describe_security_group_attribute(security_group_id=group_id)
     except ECSResponseError as e:
-        module.fail_json(msg='Error in describe_security_groups: %s' % str(e))
+        module.fail_json(msg='Faild to describe security group {0}: {1}'.format(group_id,e))
 
     if state == 'absent':
         if not group:
@@ -575,32 +392,53 @@ def main():
 
     if not group:
         try:
-            client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
-            group = ecs.create_security_group(security_group_name=group_name, description=description, vpc_id=vpc_id,
-                                              tags=group_tags, client_token=client_token)
+            params = module.params
+            params['security_group_name'] = group_name
+            params['client_token'] = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
+            group = ecs.create_security_group(**params)
             changed = True
-
         except ECSResponseError as e:
             module.fail_json(changed=changed, msg='Creating a security group is failed. Error: {0}'.format(e))
 
+    if not group_name:
+        group_name = group.security_group_name
+
+    description = module.params['description']
+    if not description:
+        description = group.description
+    if group.modify(name=group_name, description=description):
+        changed = True
+
     # validating rules if provided
-    total_rules_count = 0
-    inbound_rules = module.params['rules']
-    if inbound_rules:
-        total_rules_count = len(inbound_rules)
+    ingress_rules = module.params['rules']
+    if ingress_rules:
+        direction = 'ingress'
+        for rule in ingress_rules:
+            validate_group_rule_keys(module, rule, direction)
+        if module.params['purge_rules']:
+            for existing in group.permissions:
+                if existing['direction'] != direction:
+                    continue
+                if purge_rules(module, group, existing, ingress_rules, direction):
+                    changed = True
+        for rule in ingress_rules:
+            if group.authorize(rule, direction):
+                changed = True
 
-    outbound_rules = module.params['rules_egress']
-    if outbound_rules:
-        total_rules_count += len(outbound_rules)
-
-    if total_rules_count > 100:
-        module.fail_json(msg='more than 100 rules for authorization are not allowed')
-
-    validate_format_sg_rules(module, inbound_rules, outbound_rules)
-
-    if inbound_rules or outbound_rules:
-        if authorize_security_group(module, ecs, group_id=group.id, inbound_rules=inbound_rules, outbound_rules=outbound_rules):
-            changed = True
+    egress_rules = module.params['rules_egress']
+    if egress_rules:
+        direction = 'egress'
+        for rule in egress_rules:
+            validate_group_rule_keys(module, rule, direction)
+        if module.params['purge_rules_egress']:
+            for existing in group.permissions:
+                if existing['direction'] != direction:
+                    continue
+                if purge_rules(module, group, existing, egress_rules, direction):
+                    changed = True
+        for rule in egress_rules:
+            if group.authorize(rule, direction):
+                changed = True
 
     module.exit_json(changed=changed, group=group.get().read())
 

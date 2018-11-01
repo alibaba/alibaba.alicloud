@@ -15,35 +15,35 @@ vswitch_description: "Create a new VSwitch resource via Ansible example alicloud
 # create security parameters
 group_description: "Create a new security group resource via Ansible example alicloud-ecs-vpc."
 group_inboundRules:
-  - proto: tcp
+  - ip_protocol: tcp
     port_range: 22/22
-    cidr_ip: 0.0.0.0/0
+    source_cidr_ip: 0.0.0.0/0
     priority: 1
 
-  - proto: tcp
+  - ip_protocol: tcp
     port_range: 80/80
-    cidr_ip: 0.0.0.0/0
+    source_cidr_ip: 0.0.0.0/0
     priority: 1
 
-  - proto: udp
+  - ip_protocol: udp
     port_range: 10988/10989
-    cidr_ip: 47.89.23.33/32
+    source_cidr_ip: 47.89.23.33/32
     priority: 2
 
 group_outboundRules:
-  - proto: tcp
+  - ip_protocol: tcp
     port_range: 80/80
-    cidr_ip: 192.168.0.54/32
+    dest_cidr_ip: 192.168.0.54/32
     priority: 1
 
-  - proto: tcp
+  - ip_protocol: tcp
     port_range: 8080/8085
-    cidr_ip: 47.89.23.33/32
+    dest_cidr_ip: 47.89.23.33/32
     priority: 1
 
-  - proto: udp
+  - ip_protocol: udp
     port_range: 10989/10997
-    cidr_ip: 47.89.23.33/32
+    dest_cidr_ip: 47.89.23.33/32
     priority: 2
 
 # create ECS instance parameters
