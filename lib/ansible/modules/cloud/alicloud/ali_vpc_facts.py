@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_vpc_facts
-version_added: "1.5.0"
+version_added: "2.8"
 short_description: Gather facts on vpcs of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -36,23 +36,29 @@ description:
 options:
   vpc_name:
     description:
-      - Name of one or more VPC that exist in your account.
+      - (Deprecated) Name of one or more VPC that exist in your account. New option `name_prefix` instead.
     aliases: ["name"]
   vpc_ids:
     description:
       - A list of VPC IDs that exist in your account.
     aliases: ["ids"]
+  name_prefix:
+    description:
+      - Use a VPC name prefix to filter VPCs.
+  cidr_prefix:
+    description:
+      - Use a VPC cidr block prefix to filter VPCs.
   filters:
     description:
-      - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
-        The filter keys can be all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35739.htm) for parameter details.
-        Filter keys can be same as request parameter name or be lower case and use underscores (_) or dashes (-) to
-        connect different words in one parameter. 'VpcId' should be a list and use I(vpc_ids) instead.
+      - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
+        all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35739.htm) for parameter details.
+        Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
+        connect different words in one parameter.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark"
+    - "footmark >= 1.7.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -65,13 +71,19 @@ EXAMPLES = '''
 
 # Gather facts about a particular VPC using VPC ID
 - ali_vpc_facts:
-    vpc_ids: vpc-aaabbb
+    vpc_ids:
+      - vpc-aaabbb
+      - vpc-123fwec
 
-# Gather facts about any VPC with 'is_default' and name
+# Gather facts about any VPC with 'is_default' and name_prefix
 - ali_vpc_facts:
-    vpc_name: my-vpc
+    name_prefix: "my-vpc"
     filters:
       is_default: False
+
+# Gather facts about any VPC with cidr_prefix
+- ali_vpc_facts:
+    cidr_prefix: "172.16"
 '''
 
 RETURN = '''
@@ -163,7 +175,9 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         vpc_ids=dict(type='list', aliases=['ids']),
-        vpc_name=dict(type='str', aliases=['name']),
+        vpc_name=dict(aliases=['name']),
+        name_prefix=dict(),
+        cidr_prefix=dict(),
         filters=dict(type='dict')
     )
     )
@@ -175,18 +189,35 @@ def main():
     filters = module.params['filters']
     if not filters:
         filters = {}
-    if module.params['vpc_ids']:
-        filters['vpc_ids'] = module.params['vpc_ids']
+
+    vpc_ids = module.params['vpc_ids']
+    if vpc_ids:
+        filter_vpc_id = filters['vpc_id']
+        if filter_vpc_id and filter_vpc_id not in vpc_ids:
+            vpc_ids.append(filter_vpc_id)
+
     name = module.params['vpc_name']
+    name_prefix = module.params['name_prefix']
+    cidr_prefix = module.params['cidr_prefix']
 
     try:
         vpcs = []
         ids = []
-        for vpc in vpc_connect(module).describe_vpcs(**filters):
-            if name and vpc.vpc_name != name:
-                continue
-            vpcs.append(vpc.read())
-            ids.append(vpc.id)
+        while True:
+            if vpc_ids:
+                filters['vpc_id'] = vpc_ids[0]
+                vpc_ids.pop(0)
+            for vpc in vpc_connect(module).describe_vpcs(**filters):
+                if name and vpc.vpc_name != name:
+                    continue
+                if name_prefix and not str(vpc.vpc_name).startswith(name_prefix):
+                    continue
+                if cidr_prefix and not str(vpc.cidr_block).startswith(cidr_prefix):
+                    continue
+                vpcs.append(vpc.read())
+                ids.append(vpc.id)
+            if not vpc_ids:
+                break
 
         module.exit_json(changed=False, ids=ids, vpcs=vpcs)
     except Exception as e:

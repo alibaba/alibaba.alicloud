@@ -4,6 +4,7 @@
 
 IMPROVEMENTS:
 
+- Add name_prefix and cidr_prefix for ali_vpc_facts ([#126](https://github.com/alibaba/ansible-provider/pull/126))
 - Add name_prefix and filters for ali_instance_facts ([#125](https://github.com/alibaba/ansible-provider/pull/125))
 - Improve alicloud inventory based on footmark 1.6.3+ ([#124](https://github.com/alibaba/ansible-provider/pull/124))
 - Improve ali_security_group and support purge_rules and purge_rules_egress ([#123](https://github.com/alibaba/ansible-provider/pull/123))

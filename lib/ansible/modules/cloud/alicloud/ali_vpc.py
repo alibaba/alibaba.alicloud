@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -24,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_vpc
-version_added: "1.5.0"
+version_added: "2.8"
 short_description: Configure Alibaba Cloud virtual private cloud(VPC)
 description:
     - Create, modify, and delete Alicloud virtual private cloud(VPC).
@@ -46,27 +49,22 @@ options:
       - The description of VPC, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
   cidr_block:
     description:
-      - The CIDR block representing the vpc. The value can be subnet block of its choices. It is required when creating a vpc.
-    default: '172.16.0.0/12'
-    choices: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']
+      - The CIDR block representing the vpc. The value can be subnet block of its choices.
+        Required when C(state=present) and creating new a vpc.
     aliases: [ 'cidr' ]
   user_cidrs:
     description:
       - List of user custom cidr in the VPC. It no more than three.
   vpc_id:
     description:
-      - The ID of a VPC. It required when managing an existing VPC. Such as deleting vpc and querying vpc attribute.
+      - The ID of a VPC. Required when C(state=absent).
     aliases: ['id']
-  is_default:
-    description:
-      - When retrieving vpc, it can mark the VPC is created by system.
-    type: bool
 notes:
   - There will be launch a virtual router along with creating a vpc successfully.
   - There is only one virtual router in one vpc and one route table in one virtual router.
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "footmark >= 1.7.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -74,28 +72,17 @@ author:
 """
 
 EXAMPLES = """
-#
-# provisioning to create vpc in VPC
-#
-
 # basic provisioning example to create vpc in VPC
 - name: create vpc
   hosts: localhost
   connection: local
-  vars:
-    alicloud_region: cn-hongkong
-    state: present
-    cidr_block: 192.168.0.0/16
-    vpc_name: Demo_VPC
-    description: Demo VPC
+
   tasks:
     - name: create vpc
       ali_vpc:
-        alicloud_region: '{{ alicloud_region }}'
-        state: '{{ state }}'
-        cidr_block: '{{ cidr_block }}'
-        vpc_name: '{{ vpc_name }}'
-        description: '{{ description }}'
+        cidr_block: '192.168.0.0/16'
+        vpc_name: 'Demo_VPC'
+        description: 'Demo VPC'
       register: result
     - debug: var=result
 
@@ -103,12 +90,10 @@ EXAMPLES = """
 - name: delete vpc
   hosts: localhost
   connection: local
-  vars:
-    alicloud_region: cn-hongkong
+
   tasks:
     - name: delete vpc
       ali_vpc:
-        alicloud_region: '{{ alicloud_region }}'
         state: absent
         vpc_id: xxxxxxxxxx
       register: result
@@ -200,12 +185,11 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(default='172.16.0.0/16', aliases=['cidr']),
+        cidr_block=dict(aliases=['cidr']),
         user_cidrs=dict(type='list'),
         vpc_name=dict(aliases=['name']),
         description=dict(),
         vpc_id=dict(aliases=['id']),
-        is_default=dict(type='bool'),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -220,7 +204,6 @@ def main():
     vpc_id = module.params['vpc_id']
     vpc_name = module.params['vpc_name']
     description = module.params['description']
-    user_cidrs = module.params['user_cidrs']
 
     if str(description).startswith('http://') or str(description).startswith('https://'):
         module.fail_json(msg='description can not start with http:// or https://')
