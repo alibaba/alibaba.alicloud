@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -24,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_vswitch
-version_added: "1.5.0"
+version_added: "2.8"
 short_description: Manage subnet in Alibaba Cloud virtual private cloud(VPC)
 description:
     - Manage subnet in Alibaba Cloud virtual private cloud(VPC).
@@ -38,15 +41,15 @@ options:
   zone_id:
     description:
       - Aliyun availability zone ID which to launch the vswitch or list vswitches.
-        It is required when creating a vswitch.
+        It is required when creating a new vswitch.
     aliases: [ 'availability_zone', 'alicloud_zone' ]
   vpc_id:
     description:
-      - The ID of a VPC to which that Vswitch belongs. It is required when creating a vswitch.
+      - The ID of a VPC to which that Vswitch belongs. It is required when creating a new vswitch.
   cidr_block:
     description:
       - The CIDR block representing the Vswitch e.g. 10.0.0.0/8. The value must be sub cidr_block of Vpc.
-        It is required when creating a vswitch.
+        It is required when creating a new vswitch.
   vswitch_name:
     description:
       - The name of vswitch, which is a string of 2 to 128 Chinese or English characters. It must begin with an
@@ -58,11 +61,11 @@ options:
       - The description of vswitch, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
   vswitch_id:
     description:
-      - VSwitch ID. It is used to manage the existing VSwitch. Such as modifying VSwitch's attribute or deleting VSwitch.
+      - VSwitch ID. It is used to manage the existing VSwitch. Required when C(present=absent).
     aliases: ['subnet_id', 'id']
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "footmark >= 1.7.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -76,23 +79,12 @@ EXAMPLES = """
 - name: create vswitch
   hosts: localhost
   connection: local
-  vars:
-    alicloud_region: cn-hongkong
-    vpc_id: xxxxxxxxxx
-    availability_zone: cn-hongkong-b
-    cidr_block: '172.16.0.0/24'
-    name: 'Demo_VSwitch'
-    description: 'akashhttp://'
-    state: present
   tasks:
     - name: create vswitch
       ali_vswitch:
-        alicloud_region: '{{ alicloud_region }}'
         cidr_block: '{{ cidr_blok }}'
-        name: '{{ name }}'
-        description: '{{ description }}'
-        vpc_id: '{{ vpc_id }}'
-        state: '{{ state }}'
+        name: 'my-vsw'
+        vpc_id: 'vpc-abc12345'
       register: result
     - debug: var=result
 
@@ -100,18 +92,11 @@ EXAMPLES = """
 - name: delete vswitch
   hosts: localhost
   connection: local
-  vars:
-    alicloud_region: cn-hongkong
-    vpc_id: xxxxxxxxxx
-    vswitch_id: xxxxxxxxxx
-    state: absent
   tasks:
     - name: delete vswitch
       ali_vswitch:
-        alicloud_region: '{{ alicloud_region }}'
-        vpc_id: '{{ vpc_id }}'
         vswitch_id: '{{ vswitch_id }}'
-        state: '{{ state }}'
+        state: 'absent'
       register: result
     - debug: var=result
 """
@@ -222,13 +207,13 @@ def uniquely_find_vswitch(connection, module):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(type='str', default='present', choices=['present', 'absent']),
-        cidr_block=dict(type='str'),
-        description=dict(type='str'),
+        state=dict(default='present', choices=['present', 'absent']),
+        cidr_block=dict(),
+        description=dict(),
         zone_id=dict(aliases=['availability_zone','alicloud_zone']),
-        vpc_id=dict(type='str'),
+        vpc_id=dict(),
         vswitch_name=dict(aliases=['name', 'subnet_name']),
-        vswitch_id=dict(type='str', aliases=['subnet_id', 'id']),
+        vswitch_id=dict(aliases=['subnet_id', 'id']),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec,

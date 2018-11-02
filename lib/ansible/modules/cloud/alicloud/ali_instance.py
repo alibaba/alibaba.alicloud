@@ -156,6 +156,7 @@ options:
         - Delete any tags not specified in the task that are on the instance.
           This means you have to specify all the desired tags on each task affecting an instance.
       default: False
+      type: bool
     key_name:
       description:
         - The name of key pair which is used to access ECS instance in SSH.

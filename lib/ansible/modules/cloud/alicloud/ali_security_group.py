@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -66,18 +69,21 @@ options:
   purge_rules:
     description:
       - Purge existing rules on security group that are not found in rules
-    required: false
-    default: 'true'
-    aliases: []
+    default: True
+    type: bool
   purge_rules_egress:
     description:
       - Purge existing rules_egress on security group that are not found in rules_egress
-    required: false
-    default: 'true'
+    default: True
+    type: bool
   group_id:
     description:
       - Security group ID. It is required when deleting or querying security group or performing rules authorization.
     aliases: ['id']
+  tags:
+    description:
+      - A hash/dictionaries of security group tags. C({"key":"value"})
+    aliases: ["group_tags"]
 requirements:
     - "python >= 2.6"
     - "footmark >= 1.7.0"
@@ -288,10 +294,10 @@ except ImportError:
 
 
 VALID_INGRESS_PARAMS = ["ip_protocol", "port_range", "source_port_range", "nic_type", "policy",
-                        "dest_cidr_ip","source_cidr_ip", "priority", "description",
+                        "dest_cidr_ip", "source_cidr_ip", "priority", "description",
                         "source_group_id", "source_group_owner_account", "source_group_owner_id"]
 VALID_EGRESS_PARAMS = ["ip_protocol", "port_range", "source_port_range", "nic_type", "policy",
-                       "dest_cidr_ip","source_cidr_ip", "priority", "description",
+                       "dest_cidr_ip", "source_cidr_ip", "priority", "description",
                        "dest_group_id", "dest_group_owner_account", "dest_group_owner_id"]
 
 
@@ -302,7 +308,7 @@ def validate_group_rule_keys(module, rule, direction):
 
     VALID_PARAMS = VALID_INGRESS_PARAMS
     if direction == "egress":
-        VALID_PARAMS  =VALID_EGRESS_PARAMS
+        VALID_PARAMS = VALID_EGRESS_PARAMS
 
     for k in rule:
         if k not in VALID_PARAMS:
@@ -353,7 +359,7 @@ def main():
         group_name=dict(type='str', required=False, aliases=['name']),
         description=dict(type='str', required=False),
         vpc_id=dict(type='str'),
-        group_tags=dict(type='list', aliases=['tags']),
+        tags=dict(type='dict', aliases=['group_tags']),
         rules=dict(type='list'),
         rules_egress=dict(type='list'),
         purge_rules=dict(type='bool', default=True),
@@ -371,7 +377,6 @@ def main():
     state = module.params['state']
     group_name = module.params['group_name']
     group_id = module.params['group_id']
-    group_tags = module.params['group_tags']
 
     changed = False
     group = None
@@ -380,7 +385,7 @@ def main():
         if group_id:
             group = ecs.describe_security_group_attribute(security_group_id=group_id)
     except ECSResponseError as e:
-        module.fail_json(msg='Faild to describe security group {0}: {1}'.format(group_id,e))
+        module.fail_json(msg='Faild to describe security group {0}: {1}'.format(group_id, e))
 
     if state == 'absent':
         if not group:

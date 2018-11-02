@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_security_group_facts
-version_added: "1.5.0"
+version_added: "2.8"
 short_description: Gather facts on security group of Alibaba Cloud ECS.
 description:
   - This module fetches data from the Open API in Alicloud.
@@ -40,20 +40,26 @@ options:
     aliases: ["ids"]
   group_name:
     description:
-      - Name of the security group.
+      - (Deprecated) Name of the security group. New option `name_prefix` instead.
     aliases: ["name"]
+  name_prefix:
+    description:
+      - Use a Security Group name prefix to filter security group.
+  tags:
+    description:
+      - A hash/dictionaries of security group tags. C({"key":"value"})
   filters:
     description:
-      - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
-        The filter keys can be all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/25556.htm) for parameter details.
-        Filter keys can be same as request parameter name or be lower case and use underscores (_) or dashes (-) to
+      - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
+        all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/25556.htm) for parameter details.
+        Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
         connect different words in one parameter. "Tag.n.Key" and "Tag.n.Value" use new filter 'tags' instead and
-        it should be a dict.
+        it should be a dict. "SecurityGroupIds" will be joined into "group_ids" automatically.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark"
+    - "footmark >= 1.7.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -69,25 +75,21 @@ EXAMPLES = '''
     filters:
       vpc-id: vpc-12345678
 
-# Gather facts about a security group
+# Gather facts about a security group using a name_prefix
 - ali_security_group_facts:
-    group_name: example-1
+    name_prefix: example
 
 # Gather facts about a security group by id
 - ali_security_group_facts:
-    group_ids: sg-12345678
-
-# Gather facts about a security group with multiple filters, also mixing the use of underscores as filter keys
-- ali_security_group_facts:
-    group_name: example-2
-    filters:
-      vpc_id: vpc-12345678
+    group_ids:
+      - sg-12345678
+      - sg-cnqwu234
 
 # Gather facts about any security group with a tag key Name and value Example.
 - ali_security_group_facts:
-    filters:
-      tags:
-        name: Example
+    tags:
+      name: Example
+      env: dev
 '''
 
 RETURN = '''
@@ -198,7 +200,9 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        group_name=dict(type='str', aliases=['name']),
+        group_name=dict(aliases=['name']),
+        name_prefix=dict(),
+        tags=dict(type='dict'),
         group_ids=dict(type='list', aliases=['ids']),
         filters=dict(type='dict')
     ))
@@ -210,25 +214,34 @@ def main():
 
     ecs = ecs_connect(module)
 
+    filters = module.params["filters"]
+    if not filters:
+        filters = {}
+
     group_ids = module.params['group_ids']
+    if group_ids:
+        for id in filters['security_group_ids']:
+            if id in group_ids:
+                continue
+            group_ids.append(id)
+        filters["security_group_ids"] = group_ids
+
     name = module.params['group_name']
+    name_prefix = module.params['name_prefix']
 
     changed = False
-    result = []
+    groups = []
+    ids = []
     try:
-        security_groups = ecs.describe_security_groups(**module.params["filters"])
-        group_ids = []
-        for sg in security_groups:
-            if group_ids and sg.security_group_id not in group_ids:
+        for sg in ecs.describe_security_groups(**filters):
+            if name_prefix and not str(sg.security_group_name).startswith(name_prefix):
                 continue
-            if name and sg.security_group_name != name:
-                continue
-            result.append(sg.read())
-            group_ids.append(sg.id)
+            groups.append(sg.read())
+            ids.append(sg.id)
     except ECSResponseError as e:
         module.fail_json(msg='Error in describe_security_groups: {0}'.format(e))
 
-    module.exit_json(changed=changed, ids=group_ids, groups=result)
+    module.exit_json(changed=changed, ids=ids, groups=groups)
 
 
 if __name__ == '__main__':
