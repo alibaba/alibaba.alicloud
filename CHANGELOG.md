@@ -1,6 +1,7 @@
 # Ansible-Alicloud Change Log
 
-## 1.7.0 (Unreleased)
+## 1.8.0 (Unreleased)
+## 1.7.0 (2 November, 2018)
 
 IMPROVEMENTS:
 
