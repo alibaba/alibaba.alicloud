@@ -27,7 +27,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_vswitch_facts
-version_added: "1.5.0"
+version_added: "2.8"
 short_description: Gather facts on vswitchs of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -36,7 +36,7 @@ description:
 options:
   vswitch_name:
     description:
-      - Name of one or more vswitch that exist in your account.
+      - (Deprecated) Name of one or more vswitch that exist in your account. New option `name_prefix` instead.
     aliases: ["name", 'subnet_name']
   vswitch_ids:
     description:
@@ -44,18 +44,24 @@ options:
     aliases: ['subnet_ids', 'ids']
   cidr_block:
     description:
-      - The CIDR block representing the Vswitch e.g. 10.0.0.0/8.
+      - (Deprecated) The CIDR block representing the Vswitch e.g. 10.0.0.0/8. New option `cidr_prefix` instead.
+  name_prefix:
+    description:
+      - Use a VSwitch name prefix to filter vswitches.
+  cidr_prefix:
+    description:
+      - Use a VSwitch cidr block prefix to filter vswitches.
   filters:
     description:
-      - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
-        The filter keys can be all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35748.htm) for parameter details.
-        Filter keys can be same as request parameter name or be lower case and use underscores (_) or dashes (-) to
-        connect different words in one parameter. 'VSwitchId' should be a list and use I(vswitch_ids) instead.
+      - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
+        all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35748.htm) for parameter details.
+        Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
+        connect different words in one parameter.
 author:
     - "He Guimin (@xiaozhu36)"
-requirements:   
+requirements:
     - "python >= 2.6"
-    - "footmark"
+    - "footmark >= 1.7.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -68,28 +74,19 @@ EXAMPLES = '''
 
 # Gather facts about a particular VPC subnet using ID
 - ali_vswitch_facts:
-    vswitch_ids: vsw-00112233
+    vswitch_ids:
+      - vsw-00112233
 
 # Gather facts about any VPC subnet within VPC with ID vpc-abcdef00
 - ali_vswitch_facts:
     filters:
       vpc-id: vpc-abcdef00
 
-# Gather facts about a set of VPC subnets, cidrA, cidrB and cidrC within a
-# VPC with ID vpc-abcdef00 and then use the jinja map function to return the
-# vswitch_ids as a list.
-
+# Gather facts about a set of VPC subnets, cidrA, cidrB and cidrC within a VPC
 - ali_vswitch_facts:
-    cidr_block: "{{ item }}"
+    cidr_prefix: "10.0."
     filters:
       vpc-id: vpc-abcdef00
-  with_items:
-    - cidrA
-    - cidrB
-  register: vswitch_facts
-
-- set_fact:
-    vswitch_ids: "{{ vswitch_facts.vswitches|map(attribute='id')|list }}"
 '''
 
 RETURN = '''
@@ -180,8 +177,10 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        vswitch_name=dict(type='str', aliases=['name', 'subnet_name']),
-        cidr_block=dict(type='str'),
+        vswitch_name=dict(aliases=['name', 'subnet_name']),
+        cidr_block=dict(),
+        name_prefix=dict(),
+        cidr_prefix=dict(),
         vswitch_ids=dict(type='list', aliases=['ids', 'subnet_ids']),
         filters=dict(type='dict')
     )
@@ -195,21 +194,38 @@ def main():
     filters = module.params['filters']
     if not filters:
         filters = {}
-    if module.params['vswitch_ids']:
-        filters['vswitch_ids'] = module.params['vswitch_ids']
+
+    vswitch_ids = module.params['vswitch_ids']
+    if vswitch_ids:
+        filter_vsw_id = filters['vswitch_id']
+        if filter_vsw_id and filter_vsw_id not in vswitch_ids:
+            vswitch_ids.append(filter_vsw_id)
+
     name = module.params['vswitch_name']
     cidr_block = module.params['cidr_block']
+    name_prefix = module.params['name_prefix']
+    cidr_prefix = module.params['cidr_prefix']
 
     try:
         vswitches = []
         ids = []
-        for vsw in vpc_connect(module).describe_vswitches(**filters):
-            if name and vsw.vswitch_name != name:
-                continue
-            if cidr_block and vsw.cidr_block != cidr_block:
-                continue
-            vswitches.append(vsw.read())
-            ids.append(vsw.id)
+        while True:
+            if vswitch_ids:
+                filters['vswitch_id'] = vswitch_ids[0]
+                vswitch_ids.pop(0)
+            for vsw in vpc_connect(module).describe_vswitches(**filters):
+                if name and vsw.vswitch_name != name:
+                    continue
+                if cidr_block and vsw.cidr_block != cidr_block:
+                    continue
+                if name_prefix and not str(vsw.vswitch_name).startswith(name_prefix):
+                    continue
+                if cidr_prefix and not str(vsw.cidr_block).startswith(cidr_prefix):
+                    continue
+                vswitches.append(vsw.read())
+                ids.append(vsw.id)
+            if not vswitch_ids:
+                break
 
         module.exit_json(changed=False, ids=ids, vswitches=vswitches)
     except Exception as e:

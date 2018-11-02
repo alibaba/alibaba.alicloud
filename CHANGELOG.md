@@ -4,6 +4,8 @@
 
 IMPROVEMENTS:
 
+- Add tags for ali_security_group ([#127](https://github.com/alibaba/ansible-provider/pull/127))
+- Add name_prefix for ali_security_group_facts ([#127](https://github.com/alibaba/ansible-provider/pull/127))
 - Add name_prefix and cidr_prefix for ali_vpc_facts ([#126](https://github.com/alibaba/ansible-provider/pull/126))
 - Add name_prefix and filters for ali_instance_facts ([#125](https://github.com/alibaba/ansible-provider/pull/125))
 - Improve alicloud inventory based on footmark 1.6.3+ ([#124](https://github.com/alibaba/ansible-provider/pull/124))
