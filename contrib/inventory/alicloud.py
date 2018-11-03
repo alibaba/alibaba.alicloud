@@ -18,18 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-
+import sys
 import os
 import argparse
 import re
-from time import time
-
-import six
 import yaml
+from ansible.module_utils.six import string_types
 
+from time import time
 from ansible.module_utils.alicloud_ecs import connect_to_acs
-
-from six.moves import configparser
+if sys.version_info >= (3, 0):
+    import configparser
+else:
+    import ConfigParser as configparser
 
 try:
     import json
@@ -50,7 +51,7 @@ except ImportError:
 class EcsInventory(object):
 
     def _empty_inventory(self):
-        return {"_meta" : {"hostvars" : {}}}
+        return {"_meta": {"hostvars": {}}}
 
     def __init__(self):
         ''' Main execution path '''
@@ -110,7 +111,7 @@ class EcsInventory(object):
             else:
                 data_to_print = self.json_format_dict(self.inventory, True)
 
-        print data_to_print
+        print(data_to_print)
 
     def parse_cli_args(self):
         ''' Command line argument processing '''
@@ -128,8 +129,6 @@ class EcsInventory(object):
         ''' Reads the settings from the alicloud.ini file '''
 
         config = configparser.SafeConfigParser()
-        if six.PY3:
-            config = configparser.ConfigParser()
 
         ecs_default_ini_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'alicloud.ini')
         ecs_ini_path = os.path.expanduser(os.path.expandvars(os.environ.get('ALICLOUD_INI_PATH', ecs_default_ini_path)))
@@ -232,7 +231,7 @@ class EcsInventory(object):
 
         # Do we need to exclude hosts that match a pattern?
         try:
-            pattern_exclude = self.get_option(config, 'ecs', 'pattern_exclude');
+            pattern_exclude = self.get_option(config, 'ecs', 'pattern_exclude')
             if pattern_exclude and len(pattern_exclude) > 0:
                 self.pattern_exclude = re.compile(pattern_exclude)
         except configparser.NoOptionError:
@@ -420,9 +419,9 @@ class EcsInventory(object):
             # Handle complex types
             if type(value) in [int, bool]:
                 instance_vars[key] = value
-            elif isinstance(value, six.string_types):
+            elif isinstance(value, string_types):
                 instance_vars[key] = value.strip()
-            elif type(value) == type(None):
+            elif not value:
                 instance_vars[key] = ''
             elif key == 'tags':
                 for k, v in value.items():
@@ -444,10 +443,10 @@ class EcsInventory(object):
             # Need to load index from cache
             self.load_index_from_cache()
 
-        if not self.args.host in self.index:
+        if self.args.host not in self.index:
             # try updating the cache
             self.do_api_calls_update_cache()
-            if not self.args.host in self.index:
+            if self.args.host not in self.index:
                 # host might not exist anymore
                 return self.json_format_dict({}, True)
 
@@ -466,7 +465,7 @@ class EcsInventory(object):
             self.fail_with_error("region name: %s likely not supported. Connection to region failed." % region)
         return conn
 
-    def get_option(self,config, module, name, default=None):
+    def get_option(self, config, module, name, default=None):
         # Check module args and then return them from option
         option = None
         if config.has_option(module, name):
