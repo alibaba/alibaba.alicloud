@@ -1,6 +1,11 @@
 # Ansible-Alicloud Change Log
 
 ## 1.8.0 (Unreleased)
+
+IMPROVEMENTS:
+
+- Improve dynamic inventory grammar ([#128](https://github.com/alibaba/ansible-provider/pull/128))
+
 ## 1.7.0 (2 November, 2018)
 
 IMPROVEMENTS:
