@@ -1,0 +1,37 @@
+---
+- name: Validate module ali_instance
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+
+  tasks:
+    - name: Retrieving vpcs using vpc_ids
+      ali_vpc_facts:
+        vpc_ids: '{{ vpcs.ids}}'
+
+    - name: Add a vpc and used to test name_regex
+      ali_vpc:
+        cidr_block: '192.168.2.0/24'
+        vpc_name: '{{ name }}regex-vpc'
+        description: '{{ vpc_description }} name regex.'
+
+    - name: Filter vpc using name_regex
+      ali_vpc_facts:
+        name_prefix: '{{name}}regex'
+
+    - name: Retrieving all vpcs
+      ali_vpc_facts:
+
+    - name: Retrieving all vpcs based on name_regex
+      ali_vpc_facts:
+        name_prefix: '{{name}}'
+      register: vpcs
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        vpc_id: '{{item}}'
+        state: absent
+      with_items: '{{vpcs.ids}}'
+

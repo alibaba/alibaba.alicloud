@@ -111,7 +111,7 @@ options:
       description:
       - I(count) determines how many instances based on a specific tag criteria should be present.
         This can be expressed in multiple ways and is shown in the EXAMPLES section.
-        The specified count_tag must already exist or be passed in as the I(instance_tags) option.
+        The specified count_tag must already exist or be passed in as the I(tags) option.
         If it is not specified, it will be replaced by I(instance_name).
     allocate_public_ip:
       description:
@@ -147,14 +147,14 @@ options:
         - Whether the current operation needs to be execute forcibly.
       default: False
       type: bool
-    instance_tags:
+    tags:
       description:
         - A hash/dictionaries of instance tags, to add to the new instance or for starting/stopping instance by tag. C({"key":"value"})
-      aliases: ["tags"]
+      aliases: ["instance_tags"]
     purge_tags:
       description:
         - Delete any tags not specified in the task that are on the instance.
-          This means you have to specify all the desired tags on each task affecting an instance.
+          If True, it means you have to specify all the desired tags on each task affecting an instance.
       default: False
       type: bool
     key_name:
@@ -213,7 +213,7 @@ EXAMPLES = '''
         assign_public_ip: '{{ assign_public_ip }}'
         internet_charge_type: '{{ internet_charge_type }}'
         max_bandwidth_out: '{{ max_bandwidth_out }}'
-        instance_tags:
+        tags:
             Name: created_one
         host_name: '{{ host_name }}'
         password: '{{ password }}'
@@ -231,7 +231,7 @@ EXAMPLES = '''
         security_groups: '{{ security_groups }}'
         internet_charge_type: '{{ internet_charge_type }}'
         max_bandwidth_out: '{{ max_bandwidth_out }}'
-        instance_tags:
+        tags:
             Name: created_one
             Version: 0.1
         count: 2
@@ -652,7 +652,7 @@ def main():
         system_disk_name=dict(type='str'),
         system_disk_description=dict(type='str'),
         force=dict(type='bool', default=False),
-        instance_tags=dict(type='dict', aliases=['tags']),
+        tags=dict(type='dict', aliases=['instance_tags']),
         purge_tags=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'running', 'stopped', 'restarted', 'absent']),
         description=dict(type='str'),
@@ -680,7 +680,7 @@ def main():
     force = module.params['force']
     zone_id = module.params['availability_zone']
     key_name = module.params['key_name']
-    instance_tags = module.params['instance_tags']
+    tags = module.params['tags']
     changed = False
 
     instances = []
@@ -692,7 +692,7 @@ def main():
             module.fail_json(msg="There are no instances in our record based on instance_ids {0}. "
                                  "Please check it and try again.".format(instance_ids))
     elif count_tag:
-        instances = ecs.describe_instances(zone_id=zone_id, instance_tags=eval(count_tag))
+        instances = ecs.describe_instances(zone_id=zone_id, tags=eval(count_tag))
     elif instance_name:
         instances = ecs.describe_instances(zone_id=zone_id, instance_name=instance_name)
 
@@ -700,7 +700,7 @@ def main():
     if state == 'absent':
         if len(instances) < 1:
             module.fail_json(msg='Please specify ECS instances that you want to operate by using '
-                                 'parameters instance_ids, instance_tags or instance_name, aborting')
+                                 'parameters instance_ids, tags or instance_name, aborting')
         try:
             targets = []
             for inst in instances:
@@ -793,7 +793,7 @@ def main():
     else:
         if len(instances) < 1:
             module.fail_json(msg='Please specify ECS instances that you want to operate by using '
-                                 'parameters instance_ids, instance_tags or instance_name, aborting')
+                                 'parameters instance_ids, tags or instance_name, aborting')
         if state == 'running':
             try:
                 targets = []
@@ -835,14 +835,28 @@ def main():
             except Exception as e:
                 module.fail_json(msg='Reboot instances got an error: {0}'.format(e))
 
-    if instance_tags:
+    tags = module.params['tags']
+    if tags or module.params['purge_tags']:
         for inst in instances:
-            if module.params["purge_tags"]:
-                if inst.remove_tags(instance_tags):
-                    changed = True
+            removed = {}
+            if not tags:
+                removed = inst.tags
             else:
-                if inst.add_tags(instance_tags):
+                for key, value in inst.tags.items():
+                    if key not in tags.keys():
+                        removed[key] = value
+            try:
+                if inst.remove_tags(removed):
                     changed = True
+            except Exception as e:
+                module.fail_json(msg="{0}".format(e))
+
+            if tags:
+                try:
+                    if inst.add_tags(tags):
+                        changed = True
+                except Exception as e:
+                    module.fail_json(msg="{0}".format(e))
 
     module.exit_json(changed=changed, ids=ids, instances=get_instances_info(ecs, ids))
 
