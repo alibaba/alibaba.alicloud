@@ -4,6 +4,7 @@
 
 IMPROVEMENTS:
 
+- Add tags for ali_eni ([#131](https://github.com/alibaba/ansible-provider/pull/131))
 - Improve module ali_eni and ali_eni_facts ([#130](https://github.com/alibaba/ansible-provider/pull/130))
 - Add test cases for the ali_eni and ali_eni_facts([#130](https://github.com/alibaba/ansible-provider/pull/130))
 - Add name_prefix and tags for the ali_eni_facts ([#130](https://github.com/alibaba/ansible-provider/pull/130))
