@@ -12,6 +12,7 @@
     security_groups: ['{{ sgs.groups.0.id }}']
     name: '{{ name }}-ali_eni'
     description: '{{description}}ali_eni'
+    tags: '{{tags}}'
   when: not enis.interfaces
 
 - name: Creating a network interface with private ip
@@ -21,6 +22,7 @@
     name: '{{ name }}-eni'
     description: '{{description}}ali_eni'
     private_ip: '172.16.1.10'
+    tags: '{{tags}}'
   when: not enis.interfaces
 
 - name: Get the existing network interfaces

@@ -14,20 +14,23 @@
       ali_eni_facts:
         eni_ids: '{{ enis.ids}}'
 
-    - name: Add two new enis and used to test name_regex
+    - name: Add two new enis and used to test name_regex and tags
       ali_eni:
         vswitch_id: '{{ vswitches.vswitches.0.id }}'
         security_groups: ['{{ sgs.groups.0.id }}']
         name: '{{ name }}regex--ali_eni'
         description: '{{description}}-name-regex-ali_eni'
+        tags:
+          Test: tags
 
     - name: Filter instance using name_regex
       ali_eni_facts:
         name_prefix: '{{name}}regex'
 
-#    - name: Retrieving instance using tags
-#      ali_instance_facts:
-#        tags: '{{tags}}'
+    - name: Retrieving instance using tags
+      ali_eni_facts:
+        tags:
+          Test: tags
 
     - name: Retrieving all instances
       ali_eni_facts:

@@ -200,8 +200,16 @@ def main():
     filters = module.params["filters"]
     if not filters:
         filters = {}
-    if module.params["eni_ids"]:
-        filters['network_interface_ids'] = module.params["eni_ids"]
+    eni_ids = module.params["eni_ids"]
+    if not eni_ids:
+        eni_ids = []
+    for key, value in filters.items():
+        if str(key).startswith("NetworkInterfaceId") or \
+                str(key).startswith("network_interface_id") or \
+                str(key).startswith("network-interface-id"):
+            eni_ids.append(value)
+    if eni_ids:
+        filters['network_interface_ids'] = eni_ids
 
     name_prefix = module.params["name_prefix"]
     if module.params['tags']:

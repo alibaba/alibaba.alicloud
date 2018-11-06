@@ -128,35 +128,47 @@
         attached: False
       with_items: '{{enis.ids}}'
 
-#    - name: Changed. Adding a tag
-#      ali_instance:
-#        instance_ids: '{{ instances.ids}}'
-#        tags:
-#          Test1: "add1"
-#          Test2: "add2"
-#
-#    - name: Changed. Modifying a tag
-#      ali_instance:
-#        instance_ids: '{{ instances.ids}}'
-#        tags:
-#          Test1: "add1"
-#          Test2: "add3"
-#
-#    - name: No Changed. Tags are not changed
-#      ali_instance:
-#        instance_ids: '{{ instances.ids}}'
-#        tags:
-#          Test1: "add1"
-#          Test2: "add3"
-#
-#    - name: Changed. Removing a tag
-#      ali_instance:
-#        instance_ids: '{{instances.ids}}'
-#        purge_tags: True
-#        tags:
-#          Test1: "add"
-#          Test2: ""
-#          Test3: ""
+    - name: Changed. Adding a tag
+      ali_eni:
+        id: '{{item}}'
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Modifying a tag
+      ali_eni:
+        id: '{{item}}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{enis.ids}}'
+
+    - name: No Changed. No any Tags to be added
+      ali_eni:
+        id: '{{item}}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Removing other tags
+      ali_eni:
+        id: '{{item}}'
+        purge_tags: True
+        tags:
+          Test1: "add"
+          Test2: "new"
+      with_items: '{{enis.ids}}'
+
+    - name: No Changed. No any Tags to be removed
+      ali_eni:
+        id: '{{item}}'
+        purge_tags: True
+        tags:
+          Test1: "add"
+          Test2: "new"
+      with_items: '{{enis.ids}}'
 
     # Delete all of resource
     - name: Changed. Deleting instances
@@ -171,7 +183,7 @@
         id: '{{item}}'
         state: absent
       with_items: '{{enis.ids}}'
-
+#
     - name: Changed. Deleting security groups
       ali_security_group:
         group_id: '{{item.id}}'

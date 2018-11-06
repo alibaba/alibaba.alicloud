@@ -68,6 +68,15 @@ options:
       - Specifies if network interface should be attached or detached from instance. If ommited, attachment status
         won't change
     type: bool
+  tags:
+    description:
+      - A hash/dictionaries of network interface tags. C({"key":"value"})
+  purge_tags:
+    description:
+      - Delete existing tags on the network interface that are not specified in the task.
+        If True, it means you have to specify all the desired tags on each task affecting a network interface.
+  default: False
+  type: bool
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -260,7 +269,9 @@ def main():
             name=dict(type='str'),
             security_groups=dict(type='list'),
             state=dict(default='present', choices=['present', 'absent']),
-            attached=dict(default=None, type='bool')
+            attached=dict(default=None, type='bool'),
+            tags=dict(type='dict'),
+            purge_tags=dict(type='bool', default=False)
         )
     )
 
@@ -320,6 +331,28 @@ def main():
             changed = True
     except Exception as e:
         module.fail_json(msg="{0}".format(e))
+
+    tags = module.params['tags']
+    if module.params['purge_tags']:
+        removed = {}
+        if not tags:
+            removed = eni.tags
+        else:
+            for key, value in eni.tags.items():
+                if key not in tags.keys():
+                    removed[key] = value
+        try:
+            if eni.remove_tags(removed):
+                changed = True
+        except Exception as e:
+            module.fail_json(msg="{0}".format(e))
+
+    if tags:
+        try:
+            if eni.add_tags(tags):
+                changed = True
+        except Exception as e:
+            module.fail_json(msg="{0}".format(e))
 
     attached = module.params.get("attached")
     instance_id = module.params.get("instance_id")
