@@ -4,7 +4,15 @@
 
 IMPROVEMENTS:
 
+- Improve module ali_eni and ali_eni_facts ([#130](https://github.com/alibaba/ansible-provider/pull/130))
+- Add test cases for the ali_eni and ali_eni_facts([#130](https://github.com/alibaba/ansible-provider/pull/130))
+- Add name_prefix and tags for the ali_eni_facts ([#130](https://github.com/alibaba/ansible-provider/pull/130))
+- Improve module ali_eni and ali_eni_facts ([#130](https://github.com/alibaba/ansible-provider/pull/130))
 - Improve dynamic inventory grammar ([#128](https://github.com/alibaba/ansible-provider/pull/128))
+
+BUG FIXES:
+
+- Fix ali_security_group_facts's tags invalid ([#130](https://github.com/alibaba/ansible-provider/pull/130))
 
 ## 1.7.0 (2 November, 2018)
 

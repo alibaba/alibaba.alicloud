@@ -1,7 +1,7 @@
 ---
 - name: Get the existing vpc
   ali_vpc_facts:
-    vpc_name: '{{name}}-vpc'
+    name_prefix: '{{name}}'
   register: vpcs
 
 - name: Create a new alicloud VPC resource
@@ -15,5 +15,5 @@
 
 - name: Get the existing vpc
   ali_vpc_facts:
-    vpc_name: '{{name}}-vpc'
+    name_prefix: '{{name}}'
   register: vpcs

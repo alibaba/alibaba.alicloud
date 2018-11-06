@@ -18,7 +18,7 @@
       ali_instance:
         image: '{{ image_id }}'
         type: '{{ instance_type }}'
-        instance_name: 'ansible-testAcc-name-regex'
+        instance_name: '{{name}}-name-regex'
         description: 'New instance for testing name regex.'
         host_name: '{{ host_name }}'
         password: '{{ password }}'
@@ -38,7 +38,7 @@
 
     - name: Filter instance using name_regex
       ali_instance_facts:
-        name_prefix: 'ansible-testAcc-name'
+        name_prefix: '{{name}}-name'
 
     - name: Retrieving instance using tags
       ali_instance_facts:
@@ -46,6 +46,10 @@
 
     - name: Retrieving all instances
       ali_instance_facts:
+
+    - name: Retrieving all instances based on the name regex
+      ali_instance_facts:
+        name_prefix: '{{name}}'
       register: all_instances
 
     # Delete all of resource

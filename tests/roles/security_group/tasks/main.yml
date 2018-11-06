@@ -1,7 +1,7 @@
 ---
 - name: Get the existing groups
   ali_security_group_facts:
-    group_name: '{{ name }}-group'
+    name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{vpcs.vpcs.0.id}}'
   register: sgs
@@ -19,7 +19,7 @@
 
 - name: Get the existing groups
   ali_security_group_facts:
-    group_name: '{{ name }}-group'
+    name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{vpcs.vpcs.0.id}}'
   register: sgs

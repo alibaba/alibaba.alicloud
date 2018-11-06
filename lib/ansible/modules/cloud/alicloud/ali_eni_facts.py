@@ -30,23 +30,30 @@ module: ali_eni_facts
 short_description: Gather facts about ENI interfaces in Alibaba Cloud
 description:
     - Gather facts about ENI interfaces in Alibaba Cloud
-version_added: "1.5.0"
+version_added: "2.8.0"
 options:
   eni_ids:
     description:
       - A list of ENI IDs that exist in your account.
     aliases: ['ids']
+  name_prefix:
+    description:
+      - Use a name prefix to filter network interfaces.
+  tags:
+    description:
+      - A hash/dictionaries of network interface tags. C({"key":"value"})
   filters:
     description:
-      - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
-        The filter keys can be all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/58512.htm) for parameter details.
-        Filter keys can be same as request parameter name or be lower case and use underscores (_) or dashes (-) to
-        connect different words in one parameter. 'NetworkInterfaceId.N' should be a list and use I(eni_ids) instead.
+      - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
+        all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/58512.htm) for parameter details.
+        Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dashes ("-") to
+        connect different words in one parameter. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using 'tags' instead.
+        'NetworkInterfaceId.N' will be appended to I(eni_ids) automatically.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "footmark >= 1.8.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -70,6 +77,12 @@ EXAMPLES = '''
     filters:
       network_interface_name: my-test-eni
       type: Secondary
+
+# Gather facts based on vpc and name_prefix
+- ali_eni_facts:
+    tags:
+      name: Example
+      env: dev
 '''
 
 RETURN = '''
@@ -82,7 +95,7 @@ interfaces:
             description: The public IP address associated with the ENI.
             type: string
             sample: 42.1.10.1
-        availability_zone:
+        zone_id:
             description: The availability zone of the ENI is in.
             returned: always
             type: string
@@ -172,6 +185,8 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         eni_ids=dict(type='list', aliases=['ids']),
+        name_prefix=dict(),
+        tags=dict(type='dict'),
         filters=dict(type='dict'),
     )
     )
@@ -183,11 +198,19 @@ def main():
     interfaces = []
     ids = []
     filters = module.params["filters"]
+    if not filters:
+        filters = {}
     if module.params["eni_ids"]:
         filters['network_interface_ids'] = module.params["eni_ids"]
 
+    name_prefix = module.params["name_prefix"]
+    if module.params['tags']:
+        filters['tags'] = module.params['tags']
+
     try:
-        for eni in ecs_connect(module).get_all_network_interfaces(filters):
+        for eni in ecs_connect(module).describe_network_interfaces(**filters):
+            if name_prefix and not str(eni.name).startswith(name_prefix):
+                continue
             interfaces.append(eni.read())
             ids.append(eni.id)
 

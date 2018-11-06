@@ -1,0 +1,31 @@
+---
+- name: Get the existing network interfaces
+  ali_eni_facts:
+    name_prefix: '{{name}}'
+    filters:
+      vpc_id: '{{ vpcs.vpcs.0.id }}'
+  register: enis
+
+- name: Creating a network interface
+  ali_eni:
+    vswitch_id: '{{ vswitches.vswitches.0.id }}'
+    security_groups: ['{{ sgs.groups.0.id }}']
+    name: '{{ name }}-ali_eni'
+    description: '{{description}}ali_eni'
+  when: not enis.interfaces
+
+- name: Creating a network interface with private ip
+  ali_eni:
+    vswitch_id: '{{ vswitches.vswitches.0.id }}'
+    security_groups: ['{{ sgs.groups.0.id }}']
+    name: '{{ name }}-eni'
+    description: '{{description}}ali_eni'
+    private_ip: '172.16.1.10'
+  when: not enis.interfaces
+
+- name: Get the existing network interfaces
+  ali_eni_facts:
+    name_prefix: '{{name}}'
+    filters:
+      vpc_id: '{{ vpcs.vpcs.0.id }}'
+  register: enis

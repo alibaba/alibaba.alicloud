@@ -1,7 +1,7 @@
 ---
 - name: Get the existing vswitch
   ali_vswitch_facts:
-    vswitch_name: '{{ name }}-vswitch'
+    name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{vpcs.vpcs.0.id}}'
   register: vswitches
@@ -17,7 +17,7 @@
 
 - name: Get the existing vswitch
   ali_vswitch_facts:
-    vswitch_name: '{{ name }}-vswitch'
+    name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{vpcs.vpcs.0.id}}'
   register: vswitches
