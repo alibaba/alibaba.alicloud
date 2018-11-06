@@ -75,8 +75,8 @@ options:
     description:
       - Delete existing tags on the network interface that are not specified in the task.
         If True, it means you have to specify all the desired tags on each task affecting a network interface.
-  default: False
-  type: bool
+    default: False
+    type: bool
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:

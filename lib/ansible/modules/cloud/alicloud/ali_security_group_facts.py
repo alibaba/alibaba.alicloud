@@ -53,8 +53,8 @@ options:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/25556.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
-        connect different words in one parameter. "Tag.n.Key" and "Tag.n.Value" use new filter 'tags' instead and
-        it should be a dict. "SecurityGroupIds" will be joined into "group_ids" automatically.
+        connect different words in one parameter. "Tag.n.Key" and "Tag.n.Value" use new filter I(tags) instead and
+        it should be a dict. "SecurityGroupIds" should be a list and it will be appended to I(group_ids) automatically.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -219,11 +219,14 @@ def main():
         filters = {}
 
     group_ids = module.params['group_ids']
+    if not group_ids:
+        group_ids = []
+    for key, value in filters.items():
+        if key in ["SecurityGroupIds", "security_group_ids", "security_group_ids"] and isinstance(group_ids, list):
+            for id in value:
+                if id not in group_ids:
+                    group_ids.append(id)
     if group_ids:
-        for id in filters['security_group_ids']:
-            if id in group_ids:
-                continue
-            group_ids.append(id)
         filters["security_group_ids"] = group_ids
 
     name = module.params['group_name']

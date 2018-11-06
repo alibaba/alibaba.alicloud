@@ -53,7 +53,7 @@ options:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35739.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
-        connect different words in one parameter.
+        connect different words in one parameter. 'VpcId' will be appended to I(vpc_ids) automatically.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -191,10 +191,11 @@ def main():
         filters = {}
 
     vpc_ids = module.params['vpc_ids']
-    if vpc_ids:
-        filter_vpc_id = filters['vpc_id']
-        if filter_vpc_id and filter_vpc_id not in vpc_ids:
-            vpc_ids.append(filter_vpc_id)
+    if not vpc_ids:
+        vpc_ids = []
+    for key, value in filters.items():
+        if key in ["VpcId", "vpc_id", "vpc-id"] and value not in vpc_ids:
+            vpc_ids.append(value)
 
     name = module.params['vpc_name']
     name_prefix = module.params['name_prefix']

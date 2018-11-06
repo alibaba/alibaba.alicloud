@@ -207,7 +207,8 @@ def main():
         if str(key).startswith("NetworkInterfaceId") or \
                 str(key).startswith("network_interface_id") or \
                 str(key).startswith("network-interface-id"):
-            eni_ids.append(value)
+            if value not in eni_ids:
+                eni_ids.append(value)
     if eni_ids:
         filters['network_interface_ids'] = eni_ids
 

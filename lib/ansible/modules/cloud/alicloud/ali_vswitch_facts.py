@@ -56,7 +56,7 @@ options:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35748.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
-        connect different words in one parameter.
+        connect different words in one parameter. 'VSwitchId' will be appended to I(vswitch_ids) automatically.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -196,10 +196,11 @@ def main():
         filters = {}
 
     vswitch_ids = module.params['vswitch_ids']
-    if vswitch_ids:
-        filter_vsw_id = filters['vswitch_id']
-        if filter_vsw_id and filter_vsw_id not in vswitch_ids:
-            vswitch_ids.append(filter_vsw_id)
+    if not vswitch_ids:
+        vswitch_ids = []
+    for key, value in filters.items():
+        if key in ["VSwitchId", "vswitch_id", "vswitch-id"] and value not in vswitch_ids:
+            vswitch_ids.append(value)
 
     name = module.params['vswitch_name']
     cidr_block = module.params['cidr_block']
