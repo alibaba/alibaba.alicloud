@@ -228,12 +228,16 @@ def main():
 
     name = module.params['group_name']
     name_prefix = module.params['name_prefix']
+    if module.params['tags']:
+        filters['tags'] = module.params['tags']
 
     changed = False
     groups = []
     ids = []
     try:
         for sg in ecs.describe_security_groups(**filters):
+            if name and sg.security_group_name != name:
+                continue
             if name_prefix and not str(sg.security_group_name).startswith(name_prefix):
                 continue
             groups.append(sg.read())

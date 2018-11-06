@@ -31,7 +31,7 @@ short_description: Create and optionally attach an Elastic Network Interface (EN
 description:
     - Create and optionally attach an Elastic Network Interface (ENI) to an instance. If an ENI ID or private ip with
       vswitch id is provided, the existing ENI (if any) will be modified.
-version_added: "1.5.0"
+version_added: "2.8.0"
 options:
   state:
     description:
@@ -56,7 +56,7 @@ options:
   name:
     description:
       - Optional name of the ENI. It is a string of [2, 128] Chinese or English characters. It must begin with a letter
-        and can contain numbers, underscores (_), colons (:), or hyphens (-). It cannot begin with http:// or https://.
+        and can contain numbers, underscores ("_"), colons (":"), or hyphens ("-"). It cannot begin with http:// or https://.
   description:
     description:
       - Optional description of the ENI.
@@ -72,7 +72,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "footmark >= 1.8.0"
 extends_documentation_fragment:
     - alicloud
 notes:
@@ -134,8 +134,8 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-interfaces:
-    description: List of matching elastic network interfaces
+interface:
+    description: info about the elastic network interfaces that was created or deleted.
     returned: always
     type: complex
     contains:
@@ -143,7 +143,7 @@ interfaces:
             description: The public IP address associated with the ENI.
             type: string
             sample: 42.1.10.1
-        availability_zone:
+        zone_id:
             description: The availability zone of the ENI is in.
             returned: always
             type: string
@@ -235,11 +235,11 @@ def uniquely_find_eni(connection, module):
         if not eni_id and not private_ip_address and not vswitch_id:
             return None
 
-        params = {}
-        params['network_interface_ids'] = [eni_id]
-        params['primary_ip_address'] = private_ip_address
-        params['vswitch_id'] = vswitch_id
-        enis = connection.get_all_network_interfaces(params)
+        params = {'network_interface_ids': [eni_id],
+                  'primary_ip_address': private_ip_address,
+                  'vswitch_id': vswitch_id
+                  }
+        enis = connection.describe_network_interfaces(**params)
         if enis and len(enis) == 1:
             return enis[0]
         return None
@@ -304,7 +304,7 @@ def main():
             params['primary_ip_address'] = module.params.get("private_ip_address")
             params['network_interface_name'] = module.params.get("name")
             params['client_token'] = "Ansible-Alicloud-{0}-{1}".format(hash(str(module.params)), str(time.time()))
-            eni = ecs.create_network_interface(params)
+            eni = ecs.create_network_interface(**params)
             changed = True
         except Exception as e:
             module.fail_json(msg="{0}".format(e))

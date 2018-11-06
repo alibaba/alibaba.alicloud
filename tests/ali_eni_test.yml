@@ -1,0 +1,192 @@
+---
+- name: Validate module ali_instance
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+    - network_interface
+
+  tasks:
+    - name: Changed. Modifying name.
+      ali_eni:
+        id: '{{ item}}'
+        name: '{{ name }}-ali_eni-modified'
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Modifying description.
+      ali_eni:
+        id: '{{ item}}'
+        description: '{{description}}ali_eni-modified'
+      with_items: '{{enis.ids}}'
+
+    - name: No Changed. There is no any attribute changed
+      ali_eni:
+        id: '{{ item}}'
+        name: '{{ name }}-ali_eni-modified'
+        description: '{{description}}ali_eni-modified'
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Go back init value.
+      ali_eni:
+        id: '{{item}}'
+        name: '{{ name }}-ali_eni'
+        description: '{{description}}ali_eni'
+      with_items: '{{enis.ids}}'
+
+    - name: Creating a new security group
+      ali_security_group:
+        name: '{{ name }}-group-eni'
+        vpc_id: '{{vpcs.vpcs.0.id}}'
+      register: group
+
+    - name: Changed. Add a new security group.
+      ali_eni:
+        id: '{{item}}'
+        security_groups:
+          - '{{ sgs.groups.0.id }}'
+          - '{{group.group.id}}'
+      with_items: '{{enis.ids}}'
+
+    - name: Get the existing groups
+      ali_security_group_facts:
+        name_prefix: '{{ name }}'
+        filters:
+          vpc_id: '{{vpcs.vpcs.0.id}}'
+      register: sgs
+
+    - name: No Changed. There is no any attribute changed
+      ali_eni:
+        id: '{{item}}'
+        security_groups: '{{ sgs.ids }}'
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Attach a instance
+      ali_eni:
+        id: "{{ item.0 }}"
+        instance_id: "{{ item.1 }}"
+        attached: True
+      with_together:
+        - "{{enis.ids}}"
+        - "{{instances.ids}}"
+
+    - name: No Changed. There is no new instance to be attached.
+      ali_eni:
+        id: "{{ item.0 }}"
+        instance_id: "{{ item.1 }}"
+        attached: True
+      with_together:
+        - "{{enis.ids}}"
+        - "{{instances.ids}}"
+
+    - name: Changed. Detach a instance
+      ali_eni:
+        id: "{{ item.0 }}"
+        instance_id: "{{ item.1 }}"
+        attached: False
+      with_together:
+        - "{{enis.ids}}"
+        - "{{instances.ids}}"
+
+    - name: No Changed. There is no new instance to be detached.
+      ali_eni:
+        id: "{{ item.0 }}"
+        instance_id: "{{ item.1 }}"
+        attached: False
+      with_together:
+        - "{{enis.ids}}"
+        - "{{instances.ids}}"
+
+    - name: Changed. Attach two eni to a instance
+      ali_eni:
+        id: '{{item}}'
+        instance_id: '{{ instances.ids.0 }}'
+        attached: True
+      with_items: '{{enis.ids}}'
+
+    - name: No Changed. There is no new eni need to attach.
+      ali_eni:
+        id: '{{item}}'
+        instance_id: '{{ instances.ids.0}}'
+        attached: True
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Detach two eni from a instance
+      ali_eni:
+        id: '{{item}}'
+        instance_id: '{{ instances.ids.0}}'
+        attached: False
+      with_items: '{{enis.ids}}'
+
+    - name: No Changed. There is no new eni need to detach.
+      ali_eni:
+        id: '{{item}}'
+        instance_id: '{{ instances.ids.0}}'
+        attached: False
+      with_items: '{{enis.ids}}'
+
+#    - name: Changed. Adding a tag
+#      ali_instance:
+#        instance_ids: '{{ instances.ids}}'
+#        tags:
+#          Test1: "add1"
+#          Test2: "add2"
+#
+#    - name: Changed. Modifying a tag
+#      ali_instance:
+#        instance_ids: '{{ instances.ids}}'
+#        tags:
+#          Test1: "add1"
+#          Test2: "add3"
+#
+#    - name: No Changed. Tags are not changed
+#      ali_instance:
+#        instance_ids: '{{ instances.ids}}'
+#        tags:
+#          Test1: "add1"
+#          Test2: "add3"
+#
+#    - name: Changed. Removing a tag
+#      ali_instance:
+#        instance_ids: '{{instances.ids}}'
+#        purge_tags: True
+#        tags:
+#          Test1: "add"
+#          Test2: ""
+#          Test3: ""
+
+    # Delete all of resource
+    - name: Changed. Deleting instances
+      ali_instance:
+        instance_ids: '{{instances.ids}}'
+        force: True
+        state: absent
+
+    # Delete all of enis
+    - name: Changed. Deleting enis
+      ali_eni:
+        id: '{{item}}'
+        state: absent
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        group_id: '{{item.id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        id: '{{item.id}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        vpc_id: '{{item.id}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'
+

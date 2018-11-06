@@ -1,7 +1,7 @@
 ---
 - name: Get the existing ECS instances
   ali_instance_facts:
-    instance_names: ['{{ name }}-instance']
+    name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
     tags: '{{ tags }}'
@@ -36,7 +36,7 @@
 
 - name: Get the existing ECS instances
   ali_instance_facts:
-    instance_names: ['{{ name }}-instance']
+    name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
     tags: '{{ tags }}'
