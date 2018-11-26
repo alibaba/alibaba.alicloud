@@ -45,23 +45,26 @@ options:
     aliases: [ 'availability_zone', 'alicloud_zone' ]
   vpc_id:
     description:
-      - The ID of a VPC to which that Vswitch belongs. It is required when creating a new vswitch.
+      - The ID of a VPC to which that Vswitch belongs.
+        This is used in combination with C(cidr_block) to determine if a VSwitch already exists.
+    required: True
   cidr_block:
     description:
       - The CIDR block representing the Vswitch e.g. 10.0.0.0/8. The value must be sub cidr_block of Vpc.
-        It is required when creating a new vswitch.
-  vswitch_name:
+        This is used in conjunction with the C(vpc_id) to ensure idempotence.
+    required: True
+  name:
     description:
       - The name of vswitch, which is a string of 2 to 128 Chinese or English characters. It must begin with an
         uppercase/lowercase letter or a Chinese character and can contain numerals, "_" or "-".
         It cannot begin with http:// or https://.
-    aliases: [ 'name', 'subnet_name' ]
+    aliases: [ 'vswitch_name', 'subnet_name' ]
   description:
     description:
       - The description of vswitch, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
   vswitch_id:
     description:
-      - VSwitch ID. It is used to manage the existing VSwitch. Required when C(present=absent).
+      - (Deprecated) VSwitch ID.
     aliases: ['subnet_id', 'id']
 requirements:
     - "python >= 2.6"
@@ -74,31 +77,24 @@ author:
 """
 
 EXAMPLES = """
+# Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
+- name: create a new vswitch
+  ali_vswitch:
+    cidr_block: '{{ cidr_blok }}'
+    name: 'my-vsw'
+    vpc_id: 'vpc-abc12345'
 
-# basic provisioning example to create vswitch
-- name: create vswitch
-  hosts: localhost
-  connection: local
-  tasks:
-    - name: create vswitch
-      ali_vswitch:
-        cidr_block: '{{ cidr_blok }}'
-        name: 'my-vsw'
-        vpc_id: 'vpc-abc12345'
-      register: result
-    - debug: var=result
+- name: modify the existing vswitch
+  ali_vswitch:
+    cidr_block: '{{ cidr_blok }}'
+    vpc_id: 'vpc-abc12345'
+    name: 'my-vsw-from-ansible'
 
-# basic provisioning example to delete vswitch
-- name: delete vswitch
-  hosts: localhost
-  connection: local
-  tasks:
-    - name: delete vswitch
-      ali_vswitch:
-        vswitch_id: '{{ vswitch_id }}'
-        state: 'absent'
-      register: result
-    - debug: var=result
+- name: delete the existing vswitch
+  ali_vswitch:
+    cidr_block: '{{ cidr_blok }}'
+    vpc_id: 'vpc-abc12345'
+    state: 'absent'
 """
 
 RETURN = '''
@@ -169,7 +165,7 @@ vswitch:
             sample: 2018-06-24T15:14:45Z
 '''
 
-import time, inspect
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, vpc_connect
 
@@ -182,45 +178,30 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def uniquely_find_vswitch(connection, module):
-
-    vswitch_id = module.params["vswitch_id"]
-    cidr_block = module.params['cidr_block']
-    vpc_id = module.params['vpc_id']
-
+def vswitch_exists(conn, module, vpc_id, cidr):
     try:
-        if not vswitch_id and not cidr_block and not vpc_id:
-            return None
-
-        vsws = connection.describe_vswitches(**module.params)
-        for v in vsws:
-            if vswitch_id and v.vswitch_id == vswitch_id:
-                return v
-            if cidr_block == v.cidr_block:
-                return v
-        return None
-
+        for vsw in conn.describe_vswitches(vpc_id=vpc_id):
+            if vsw.cidr_block == cidr:
+                return vsw
     except Exception as e:
-        module.fail_json(msg=e.message)
+        module.fail_json(msg="Couldn't get matching subnet: {0}".format(e))
+
+    return None
 
 
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(),
+        cidr_block=dict(required=True),
         description=dict(),
-        zone_id=dict(aliases=['availability_zone','alicloud_zone']),
-        vpc_id=dict(),
-        vswitch_name=dict(aliases=['name', 'subnet_name']),
+        zone_id=dict(aliases=['availability_zone', 'alicloud_zone']),
+        vpc_id=dict(required=True),
+        name=dict(aliases=['vswitch_name', 'subnet_name']),
         vswitch_id=dict(aliases=['subnet_id', 'id']),
     ))
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=([
-                               ('state', 'absent', ['vswitch_id'])
-                           ])
-                           )
+    module = AnsibleModule(argument_spec=argument_spec)
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg='footmark required for the module ali_vswitch.')
@@ -229,11 +210,9 @@ def main():
 
     # Get values of variable
     state = module.params['state']
-    vswitch_name = module.params['vswitch_name']
-    description = module.params['description']
 
     changed = False
-    vswitch = uniquely_find_vswitch(vpc, module)
+    vswitch = vswitch_exists(vpc, module, module.params['vpc_id'], module.params['cidr_block'])
 
     if state == 'absent':
         if not vswitch:
@@ -244,6 +223,8 @@ def main():
         except VPCResponseError as ex:
             module.fail_json(msg='Unable to delete vswitch: {0}, error: {1}'.format(vswitch.id, ex))
 
+    vswitch_name = module.params['name']
+    description = module.params['description']
     if str(description).startswith('http://') or str(description).startswith('https://'):
         module.fail_json(msg='description can not start with http:// or https://')
 
@@ -254,6 +235,7 @@ def main():
         try:
             params = module.params
             params['client_token'] = "Ansible-Alicloud-{0}-{1}".format(hash(str(module.params)), str(time.time()))
+            params['vswitch_name'] = vswitch_name
             vswitch = vpc.create_vswitch(**params)
             module.exit_json(changed=True, vswitch=vswitch.get().read())
         except VPCResponseError as e:
