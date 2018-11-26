@@ -38,27 +38,37 @@ options:
       -  Whether or not to create, delete VPC.
     choices: ['present', 'absent']
     default: 'present'
-  vpc_name:
+  name:
     description:
-      - The name of VPC, which is a string of 2 to 128 Chinese or English characters. It must begin with an
+      - The name to give your VPC, which is a string of 2 to 128 Chinese or English characters. It must begin with an
         uppercase/lowercase letter or a Chinese character and can contain numerals, "_" or "-".
         It cannot begin with http:// or https://.
-    aliases: [ 'name' ]
+        This is used in combination with C(cidr_block) to determine if a VPC already exists.
+    aliases: [ 'vpc_name' ]
+    required: True
+  new_name:
+    description:
+      - A new name applied to modify the existing VPC.
   description:
     description:
       - The description of VPC, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
   cidr_block:
     description:
-      - The CIDR block representing the vpc. The value can be subnet block of its choices.
-        Required when C(state=present) and creating new a vpc.
+      - The primary CIDR of the VPC. This is used in conjunction with the C(name) to ensure idempotence.
     aliases: [ 'cidr' ]
+    required: True
   user_cidrs:
     description:
       - List of user custom cidr in the VPC. It no more than three.
   vpc_id:
     description:
-      - The ID of a VPC. Required when C(state=absent).
-    aliases: ['id']
+      - (Deprecated) The ID of a VPC.
+  multi_ok:
+    description:
+      - By default the module will not create another VPC if there is another VPC with the same name and CIDR block.
+        Specify this as true if you want duplicate VPCs created.
+    default: False
+    type: bool
 notes:
   - There will be launch a virtual router along with creating a vpc successfully.
   - There is only one virtual router in one vpc and one route table in one virtual router.
@@ -72,32 +82,24 @@ author:
 """
 
 EXAMPLES = """
-# basic provisioning example to create vpc in VPC
-- name: create vpc
-  hosts: localhost
-  connection: local
+# Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
+- name: create a new vpc
+  ali_vpc:
+    cidr_block: '192.168.0.0/16'
+    name: 'Demo_VPC'
+    description: 'Demo VPC'
 
-  tasks:
-    - name: create vpc
-      ali_vpc:
-        cidr_block: '192.168.0.0/16'
-        vpc_name: 'Demo_VPC'
-        description: 'Demo VPC'
-      register: result
-    - debug: var=result
+- name: modify a vpc name
+  ali_vpc:
+    cidr_block: '192.168.0.0/16'
+    name: 'Demo_VPC'
+    new_name: 'vpc-from-ansible'
 
-# basic provisioning example to delete vpc
-- name: delete vpc
-  hosts: localhost
-  connection: local
-
-  tasks:
-    - name: delete vpc
-      ali_vpc:
-        state: absent
-        vpc_id: xxxxxxxxxx
-      register: result
-    - debug: var=result
+- name: delete a vpc
+  ali_vpc:
+    state: absent
+    cidr_block: '192.168.0.0/16'
+    name: 'Demo_VPC'
 """
 
 RETURN = '''
@@ -181,15 +183,40 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
+def vpc_exists(module, vpc, name, cidr_block, multi):
+    """Returns None or a vpc object depending on the existence of a VPC. When supplied
+    with a CIDR and Name, it will check them to determine if it is a match
+    otherwise it will assume the VPC does not exist and thus return None.
+    """
+    matching_vpcs = []
+    try:
+        for v in vpc.describe_vpcs():
+            if v.cidr_block == cidr_block and v.vpc_name == name:
+                matching_vpcs.append(v)
+    except Exception as e:
+        module.fail_json(msg="Failed to describe VPCs: {0}".format(e))
+
+    if multi:
+        return None
+    elif len(matching_vpcs) == 1:
+        return matching_vpcs[0]
+    elif len(matching_vpcs) > 1:
+        module.fail_json(msg='Currently there are {0} VPCs that have the same name and '
+                             'CIDR block you specified. If you would like to create '
+                             'the VPC anyway please pass True to the multi_ok param.'.format(len(matching_vpcs)))
+    return None
+
+
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(aliases=['cidr']),
+        cidr_block=dict(required=True, aliases=['cidr']),
         user_cidrs=dict(type='list'),
-        vpc_name=dict(aliases=['name']),
-        description=dict(),
-        vpc_id=dict(aliases=['id']),
+        name=dict(required=True, aliases=['vpc_name']),
+        new_name=dict(),
+        multi_ok=dict(type='bool', default=False),
+        description=dict()
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -201,23 +228,21 @@ def main():
 
     # Get values of variable
     state = module.params['state']
-    vpc_id = module.params['vpc_id']
-    vpc_name = module.params['vpc_name']
+    vpc_name = module.params['name']
+    new_name = module.params['new_name']
     description = module.params['description']
 
     if str(description).startswith('http://') or str(description).startswith('https://'):
         module.fail_json(msg='description can not start with http:// or https://')
     if str(vpc_name).startswith('http://') or str(vpc_name).startswith('https://'):
         module.fail_json(msg='vpc_name can not start with http:// or https://')
+    if str(new_name).startswith('http://') or str(new_name).startswith('https://'):
+        module.fail_json(msg='vpc_name can not start with http:// or https://')
 
     changed = False
-    vpc = None
 
-    if vpc_id:
-        try:
-            vpc = vpc_conn.describe_vpc_attribute(vpc_id=vpc_id)
-        except VPCResponseError as e:
-            module.fail_json(msg='Retrieving vpc by id {0} got an error: {1}'.format(vpc_id, e))
+    # Check if VPC exists
+    vpc = vpc_exists(module, vpc_conn, vpc_name, module.params['cidr_block'], module.params['multi_ok'])
 
     if state == 'absent':
         if not vpc:
@@ -231,14 +256,17 @@ def main():
     if not vpc:
         params = module.params
         params['client_token'] = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
+        params['vpc_name'] = vpc_name
         try:
             vpc = vpc_conn.create_vpc(**params)
             module.exit_json(changed=True, vpc=vpc.get().read())
         except VPCResponseError as e:
             module.fail_json(msg='Unable to create vpc, error: {0}'.format(e))
 
-    if not vpc_name:
+    if not new_name:
         vpc_name = vpc.vpc_name
+    else:
+        vpc_name = new_name
     if not description:
         description = vpc.description
 
@@ -247,7 +275,7 @@ def main():
             changed = True
         module.exit_json(changed=changed, vpc=vpc.get().read())
     except VPCResponseError as e:
-        module.fail_json(msg='Unable to modify vpc {0}, error: {1}'.format(vpc_id, e))
+        module.fail_json(msg='Unable to modify vpc {0}, error: {1}'.format(vpc.id, e))
 
 
 if __name__ == '__main__':

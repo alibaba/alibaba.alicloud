@@ -1,5 +1,10 @@
 # Ansible-Alicloud Change Log
 ## 1.9.0 (Unreleased)
+
+IMPROVEMENTS:
+
+- Improve ali_vpc and make it idempotence ([#134](https://github.com/alibaba/ansible-provider/pull/134))
+
 ## 1.8.0 (12 November, 2018)
 
 IMPROVEMENTS:
