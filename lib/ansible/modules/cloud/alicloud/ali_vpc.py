@@ -30,8 +30,8 @@ module: ali_vpc
 version_added: "2.8"
 short_description: Configure Alibaba Cloud virtual private cloud(VPC)
 description:
-    - Create, modify, and delete Alicloud virtual private cloud(VPC).
-      If a VPC ID is provided, the existing VPC will be modified.
+    - Create, Delete Alicloud virtual private cloud(VPC).
+      It support updating VPC description.
 options:
   state:
     description:
@@ -46,9 +46,6 @@ options:
         This is used in combination with C(cidr_block) to determine if a VPC already exists.
     aliases: [ 'vpc_name' ]
     required: True
-  new_name:
-    description:
-      - A new name applied to modify the existing VPC.
   description:
     description:
       - The description of VPC, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
@@ -67,6 +64,13 @@ options:
     description:
       - By default the module will not create another VPC if there is another VPC with the same name and CIDR block.
         Specify this as true if you want duplicate VPCs created.
+    default: False
+    type: bool
+  recent:
+    description:
+      - By default the module will not choose the recent one if there is another VPC with the same I(name) and
+       I(cidr_block). Specify this as true if you want to target the recent VPC.
+        There will be conflict when I(multi_ok=True) and I(recent=True).
     default: False
     type: bool
 notes:
@@ -89,11 +93,11 @@ EXAMPLES = """
     name: 'Demo_VPC'
     description: 'Demo VPC'
 
-- name: modify a vpc name
+- name: choose the latest VPC as target when there are several vpcs with same name and cidr block
   ali_vpc:
     cidr_block: '192.168.0.0/16'
     name: 'Demo_VPC'
-    new_name: 'vpc-from-ansible'
+    recent: True
 
 - name: delete a vpc
   ali_vpc:
@@ -183,7 +187,7 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def vpc_exists(module, vpc, name, cidr_block, multi):
+def vpc_exists(module, vpc, name, cidr_block, multi, recent):
     """Returns None or a vpc object depending on the existence of a VPC. When supplied
     with a CIDR and Name, it will check them to determine if it is a match
     otherwise it will assume the VPC does not exist and thus return None.
@@ -196,14 +200,17 @@ def vpc_exists(module, vpc, name, cidr_block, multi):
     except Exception as e:
         module.fail_json(msg="Failed to describe VPCs: {0}".format(e))
 
-    if multi:
-        return None
-    elif len(matching_vpcs) == 1:
+    if len(matching_vpcs) == 1:
         return matching_vpcs[0]
     elif len(matching_vpcs) > 1:
+        if multi:
+            return None
+        elif recent:
+            return matching_vpcs[-1]
         module.fail_json(msg='Currently there are {0} VPCs that have the same name and '
                              'CIDR block you specified. If you would like to create '
-                             'the VPC anyway please pass True to the multi_ok param.'.format(len(matching_vpcs)))
+                             'the VPC anyway please pass True to the multi_ok param. '
+                             'Or, please pass True to the recent param to choose the recent one.'.format(len(matching_vpcs)))
     return None
 
 
@@ -214,9 +221,9 @@ def main():
         cidr_block=dict(required=True, aliases=['cidr']),
         user_cidrs=dict(type='list'),
         name=dict(required=True, aliases=['vpc_name']),
-        new_name=dict(),
         multi_ok=dict(type='bool', default=False),
-        description=dict()
+        description=dict(),
+        recent=dict(type='bool', default=False),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -229,20 +236,17 @@ def main():
     # Get values of variable
     state = module.params['state']
     vpc_name = module.params['name']
-    new_name = module.params['new_name']
     description = module.params['description']
 
     if str(description).startswith('http://') or str(description).startswith('https://'):
         module.fail_json(msg='description can not start with http:// or https://')
     if str(vpc_name).startswith('http://') or str(vpc_name).startswith('https://'):
         module.fail_json(msg='vpc_name can not start with http:// or https://')
-    if str(new_name).startswith('http://') or str(new_name).startswith('https://'):
-        module.fail_json(msg='vpc_name can not start with http:// or https://')
 
     changed = False
 
     # Check if VPC exists
-    vpc = vpc_exists(module, vpc_conn, vpc_name, module.params['cidr_block'], module.params['multi_ok'])
+    vpc = vpc_exists(module, vpc_conn, vpc_name, module.params['cidr_block'], module.params['multi_ok'], module.params['recent'])
 
     if state == 'absent':
         if not vpc:
@@ -263,10 +267,6 @@ def main():
         except VPCResponseError as e:
             module.fail_json(msg='Unable to create vpc, error: {0}'.format(e))
 
-    if not new_name:
-        vpc_name = vpc.vpc_name
-    else:
-        vpc_name = new_name
     if not description:
         description = vpc.description
 
