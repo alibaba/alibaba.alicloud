@@ -30,26 +30,28 @@ module: ali_security_group
 version_added: "2.8"
 short_description: Manage Alibaba Cloud Security Group and its rules.
 description:
-  - Create and Delete Security Group, and it contains security group rules management.
+  - Create and Delete Security Group, Modify its description and add/remove rules.
 options:
   state:
     description:
       - Create, delete a security group
     default: 'present'
     choices: ['present', 'absent']
-  group_name:
+  name:
     description:
       - Name of the security group, which is a string of 2 to 128 Chinese or English characters. It must begin with an
         uppercase/lowercase letter or a Chinese character and can contain numerals, "_", "." or "-".
         It cannot begin with http:// or https://.
-    aliases: ['name']
+        This is used in combination with C(vpc_id) to determine if a Securty Group already exists.
+    required: True
+    aliases: ['group_name']
   description:
     description:
       - Description of the security group, which is a string of 2 to 256 characters.
       - It cannot begin with http:// or https://.
   vpc_id:
     description:
-      - ID of the VPC to which the security group belongs.
+      - ID of the VPC to create the group in. This is used in conjunction with the C(name) to ensure idempotence.
   rules:
     description:
       - List of hash/dictionaries firewall inbound rules to enforce in this group (see example). If none are supplied,
@@ -78,12 +80,26 @@ options:
     type: bool
   group_id:
     description:
-      - Security group ID. It is required when deleting or querying security group or performing rules authorization.
+      - (Deprecated) Security group ID.
     aliases: ['id']
   tags:
     description:
       - A hash/dictionaries of security group tags. C({"key":"value"})
     aliases: ["group_tags"]
+  multi_ok:
+    description:
+      - By default the module will not create another Security Group if there is another Security Group
+        with the same I(name) or I(vpc_id). Specify this as true if you want duplicate Security Groups created.
+        There will be conflict when I(multi_ok=True) and I(recent=True).
+    default: False
+    type: bool
+  recent:
+    description:
+      - By default the module will not choose the recent one if there is another Security Group with
+        the same I(name) or I(vpc_id). Specify this as true if you want to target the recent Security Group.
+        There will be conflict when I(multi_ok=True) and I(recent=True).
+    default: False
+    type: bool
 requirements:
     - "python >= 2.6"
     - "footmark >= 1.7.0"
@@ -94,102 +110,32 @@ author:
 '''
 
 EXAMPLES = '''
-#
-# Provisioning new Security Group
-#
+# Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
+- name: create a new security group
+  ali_security_group:
+    name: 'AliyunSG'
+    vpc_id: 'vpc-123csecd'
 
-# Basic provisioning example to create security group
-- name: create security group
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: cn-shenzhen
-  tasks:
-    - name: create security grp
-      ali_security_group:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        group_name: 'AliyunSG'
+- name: authorize security group
+  ali_security_group:
+    name: 'AliyunSG'
+    vpc_id: 'vpc-123csecd'
+    rules:
+      - ip_protocol: tcp
+        port_range: 1/122
+        source_cidr_ip: '10.159.6.18/12'
+    rules_egress:
+      - ip_protocol: icmp
+        port_range: -1/-1
+        source_cidr_ip: 10.0.0.0/10
+        dest_group_id: 'sg-ce33rdsfe'
+        priority: 1
 
-# Basic provisioning example authorize security group
-- name: authorize security grp
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: cn-shenzhen
-  tasks:
-    - name: authorize security group
-      ali_security_group:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        group_id: xxxxxxxxxx
-        alicloud_region: '{{ alicloud_region }}'
-        rules:
-          - ip_protocol: tcp
-            port_range: 1/122
-            source_cidr_ip: '10.159.6.18/12'
-        rules_egress:
-          - proto: all
-            port_range: -1/-1
-            dest_group_id: xxxxxxxxxx
-            nic_type: intranet
-
-# Provisioning example create and authorize security group
-- name: create and authorize security group
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: cn-shenzhen
-  tasks:
-    - name: create and authorize security grp
-      ali_security_group:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        group_name: 'AliyunSG'
-        description: 'an example ECS group'
-        alicloud_region: '{{ alicloud_region }}'
-        rules:
-          - ip_protocol: tcp
-            port_range: 1/122
-            source_cidr_ip: '10.159.6.18/12'
-            priority: 10
-            policy: drop
-            nic_type: intranet
-        rules_egress:
-          - proto: all
-            port_range: -1/-1
-            dest_group_id: xxxxxxxxxx
-            group_owner_id: xxxxxxxxxx
-            priority: 10
-            policy: accept
-            nic_type: intranet
-
-# Provisioning example to delete security group
 - name: delete security grp
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: us-west-1
-    group_ids:
-     - xxxxxxxxxx
+  ali_security_group:
+    name: 'AliyunSG'
+    vpc_id: 'vpc-123csecd'
     state: absent
-  tasks:
-    - name: delete security grp
-      ali_security_group:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        group_ids: '{{ group_ids }}'
-        state: '{{ state }}'
 
 '''
 
@@ -352,19 +298,51 @@ def purge_rules(module, group, existing_rule, rules, direction):
     return False
 
 
+def group_exists(conn, module, vpc_id, name, multi, recent):
+    """Returns None or a security group object depending on the existence of a security group.
+    When supplied with a vpc_id and Name, it will check them to determine if it is a match
+    otherwise it will assume the Security Group does not exist and thus return None.
+    """
+    matching_groups = []
+    filters = {}
+    if vpc_id:
+        filters['vpc_id'] = vpc_id
+    try:
+        for g in conn.describe_security_groups(**filters):
+            if g.security_group_name == name:
+                matching_groups.append(g)
+    except Exception as e:
+        module.fail_json(msg="Failed to describe Security Groups: {0}".format(e))
+
+    if len(matching_groups) == 1:
+        return matching_groups[0]
+    elif len(matching_groups) > 1:
+        if multi:
+            return None
+        elif recent:
+            return matching_groups[-1]
+        module.fail_json(msg='Currently there are {0} Security Groups that have the same name and '
+                             'vpc id you specified. If you would like to create anyway '
+                             'please pass True to the multi_ok param. Or, please pass True to the recent '
+                             'param to choose the recent one.'.format(len(matching_groups)))
+    return None
+
+
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', type='str', choices=['present', 'absent']),
-        group_name=dict(type='str', required=False, aliases=['name']),
-        description=dict(type='str', required=False),
+        name=dict(type='str', required=True, aliases=['group_name']),
+        description=dict(type='str'),
         vpc_id=dict(type='str'),
         tags=dict(type='dict', aliases=['group_tags']),
         rules=dict(type='list'),
         rules_egress=dict(type='list'),
         purge_rules=dict(type='bool', default=True),
         purge_rules_egress=dict(type='bool', default=True),
-        group_id=dict(type='str', aliases=['id'])
+        group_id=dict(type='str', aliases=['id']),
+        multi_ok=dict(type='bool', default=False),
+        recent=dict(type='bool', default=False),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -375,17 +353,21 @@ def main():
     ecs = ecs_connect(module)
 
     state = module.params['state']
-    group_name = module.params['group_name']
-    group_id = module.params['group_id']
+    group_name = module.params['name']
+    if str(group_name).startswith('http://') or str(group_name).startswith('https://'):
+        module.fail_json(msg='Name can not start with http:// or https://')
+    description = module.params['description']
+    if str(description).startswith('http://') or str(description).startswith('https://'):
+        module.fail_json(msg='description can not start with http:// or https://')
+    multi = module.params['multi_ok']
+    recent = module.params['recent']
+
+    if multi and recent:
+        module.fail_json(msg='multi_ok and recent can not be True at the same time.')
 
     changed = False
-    group = None
 
-    try:
-        if group_id:
-            group = ecs.describe_security_group_attribute(security_group_id=group_id)
-    except ECSResponseError as e:
-        module.fail_json(msg='Faild to describe security group {0}: {1}'.format(group_id, e))
+    group = group_exists(ecs, module, module.params['vpc_id'], group_name, multi, recent)
 
     if state == 'absent':
         if not group:
@@ -405,10 +387,6 @@ def main():
         except ECSResponseError as e:
             module.fail_json(changed=changed, msg='Creating a security group is failed. Error: {0}'.format(e))
 
-    if not group_name:
-        group_name = group.security_group_name
-
-    description = module.params['description']
     if not description:
         description = group.description
     if group.modify(name=group_name, description=description):
