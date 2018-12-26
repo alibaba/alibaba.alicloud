@@ -161,10 +161,10 @@ class EcsInventory(object):
             if self.get_option(config, 'ecs', 'regions_exclude'):
                 exclude_regions = [ex.strip() for ex in self.get_option(config, 'ecs', 'regions_exclude').split(',') if ex.strip()]
 
-            if all_regions and exclude_regions:
-                for region in all_regions:
-                    if region.id not in exclude_regions:
-                        self.regions.append(region.id)
+            for region in all_regions:
+                if exclude_regions and region.id in exclude_regions:
+                    continue
+                self.regions.append(region.id)
         else:
             self.regions = config_regions.split(",")
 

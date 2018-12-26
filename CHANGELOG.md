@@ -7,6 +7,10 @@ IMPROVEMENTS:
 - Improve ali_vswitch and make it idempotence ([#136](https://github.com/alibaba/ansible-provider/pull/136))
 - Improve ali_vpc and make it idempotence ([#135](https://github.com/alibaba/ansible-provider/pull/135))
 
+BUG FIXES:
+
+- Fix regions=all not working bug in dynamic inventory ([#138](https://github.com/alibaba/ansible-provider/pull/138))
+
 ## 1.8.0 (12 November, 2018)
 
 IMPROVEMENTS:
