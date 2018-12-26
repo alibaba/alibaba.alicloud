@@ -84,7 +84,7 @@ class EcsInventory(object):
         self.pattern_include = None
         self.pattern_exclude = None
 
-        self.ecs_instance_filters = dict()
+        self.ecs_instance_filters = dict(page_size=100)
 
         # Read settings and parse CLI arguments
         self.args = None
