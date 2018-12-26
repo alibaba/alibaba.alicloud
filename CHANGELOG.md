@@ -3,13 +3,14 @@
 
 IMPROVEMENTS:
 
+- Improve dynamic inventory by setting page_size 100 ([#142](https://github.com/alibaba/ansible-provider/pull/142))
 - Improve ali_security_group and make it idempotence ([#137](https://github.com/alibaba/ansible-provider/pull/137))
 - Improve ali_vswitch and make it idempotence ([#136](https://github.com/alibaba/ansible-provider/pull/136))
 - Improve ali_vpc and make it idempotence ([#135](https://github.com/alibaba/ansible-provider/pull/135))
 
 BUG FIXES:
 
-- Fix regions=all not working bug in dynamic inventory ([#138](https://github.com/alibaba/ansible-provider/pull/138))
+- Fix regions=all not working bug in dynamic inventory ([#141](https://github.com/alibaba/ansible-provider/pull/141))
 
 ## 1.8.0 (12 November, 2018)
 
