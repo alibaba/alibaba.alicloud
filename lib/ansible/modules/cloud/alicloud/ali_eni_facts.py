@@ -80,9 +80,9 @@ EXAMPLES = '''
 
 # Gather facts based on vpc and name_prefix
 - ali_eni_facts:
-    tags:
-      name: Example
-      env: dev
+    name_prefix: foo
+    filters:
+      vswitch_id: vpc-dsfh2ef2
 '''
 
 RETURN = '''
