@@ -1,8 +1,13 @@
 # Ansible-Alicloud Change Log
 ## 1.9.0 (Unreleased)
 
+FEATURES:
+
+- **New Module:** `ali_eip_facts` ([#144](https://github.com/alibaba/ansible-provider/pull/144))
+
 IMPROVEMENTS:
 
+- Improve module ali_eip and add its testcase ([#145](https://github.com/alibaba/ansible-provider/pull/145))
 - Improve dynamic inventory by setting page_size 100 ([#142](https://github.com/alibaba/ansible-provider/pull/142))
 - Improve ali_security_group and make it idempotence ([#137](https://github.com/alibaba/ansible-provider/pull/137))
 - Improve ali_vswitch and make it idempotence ([#136](https://github.com/alibaba/ansible-provider/pull/136))
