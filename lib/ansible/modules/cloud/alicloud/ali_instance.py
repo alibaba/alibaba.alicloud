@@ -382,11 +382,6 @@ instances:
             returned: always
             type: string
             sample: m-0011223344
-        inner_ip_address:
-            description: The inner IPv4 address of the classic instance.
-            returned: always
-            type: string
-            sample: 10.0.0.2
         instance_charge_type:
             description: The instance charge type.
             returned: always
@@ -402,6 +397,11 @@ instances:
             returned: always
             type: string
             sample: ecs.sn1ne.xlarge
+        instance_type_family:
+            description: The instance type family of the instance belongs.
+            returned: always
+            type: string
+            sample: ecs.sn1ne
         internet_charge_type:
             description: The billing method of the network bandwidth.
             returned: always
@@ -463,7 +463,7 @@ instances:
             type: string
             sample: 10.0.0.1
         public_ip_address:
-            description: The public IPv4 address assigned to the instance
+            description: The public IPv4 address assigned to the instance or eip address
             returned: always
             type: string
             sample: 43.0.0.1
