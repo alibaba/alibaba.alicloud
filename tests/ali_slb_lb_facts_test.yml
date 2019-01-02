@@ -1,0 +1,35 @@
+---
+- name: Validate module ali_instance
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - slb
+
+  tasks:
+    - name: Retrieving slbs using ids
+      ali_slb_lb_facts:
+        ids: '{{slb.load_balancer.id}}'
+
+    - name: Create a slb and used to test name_regex
+      ali_slb_lb:
+        name: '{{name}}regex-slb'
+
+    - name: Filter slb using name_regex
+      ali_slb_lb_facts:
+        name_prefix: '{{name}}regex'
+
+    - name: Retrieving all slbs
+      ali_slb_lb_facts:
+
+    - name: Retrieving all slbs based on name_regex
+      ali_slb_lb_facts:
+        name_prefix: '{{name}}'
+      register: slbs
+
+    - name: Changed. Deleting slbs
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        state: absent
+      with_items: '{{slbs.load_balancers}}'
+

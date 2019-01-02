@@ -1,0 +1,34 @@
+---
+- name: Validate module ali_slb_lb
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - slb
+
+  tasks:
+    - name: Changed. Modifying internet charge type when C(present)
+      ali_slb_lb:
+        name: '{{ slb.load_balancer.name }}'
+        internet_charge_type: 'PayByBandwidth'
+        bandwidth: 5
+
+    - name: Changed. Stop slb instance when C(stopped)
+      ali_slb_lb:
+        name: '{{ slb.load_balancer.name }}'
+        state: stopped
+
+    - name: Changed. Running slb instance when C(running)
+      ali_slb_lb:
+        name: '{{ slb.load_balancer.name }}'
+        state: running
+
+    - name: No Changed. There is no changed when C(running)
+      ali_slb_lb:
+        name: '{{ slb.load_balancer.name }}'
+        state: running
+
+    - name: Changed. Delete slb instance when C(absent)
+      ali_slb_lb:
+        name: '{{ slb.load_balancer.name }}'
+        state: absent

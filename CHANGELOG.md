@@ -7,6 +7,7 @@ FEATURES:
 
 IMPROVEMENTS:
 
+- Improve module ali_slb_lb and ali_slb_lb_facts ([#147](https://github.com/alibaba/ansible-provider/pull/147))
 - Improve ecs instance and eni docs ([#146](https://github.com/alibaba/ansible-provider/pull/146))
 - Improve module ali_eip and add its testcase ([#145](https://github.com/alibaba/ansible-provider/pull/145))
 - Improve dynamic inventory by setting page_size 100 ([#142](https://github.com/alibaba/ansible-provider/pull/142))
