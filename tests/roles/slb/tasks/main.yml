@@ -1,0 +1,9 @@
+---
+- name: Creating an SLB instance
+  ali_slb_lb:
+    name: '{{ name }}-ali_slb_lb'
+    internet_charge_type: '{{ internet_charge_type }}'
+    is_internet: True
+    spec: slb.s1.small
+    state: 'present'
+  register: slb
