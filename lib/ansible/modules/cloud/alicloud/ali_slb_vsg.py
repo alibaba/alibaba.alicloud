@@ -27,226 +27,173 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_slb_vsg
-version_added: "1.5.0"
+version_added: "2.8"
 short_description: Create, Delete VServerGroup and Modify its name or backend servers.
 description:
-  - Create, Delete VServerGroup and Modify its name or backend servers.
+  - Create and delete a VServer group
+  - Add or remove backend servers or network interfaces to/from the VServer group
 options:
     state:
       description:
-        - The state of the instance after operating.
+        - Create and delete a VServer group.
       default: 'present'
-      choices: [ 'present', 'absent', 'list']
+      choices: ['present', 'absent']
     load_balancer_id:
       description:
-        - The unique ID of an Server Load Balancer instance, It is required when need to create a new vserver group.
+        - The Server Load Balancer instance ID.
+          This is used in combination with C(name) to determine if a VServer group already exists.
+      required: True
+      aliases: ['lb_id']
     vserver_group_name:
       description:
-        - Virtual server group name
-      aliases: [ 'group_name' ]
+        - Virtual server group name.
+          This is used in conjunction with the C(load_balancer_id) to ensure idempotence.
+      required: True
+      aliases: [ 'group_name', 'name' ]
     backend_servers:
       description:
-        - List of backend servers that need to be added.
-      suboptions:
-        instance_id:
-          description:
-            - The ID of backend server.
-          required: true
-        port:
-          description:
-            - Port used to backend server
-          required: true
-          choices: [1~65536]
-        weight:
-          description:
-            - The weigth of the backend server
-          default: 100
-          choices: [1~101]
+        - List of  that need to be added or.
+        - List of hash/dictionaries backend servers or network interfaces to add in this group (see example).
+          If none are supplied, no backend servers will be enabled. Each server has several keys and refer to
+          https://www.alibabacloud.com/help/doc-detail/35215.htm. Each key should be format as under_score.
+          Currently the valid keys including "server_id", "port", "weight" and "type".
+    purge_backend_servers:
+      description:
+        - Purge existing backend servers or ENIs on VServer group that are not found in backend_servers.
+        - If True, existing servers or ENIs will be purged from the resource to match exactly what is defined by
+          I(backend_servers). If the I(backend_servers) is not set then servers will not be modified.
+        - If True, it means you have to specify all the desired backend servers or ENIs on each task affecting a VServer group.
+      default: False
+      type: bool
     vserver_group_id:
       description:
-        - Virtual server group id. It is required when need to operate an existing vserver group.
+        - (Deprecated) Virtual server group id.
       aliases: [ 'group_id' ]
+    multi_ok:
+      description:
+        - By default the module will not create another Load Balancer if there is another Load Balancer
+          with the same I(name). Specify this as true if you want duplicate Load Balancers created.
+      default: False
+      type: bool
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "footmark >= 1.9.0"
 extends_documentation_fragment:
     - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
-  - "Liu Qiang"
 '''
 
 EXAMPLES = '''
-# basic provisioning example to create VServer Group in SLB
+# Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 - name: Create VServer Group in SLB
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: ap-southeast-1
-    load_balancer_id: <your-specified-load-balancer>
-    vserver_group_name: test
+  ali_slb_vsg:
+    load_balancer_id: 'lb-cnqnc234'
+    name: 'ansible-vsg'
+
+- name: Add backend servers to vserver group
+  ali_slb_vsg:
+    load_balancer_id: 'lb-cnqnc234'
+    name: 'ansible-vsg'
     backend_servers:
-      - instance_id: <your-specified-ECS-instance-id>
+      - instance_id: 'i-f2n3cn34c'
         port: 8080
         weight: 100
-  tasks:
-    - name: Create VServer Group in SLB
-      ali_slb_vsg:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        vserver_group_name: '{{ vserver_group_name }}'
-        backend_servers: '{{ backend_servers }}'
-        state: present
-      register: result
-    - debug: var=result
+        type: ecs
+      - instance_id: 'eni-n34cjf4vd'
+        port: 8081
+        weight: 100
+        type: eni
 
-# basic provisioning example to set VServer Group attribute in SLB
-- name: set VServer Group attribute in SLB
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: ap-southeast-1
-    load_balancer_id: <your-specified-load-balancer>
-    vserver_group_name: test
+- name: Purge backend servers from vserver group
+  ali_slb_vsg:
+    load_balancer_id: 'lb-cnqnc234'
+    name: 'ansible-vsg'
     backend_servers:
-      - instance_id: <your-specified-ECS-instance-id>
+      - instance_id: 'eni-f2n3cn34c'
         port: 8080
         weight: 100
-  tasks:
-    - name: Set VServer Group attribute in SLB
-      ali_slb_vsg:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        vserver_group_name: '{{ vserver_group_name }}'
-        backend_servers: '{{ backend_servers }}'
-        state: present
-      register: result
-    - debug: var=result
-
-# basic provisioning example to add VServer Group Backend Servers in SLB
-- name: Add VServer Group Backend Servers in SLB
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: ap-southeast-1
-    vserver_group_id: <your-specified-vserver-group-id>
-    backend_servers:
-      - instance_id: <your-specified-ECS-instance-id>
-        port: 8080
+        type: eni
+      - instance_id: 'eni-n34cjf4vd'
+        port: 8081
         weight: 100
-  tasks:
-    - name: Add VServer Group Backend Servers in SLB
-      ali_slb_vsg:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        vserver_group_id: '{{ vserver_group_id }}'
-        backend_servers: '{{ backend_servers }}'
-        state: present
-      register: result
-    - debug: var=result
+        type: eni
+    purge_backend_servers: True
 
-# basic provisioning example to remove VServer Group Backend Servers in SLB
-- name: remove VServer Group Backend Servers in SLB
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: ap-southeast-1
-    vserver_group_id: <your-specified-vserver-group-id>
-    backend_servers:
-      - instance_id: <your-specified-ECS-instance-id>
-        port: 8080
-  tasks:
-    - name: remove VServer Group Backend Servers in SLB
-      ali_slb_vsg:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        vserver_group_id: '{{ vserver_group_id }}'
-        backend_servers: '{{ backend_servers }}'
-        state: absent
-      register: result
-    - debug: var=result
-
-# basic provisioning example to describe VServer Group in SLB
-- name: describe VServer Group
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: ap-southeast-1
-    vserver_group_id: <your-specified-vserver-group-id>
-  tasks:
-    - name: Describe VServer Group in SLB
-      ali_slb_vsg:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        vserver_group_id: '{{ vserver_group_id }}'
-        state: list
-      register: result
-    - debug: var=result
-
-# basic provisioning example to delete VServer Group in SLB
-- name: Delete VServer Group
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: ap-southeast-1
-    vserver_group_id: <your-specified-vserver-group-id>
-  tasks:
-    - name: Delete VServer Group in SLB
-      ali_slb_vsg:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        vserver_group_id: '{{ vserver_group_id }}'
-        state: absent
-      register: result
-    - debug: var=result
+- name: Delete VServer Group in SLB
+  ali_slb_vsg:
+    load_balancer_id: 'lb-cnqnc234'
+    name: 'ansible-vsg'
+    state: absent
 '''
 
 RETURN = '''
 vserver_group:
     description:
-        - The info of vserver_group
-    returned: when success
-    type: dict
-    sample: {
-        "backend_servers": {
-            "backend_server": [
-                {
-                    "port": 80,
-                    "server_id": "i-2ze3ajpeq3y80w4lt4jr",
-                    "weight": 100
-                }
-            ]
-        },
-        "vserver_group_id": "rsp-2zejxvoxensk1",
-        "vserver_group_name": "Group123"
-    }
+      - info about the virtual server group that was created or deleted.
+    returned: on present
+    type: complex
+    contains:
+        address:
+            description: The IP address of the loal balancer
+            returned: always
+            type: string
+            sample: "47.94.26.126"
+
+        backend_servers:
+            description: The load balancer's backend servers
+            returned: always
+            type: complex
+            contains:
+                port:
+                    description: The backend server port
+                    returned: always
+                    type: int
+                    sample: 22
+                server_id:
+                    description: The backend server id
+                    returned: always
+                    type: string
+                    sample: "i-vqunci342"
+                type:
+                    description: The backend server type, ecs or eni
+                    returned: always
+                    type: string
+                    sample: "ecs"
+                weight:
+                    description: The backend server weight
+                    returned: always
+                    type: int
+                    sample: 100
+        id:
+            description: The ID of the virtual server group was created. Same as vserver_group_id.
+            returned: always
+            type: string
+            sample: "rsp-2zehblhcv"
+        vserver_group_id:
+            description: The ID of the virtual server group was created.
+            returned: always
+            type: string
+            sample: "rsp-2zehblhcv"
+        vserver_group_name:
+            description: The name of the virtual server group was created.
+            returned: always
+            type: string
+            sample: "ansible-ali_slb_vsg"
+        name:
+            description: The name of the virtual server group was created.
+            returned: always
+            type: string
+            sample: "ansible-ali_slb_vsg"
+        tags:
+            description: The load balancer tags
+            returned: always
+            type: complex
+            sample: {}
 '''
 
-import time
-import sys
-from ast import literal_eval
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, slb_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, slb_connect
 
 
 HAS_FOOTMARK = False
@@ -258,123 +205,149 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_info(obj):
-    """
-    get info from vsg object
-    :param obj: vsg obj
-    :return: res: info of vsg
-    """
-    res = {'vserver_group_id': obj.vserver_group_id}
-
-    if hasattr(obj, 'backend_servers'):
-        res['backend_servers'] = obj.backend_servers
-    if hasattr(obj, 'vserver_group_name'):
-        res['vserver_group_name'] = obj.vserver_group_name
-    return res
+VALID_SERVER_PARAMS = ["server_id", "port", "weight", "type"]
 
 
-def convert_to_utf8(obj):
-    if sys.version_info.major == 3:
-        return obj
-    if isinstance(obj, dict):
-        res = {}
-        for key, value in obj.iteritems():
-            res = dict(res, **{convert_to_utf8(key): convert_to_utf8(value)})
-        return res
-    elif isinstance(obj, list):
-        res = []
-        for i in obj:
-            res.append(convert_to_utf8(i))
-        return res
-    elif type(obj) not in [int, float, bool, complex, long]:
-        return obj.encode('utf-8')
-    return obj
+def check_backend_servers(module, servers):
+    for s in servers:
+        for key in s.keys():
+            if key not in VALID_SERVER_PARAMS:
+                module.fail_json(msg='Invalid backend server key {0}. Valid keys: {1}.'.format(key, VALID_SERVER_PARAMS))
+
+
+def format_backend_servers(servers):
+    backend_servers = []
+    if servers:
+        for s in servers:
+            server = {}
+            for key, value in s.items():
+                split = []
+                for k in str(key).split("_"):
+                    split.append(str.upper(k[0]) + k[1:])
+                server["".join(split)] = value
+            backend_servers.append(server)
+    return backend_servers
+
+
+def filter_backend_servers(existing, inputting):
+    old = []
+    new = []
+    removed = []
+    existingList = []
+    inputtingList = []
+    oldList = []
+    for s in existing:
+        existingList.append(s['server_id'])
+
+    for s in inputting:
+        inputtingList.append(s['server_id'])
+
+    for s in inputting:
+        if s['server_id'] in existingList:
+            old.append(s)
+            oldList.append([s['server_id']])
+            continue
+        new.append(s)
+
+    for s in existing:
+        key = s['server_id']
+        if key in inputtingList:
+            if key not in oldList:
+                old.append(s)
+            continue
+        removed.append(s)
+
+    return old, new, removed
 
 
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(type='str', default='present', choices=['present', 'absent', 'list']),
-        load_balancer_id=dict(type='str'),
-        vserver_group_name=dict(type='str', aliases=['group_name']),
+        state=dict(type='str', default='present', choices=['present', 'absent']),
+        load_balancer_id=dict(type='str', required=True, aliases=['lb_id']),
+        vserver_group_name=dict(type='str', required=True, aliases=['group_name', 'name']),
         backend_servers=dict(type='list'),
         vserver_group_id=dict(type='str', aliases=['group_id']),
-        old_backend_servers=dict(type='list'),
-        new_backend_servers=dict(type='list')
+        purge_backend_servers=dict(type='bool', default=False),
+        multi_ok=dict(type='bool', default=False)
     ))
 
-    module = AnsibleModule(argument_spec=argument_spec)
+    module = AnsibleModule(argument_spec=argument_spec,
+                           required_if=([
+                               ('state', 'present', ['backend_servers'])
+                           ])
+                           )
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg='footmark required for the module ali_slb_vsg.')
 
     slb = slb_connect(module)
     state = module.params['state']
-    load_balancer_id = module.params['load_balancer_id']
-    vserver_group_name = module.params['vserver_group_name']
-    backend_servers = module.params['backend_servers']
-    vserver_group_id = module.params['vserver_group_id']
-    changed = False
-    current_vserver_group = None
+    lb_id = module.params['load_balancer_id']
+    vsg_name = module.params['vserver_group_name']
 
-    if vserver_group_id:
+    changed = False
+    matching = None
+
+    if not module.params['multi_ok']:
         try:
-            current_vserver_group = slb.describe_vserver_group_attribute(vserver_group_id)
+            matching_vsgs = []
+            for group in slb.describe_vserver_groups(**{'load_balancer_id': lb_id}):
+                if group.name != vsg_name:
+                    continue
+                matching_vsgs.append(group)
+            if len(matching_vsgs) == 1:
+                matching = matching_vsgs[0]
+            elif len(matching_vsgs) > 1:
+                module.fail_json(msg='Currently there are {0} virtual server groups that have the same name {1}. '
+                                     'If you would like to create anyway '
+                                     'please pass True to the multi_ok param.'.format(len(matching_vsgs), vsg_name))
         except Exception as e:
             module.fail_json(msg=str("Unable to describe vserver group attribute, error:{0}".format(e)))
-    if state == "present":
-        if current_vserver_group:
-            set_data = []
-            add_data = []
-            if backend_servers:
-                server_info = {}
-                decode_infos = convert_to_utf8(current_vserver_group.backend_servers)
-                for info in decode_infos['backend_server']:
-                    server_info[info['port']] = info
-                for server in backend_servers:
-                    if server['port'] in server_info.keys():
-                        if server_info[server['port']]['weight'] != server['weight']:
-                            set_data.append(server)
-                    else:
-                        add_data.append(server)
-            if set_data or vserver_group_name:
-                try:
-                    current_vserver_group.set_attribute(backend_servers=set_data, vserver_group_name=vserver_group_name)
-                except Exception as e:
-                    module.fail_json(msg=str("Unable to set vserver group attribute, error:{0}".format(e)))
-            if add_data:
-                try:
-                    current_vserver_group.add_backend_servers(backend_servers=add_data)
-                except Exception as e:
-                    module.fail_json(msg=str("Unable to add vserver group backend server, error:{0}".format(e)))
+
+    if state == 'absent':
+        if matching:
             try:
-                current_vserver_group = slb.describe_vserver_group_attribute(vserver_group_id)
+                changed = matching.delete()
             except Exception as e:
-                module.fail_json(msg=str("Unable to describe vserver group attribute, error:{0}".format(e)))
-            module.exit_json(changed=True, vserver_group=get_info(current_vserver_group))
-        else:
+                module.fail_json(msg=str("Unable to delete vserver group, error: {0}".format(e)))
+        module.exit_json(changed=changed, vserver_group={})
+
+    backend_servers = module.params['backend_servers']
+    check_backend_servers(module, backend_servers)
+
+    if not matching:
+        try:
+            params = module.params
+            params['backend_servers'] = format_backend_servers(backend_servers[:20])
+            matching = slb.create_vserver_group(**params)
+            changed = True
+        except Exception as e:
+            module.fail_json(msg=str("Unable to create vserver group error:{0}".format(e)))
+
+    if backend_servers:
+        old, new, removed = filter_backend_servers(matching.backend_servers['backend_server'], backend_servers)
+        if old:
             try:
-                current_vserver_group = slb.create_vserver_group(load_balancer_id, vserver_group_name, backend_servers)
+                if matching.modify(backend_servers=old):
+                    changed = True
             except Exception as e:
-                module.fail_json(msg=str("Unable to create vserver group error:{0}".format(e)))
-            module.exit_json(changed=True, vserver_group=get_info(current_vserver_group))
-    if not current_vserver_group:
-        module.fail_json(msg="The specified vserver group is not exist. Please check your vserver_group_id and try again.")
-    elif state == "list":
-        module.exit_json(changed=True, vserver_group=get_info(current_vserver_group))
-    elif state == 'absent':
-        if backend_servers:
+                module.fail_json(msg='Modify backend servers failed: {0}'.format(e))
+
+        if new:
             try:
-                current_vserver_group = current_vserver_group.remove_backend_servers(backend_servers)
+                if matching.add(backend_servers=new):
+                    changed = True
             except Exception as e:
-                module.fail_json(msg=str("Unable to remove vserver group backend server, error:{0}".format(e)))
-            module.exit_json(changed=True, vserver_group=get_info(current_vserver_group))
-        else:
+                module.fail_json(msg='Add backend servers failed: {0}'.format(e))
+
+        if module.params['purge_backend_servers'] and removed:
             try:
-                changed = current_vserver_group.delete()
+                if matching.remove(backend_servers=removed):
+                    changed = True
             except Exception as e:
-                module.fail_json(msg=str("Unable to delete vserver group, error:{0}".format(e)))
-            module.exit_json(changed=changed, vserver_group=get_info(current_vserver_group))
+                module.fail_json(msg='Remove backend servers failed: {0}'.format(e))
+    module.exit_json(changed=changed, vserver_group=matching.get().read())
 
 
 if __name__ == '__main__':

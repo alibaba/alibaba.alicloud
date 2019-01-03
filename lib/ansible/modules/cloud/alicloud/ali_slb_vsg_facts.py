@@ -27,122 +27,123 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_slb_vsg_facts
-version_added: "1.5.0"
-short_description: Gather facts on vserver group of Alibaba Cloud SLB.
+version_added: "2.8"
+short_description: Gather facts on virtual server group of Alibaba Cloud SLB.
 description:
-     - This module fetches data from the Open API in Alicloud.
-       The module must be called from within the SLB vserver group itself.
-
+     - This module fetches virtual server groups data from the Open API in Alibaba Cloud.
 options:
-    load_balancer_id:
-      description:
-        - ID of server load balancer.
-      required: true
-      aliases: [ "lb_id"] 
-    vserver_group_ids:
-      description:
-        - A list of SLB vserver group ids.
-      required: false
-      aliases: [ "group_ids" ]
+  load_balancer_id:
+    description:
+      - ID of server load balancer.
+    required: true
+    aliases: ["lb_id"]
+  vserver_group_ids:
+    description:
+      - A list of SLB vserver group ids.
+    required: false
+    aliases: ["group_ids", "ids"]
+  name_prefix:
+    description:
+      - Use a vritual server group name prefix to filter vserver groups.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark"
+    - "footmark >= 1.9.0"
 extends_documentation_fragment:
     - alicloud
 '''
 
 EXAMPLES = '''
-# Fetch slb server group according to setting different filters
-- name: Fetch slb vserver group example
-  hosts: localhost
-  vars:    
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-beijing
-    load_balancer_id: lb-dj1hv3n9oemvk34evb466
-    vserver_group_ids:
-      - rsp-dj1lrpsgr8d5v
-      - rsp-dj10xmgq31vl0
-  tasks:
-    - name: Find all vserver gorup in specified slb
-      ali_slb_vsg_facts:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-      register: all_vserver_group
-    - debug: var=all_vserver_group
+# Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
+- name: Retrieving vsgs using slb id
+  ali_slb_vsg_facts:
+    lb_id: '{{item}}'
+  with_items: '{{slbs.ids}}'
 
-    - name: Find all vserver group by ids 
-      ali_slb_vsg_facts:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        vserver_group_ids: '{{ vserver_group_ids }}'
-      register: vserver_group_by_ids
-    - debug: var=vserver_group_by_ids
+- name: Filter vsg using name_regex
+  ali_slb_vsg_facts:
+    name_prefix: 'ansible-foo'
+    lb_id: 'lb-cn3cn34'
 '''
 
 RETURN = '''
-vserver_group_ids:
-    description: List all vserver group's id after operating slb vserver group.
+ids:
+    description: List ids of being fetched virtual server group.
     returned: when success
     type: list
-    sample: [ "rsp-dj1lrpsgr8d5v", "rsp-dj10xmgq31vl0" ]
+    sample: ["rsp-2zehblhcv", "rsp-f22c4lhcv"]
+names:
+    description: List name of being fetched virtual server group.
+    returned: when success
+    type: list
+    sample: ["ansible-1", "ansible-2"]
 vserver_groups:
-    description: Details about the slb vserver group that were created.
-    returned: when success
-    type: list
-    sample: [
-      {
-        "backend_servers": {
-          "backend_server": [
-            {
-              "port": 8282,
-              "server_id": "i-2ze35dldjc05dcvezgwk",
-              "weight": 100
-            },
-            {
-              "port": 8283,
-              "server_id": "i-2zehjm3jvtbkp175c2bt",
-              "weight": 100
-            }
-          ]
-        },
-        "vserver_group_id": "rsp-dj1lrpsgr8d5v",
-        "vserver_group_name": "group_1"
-      },
-      {
-        "backend_servers": {
-          "backend_server": [
-            {
-              "port": 8085,
-              "server_id": "i-2zehjm3jvtbkp175c2bt",
-              "weight": 100
-            },
-            {
-              "port": 8086,
-              "server_id": "i-2ze35dldjc05dcvezgwk",
-              "weight": 100
-            }
-          ]
-        },
-        "vserver_group_id": "rsp-dj10xmgq31vl0",
-        "vserver_group_name": "group_2"
-      }
-    ]
-total:
-    description: The number of all vserver group after operating slb.
-    returned: when success
-    type: int
-    sample: 2
+    description:
+      - info about the virtual server group that was created or deleted.
+    returned: on present
+    type: complex
+    contains:
+        address:
+            description: The IP address of the loal balancer
+            returned: always
+            type: string
+            sample: "47.94.26.126"
+
+        backend_servers:
+            description: The load balancer's backend servers
+            returned: always
+            type: complex
+            contains:
+                port:
+                    description: The backend server port
+                    returned: always
+                    type: int
+                    sample: 22
+                server_id:
+                    description: The backend server id
+                    returned: always
+                    type: string
+                    sample: "i-vqunci342"
+                type:
+                    description: The backend server type, ecs or eni
+                    returned: always
+                    type: string
+                    sample: "ecs"
+                weight:
+                    description: The backend server weight
+                    returned: always
+                    type: int
+                    sample: 100
+        id:
+            description: The ID of the virtual server group was created. Same as vserver_group_id.
+            returned: always
+            type: string
+            sample: "rsp-2zehblhcv"
+        vserver_group_id:
+            description: The ID of the virtual server group was created.
+            returned: always
+            type: string
+            sample: "rsp-2zehblhcv"
+        vserver_group_name:
+            description: The name of the virtual server group was created.
+            returned: always
+            type: string
+            sample: "ansible-ali_slb_vsg"
+        name:
+            description: The name of the virtual server group was created.
+            returned: always
+            type: string
+            sample: "ansible-ali_slb_vsg"
+        tags:
+            description: The load balancer tags
+            returned: always
+            type: complex
+            sample: {}
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, slb_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, slb_connect
 
 HAS_FOOTMARK = False
 
@@ -153,75 +154,42 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_info(obj):
-    """
-    get info from vsg object
-    :param obj: vsg obj
-    :return: res: info of vsg
-    """
-    res = {'vserver_group_id': obj.vserver_group_id}
-
-    if hasattr(obj, 'backend_servers'):
-        res['backend_servers'] = obj.backend_servers
-    if hasattr(obj, 'vserver_group_name'):
-        res['vserver_group_name'] = obj.vserver_group_name
-    return res
-
-
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         load_balancer_id=dict(type='str', aliases=['lb_id'], required=True),
-        vserver_group_ids=dict(type='list', aliases=['group_ids'])
+        vserver_group_ids=dict(type='list', aliases=['group_ids', 'ids']),
+        name_prefix=dict(type='str')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for this module.")
 
-    load_balancer_id = module.params['load_balancer_id']
-    vserver_group_ids = module.params['vserver_group_ids']
-    ids = []
-    result = []
-    all_vserver_group_ids = []
+    vsg_ids = module.params['vserver_group_ids']
+    name_prefix = module.params['name_prefix']
 
-    if vserver_group_ids and (not isinstance(vserver_group_ids, list) or len(vserver_group_ids)) < 1:
-        module.fail_json(msg='vserver_group_ids should be a list of vserver group ids, aborting')
+    ids = []
+    vsgs = []
+    names = []
 
     try:
         slb = slb_connect(module)
-        laod_balancer = slb.describe_load_balancers(load_balancer_id=load_balancer_id)
+        groups = slb.describe_vserver_groups(**{'load_balancer_id': module.params['load_balancer_id']})
 
-        if laod_balancer and len(laod_balancer) == 1:
+        if groups:
+            for group in groups:
+                if vsg_ids and group.id not in vsg_ids:
+                    continue
+                if name_prefix and not str(group.name).startswith(name_prefix):
+                    continue
+                vsgs.append(group.read())
+                ids.append(group.id)
+                names.append(group.name)
 
-            # list all vserver groups in selected load balancer
-            for vserver_group_obj in slb.describe_vserver_groups(load_balancer_id=load_balancer_id):
-                all_vserver_group_ids.append(vserver_group_obj.vserver_group_id)
-
-            # if list of vserver group id provided
-            if vserver_group_ids:
-
-                for vserver_group_id in vserver_group_ids:
-
-                    # check whether provided vserver grooup id is valid or not
-                    if vserver_group_id in all_vserver_group_ids:
-                        vserver_group = slb.describe_vserver_group_attribute(vserver_group_id)
-                        result.append(get_info(vserver_group))
-                        ids.append(vserver_group_id)
-
-            # list all vserver group in specified slb
-            else:
-                for vserver_group_id in all_vserver_group_ids:
-                    vserver_group = slb.describe_vserver_group_attribute(vserver_group_id)
-                    result.append(get_info(vserver_group))
-                    ids.append(vserver_group.vserver_group_id)
-
-            module.exit_json(changed=False, vserver_group_ids=ids,
-                             vserver_groups=result, total=len(result))
-        else:
-            module.fail_json(msg="Unable to describe slb vserver groups, invalid load balancer id")
+        module.exit_json(changed=False, vserver_groups=vsgs, ids=ids, names=names)
     except Exception as e:
-        module.fail_json(msg=str("Unable to describe slb vserver group, error:{0}".format(e)))
+        module.fail_json(msg=str("Unable to describe slb vserver groups, error:{0}".format(e)))
 
 
 if __name__ == '__main__':
