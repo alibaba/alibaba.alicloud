@@ -80,6 +80,11 @@ ids:
     returned: when success
     type: list
     sample: ["lb-dj1oi1h5l74hg22gsnugf", "lb-dj1t1xwn0y9zcr90e52i2"]
+names:
+    description: List names of being fetched slb.
+    returned: when success
+    type: list
+    sample: ["ansible-foo", "ansible-bar"]
 load_balancers:
     description:
       - info about the server load balancer that was created or deleted.
@@ -278,6 +283,7 @@ def main():
             lb_ids.append(value)
     lbs = []
     ids = []
+    names = []
 
     try:
         slb = slb_connect(module)
@@ -286,24 +292,23 @@ def main():
                 ids_tmp = lb_ids[index:index + 10]
                 if not ids_tmp:
                     break
-                id_str = ""
-                for id in ids_tmp:
-                    id_str += id + ','
-                filters['load_balancer_id'] = id_str[:-1]
+                filters['load_balancer_id'] = ",".join(ids_tmp)
 
                 for lb in slb.describe_load_balancers(**filters):
                     if name_prefix and not str(lb.load_balancer_name).startswith(name_prefix):
                         continue
                     lbs.append(lb.read())
                     ids.append(lb.load_balancer_id)
+                    names.append(lb.load_balancer_name)
         else:
             for lb in slb.describe_load_balancers(**filters):
                 if name_prefix and not str(lb.load_balancer_name).startswith(name_prefix):
                     continue
                 lbs.append(lb.read())
                 ids.append(lb.load_balancer_id)
+                names.append(lb.load_balancer_name)
 
-        module.exit_json(changed=False, load_balancers=lbs, ids=ids)
+        module.exit_json(changed=False, load_balancers=lbs, ids=ids, names=names)
     except Exception as e:
         module.fail_json(msg="Unable to describe server load balancers, and got an error: {0}.".format(e))
 
