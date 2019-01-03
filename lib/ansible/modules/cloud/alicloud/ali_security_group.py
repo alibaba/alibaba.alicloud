@@ -303,6 +303,8 @@ def group_exists(conn, module, vpc_id, name, multi, recent):
     When supplied with a vpc_id and Name, it will check them to determine if it is a match
     otherwise it will assume the Security Group does not exist and thus return None.
     """
+    if multi:
+        return None
     matching_groups = []
     filters = {}
     if vpc_id:
@@ -317,9 +319,7 @@ def group_exists(conn, module, vpc_id, name, multi, recent):
     if len(matching_groups) == 1:
         return matching_groups[0]
     elif len(matching_groups) > 1:
-        if multi:
-            return None
-        elif recent:
+        if recent:
             return matching_groups[-1]
         module.fail_json(msg='Currently there are {0} Security Groups that have the same name and '
                              'vpc id you specified. If you would like to create anyway '

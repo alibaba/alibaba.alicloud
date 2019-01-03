@@ -7,6 +7,7 @@ FEATURES:
 
 IMPROVEMENTS:
 
+- Improve module ali_vpc and ali_security_group multi_ok ([#149](https://github.com/alibaba/ansible-provider/pull/149))
 - Improve module ali_slb_vsg and ali_slb_vsg_facts ([#148](https://github.com/alibaba/ansible-provider/pull/148))
 - Improve module ali_slb_lb and ali_slb_lb_facts ([#147](https://github.com/alibaba/ansible-provider/pull/147))
 - Improve ecs instance and eni docs ([#146](https://github.com/alibaba/ansible-provider/pull/146))

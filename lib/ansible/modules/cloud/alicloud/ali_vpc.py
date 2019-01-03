@@ -31,7 +31,7 @@ version_added: "2.8"
 short_description: Configure Alibaba Cloud virtual private cloud(VPC)
 description:
     - Create, Delete Alicloud virtual private cloud(VPC).
-      It support updating VPC description.
+      It supports updating VPC description.
 options:
   state:
     description:
@@ -192,6 +192,8 @@ def vpc_exists(module, vpc, name, cidr_block, multi, recent):
     with a CIDR and Name, it will check them to determine if it is a match
     otherwise it will assume the VPC does not exist and thus return None.
     """
+    if multi:
+        return None
     matching_vpcs = []
     try:
         for v in vpc.describe_vpcs():
@@ -203,9 +205,7 @@ def vpc_exists(module, vpc, name, cidr_block, multi, recent):
     if len(matching_vpcs) == 1:
         return matching_vpcs[0]
     elif len(matching_vpcs) > 1:
-        if multi:
-            return None
-        elif recent:
+        if recent:
             return matching_vpcs[-1]
         module.fail_json(msg='Currently there are {0} VPCs that have the same name and '
                              'CIDR block you specified. If you would like to create '

@@ -1,20 +1,12 @@
 ---
-- name: Get the existing groups
-  ali_security_group_facts:
-    name_prefix: '{{ name }}'
-    filters:
-      vpc_id: '{{vpcs.vpcs.0.id}}'
-  register: sgs
-
-- name: Creating security group
+- name: Create a VPC security group
   ali_security_group:
     state: 'present'
-    name: '{{ name }}-group'
+    name: '{{ name }}'
     description: '{{ group_description }}'
-    vpc_id: '{{vpcs.vpcs.0.id}}'
+    vpc_id: '{{vpc.vpc.id}}'
     rules: '{{ group_inboundRules }}'
     rules_egress: '{{ group_outboundRules }}'
-  when: not sgs.groups
   register: group
 
 - name: Get the existing groups

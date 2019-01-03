@@ -32,7 +32,6 @@
 
     tags: '{{ tags }}'
   when: not instances.instances
-  register: instance
 
 - name: Get the existing ECS instances
   ali_instance_facts:

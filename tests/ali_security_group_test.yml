@@ -3,53 +3,53 @@
   hosts: localhost
   remote_user: root
 
+  vars:
+    name: ansible-testacc-ali_security_group
+
   roles:
     - vpc
     - security_group
 
   tasks:
-    - name: Changed. Modifying name.
-      ali_security_group:
-        group_id: '{{ item.id}}'
-        name: '{{ name }}-security-group-modified'
-      with_items: '{{sgs.groups}}'
+# It does not support modifying name
+#    - name: Changed. Modifying name.
+#      ali_security_group:
+#        vpc_id: '{{item.vpc_id}}'
+#        name: '{{ item.group_name }}-modified'
+#        recent: True
+#      with_items: '{{sgs.groups}}'
 
     - name: Changed. Modify description.
       ali_security_group:
-        group_id: '{{ item.id}}'
-        description: '{{ vpc_description }}-security-group-modified'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        description: '{{ vpc_description }}-modified'
       with_items: '{{sgs.groups}}'
 
     - name: Not Changed. No any attribute changed.
       ali_security_group:
-        group_id: '{{ item.id}}'
-        name: '{{ name }}-security-group-modified'
-        description: '{{ vpc_description }}-security-group-modified'
-      with_items: '{{sgs.groups}}'
-
-    - name: Changed. Go back init value.
-      ali_security_group:
-        group_id: '{{ item.id}}'
-        name: '{{ name }}-group'
-        description: '{{ group_description }}'
+        vpc_id: '{{item.vpc_id}}'
+        name: '{{ item.group_name }}'
+        description: '{{ vpc_description }}-modified'
       with_items: '{{sgs.groups}}'
 
     - name: Creating a new security group for source/dest group
       ali_security_group:
         name: '{{ name }}-for-rule'
         description: '{{ group_description }}-for-rule'
-        vpc_id: '{{vpcs.vpcs.0.id}}'
-      register: group
+        vpc_id: '{{vpc.vpc.id}}'
+      register: dest
 
     - name: Changed. Add three rules.
       ali_security_group:
-        group_id: '{{ item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         purge_rules: False
         rules:
           - ip_protocol: icmp
             port_range: -1/-1
             dest_cidr_ip: 10.0.0.0/10
-            source_group_id: '{{group.group.id}}'
+            source_group_id: '{{dest.group.id}}'
             priority: 1
 
           - ip_protocol: tcp
@@ -66,13 +66,14 @@
 
     - name: No Changed. There is no any changed rules.
       ali_security_group:
-        group_id: '{{ item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         purge_rules: False
         rules:
           - ip_protocol: icmp
             port_range: -1/-1
             dest_cidr_ip: 10.0.0.0/10
-            source_group_id: '{{group.group.id}}'
+            source_group_id: '{{dest.group.id}}'
             priority: 1
 
           - ip_protocol: tcp
@@ -89,12 +90,13 @@
 
     - name: Changed. Purge rules.
       ali_security_group:
-        group_id: '{{ item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         rules:
           - ip_protocol: icmp
             port_range: -1/-1
             dest_cidr_ip: 10.0.0.0/10
-            source_group_id: '{{group.group.id}}'
+            source_group_id: '{{dest.group.id}}'
             priority: 1
 
           - ip_protocol: tcp
@@ -116,12 +118,13 @@
 
     - name: No Changed. There is no any purged rules.
       ali_security_group:
-        group_id: '{{ item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         rules:
           - ip_protocol: icmp
             port_range: -1/-1
             dest_cidr_ip: 10.0.0.0/10
-            source_group_id: '{{group.group.id}}'
+            source_group_id: '{{dest.group.id}}'
             priority: 1
 
           - ip_protocol: tcp
@@ -143,13 +146,14 @@
 
     - name: Changed. Add three egress rules.
       ali_security_group:
-        group_id: '{{ item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         purge_rules_egress: False
         rules_egress:
           - ip_protocol: icmp
             port_range: -1/-1
             source_cidr_ip: 10.0.0.0/10
-            dest_group_id: '{{group.group.id}}'
+            dest_group_id: '{{dest.group.id}}'
             priority: 1
 
           - ip_protocol: tcp
@@ -166,13 +170,14 @@
 
     - name: No Changed. There is no any changed egress rules.
       ali_security_group:
-        group_id: '{{ item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         purge_rules_egress: False
         rules_egress:
           - ip_protocol: icmp
             port_range: -1/-1
             source_cidr_ip: 10.0.0.0/10
-            dest_group_id: '{{group.group.id}}'
+            dest_group_id: '{{dest.group.id}}'
             priority: 1
 
           - ip_protocol: tcp
@@ -189,12 +194,13 @@
 
     - name: Changed. Purge egress rules.
       ali_security_group:
-        group_id: '{{ item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         rules_egress:
           - ip_protocol: icmp
             port_range: -1/-1
             source_cidr_ip: 10.0.0.0/10
-            dest_group_id: '{{group.group.id}}'
+            dest_group_id: '{{dest.group.id}}'
             priority: 1
 
           - ip_protocol: tcp
@@ -216,12 +222,13 @@
 
     - name: No Changed. There is no purged egress rules.
       ali_security_group:
-        group_id: '{{ item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         rules_egress:
           - ip_protocol: icmp
             port_range: -1/-1
             source_cidr_ip: 10.0.0.0/10
-            dest_group_id: '{{group.group.id}}'
+            dest_group_id: '{{dest.group.id}}'
             priority: 1
 
           - ip_protocol: tcp
@@ -243,17 +250,20 @@
 
     - name: Changed. Deleting the security groups
       ali_security_group:
-        group_id: '{{item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting the source security group
       ali_security_group:
-        group_id: '{{group.group.id}}'
+        name: '{{ dest.group.group_name }}'
+        vpc_id: '{{dest.group.vpc_id}}'
         state: absent
 
     - name: Changed. Deleting vpcs
       ali_vpc:
-        vpc_id: '{{item.id}}'
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
         state: absent
       with_items: '{{vpcs.vpcs}}'
