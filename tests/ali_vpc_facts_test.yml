@@ -3,6 +3,9 @@
   hosts: localhost
   remote_user: root
 
+  vars:
+    name: ansible-testacc-ali_vpc_facts
+
   roles:
     - vpc
 
@@ -14,7 +17,7 @@
     - name: Add a vpc and used to test name_regex
       ali_vpc:
         cidr_block: '192.168.2.0/24'
-        vpc_name: '{{ name }}regex-vpc'
+        vpc_name: '{{ name }}regex'
         description: '{{ vpc_description }} name regex.'
 
     - name: Filter vpc using name_regex
@@ -31,7 +34,7 @@
 
     - name: Changed. Deleting vpcs
       ali_vpc:
-        vpc_id: '{{item}}'
+        cidr_block: '{{ item.cidr_block }}'
+        name: '{{ item.vpc_name }}'
         state: absent
-      with_items: '{{vpcs.ids}}'
-
+      with_items: '{{vpcs.vpcs}}'

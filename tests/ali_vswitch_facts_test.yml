@@ -3,6 +3,9 @@
   hosts: localhost
   remote_user: root
 
+  vars:
+    name: ansible-testacc-ali_vswitch_facts
+
   roles:
     - vpc
     - vswitch
@@ -15,7 +18,7 @@
     - name: Add a vswitch and used to test name_regex
       ali_vswitch:
         cidr_block: '172.16.2.0/24'
-        name: '{{name}}regex-vswitch'
+        name: '{{name}}regex'
         zone_id: '{{ availability_zone }}'
         vpc_id: '{{vpcs.vpcs.0.id}}'
         description: '{{vswitch_description}} name regex.'
@@ -34,13 +37,14 @@
 
     - name: Changed. Deleting vswitches
       ali_vswitch:
-        vswitch_id: '{{ item}}'
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
         state: absent
-      with_items: '{{vswitches.ids}}'
+      with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
       ali_vpc:
-        vpc_id: '{{item}}'
+        name: '{{vpc.vpc.vpc_name}}'
+        cidr_block: '{{vpc.vpc.cidr_block}}'
         state: absent
-      with_items: '{{vpcs.ids}}'
 

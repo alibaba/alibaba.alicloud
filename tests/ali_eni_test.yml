@@ -1,7 +1,10 @@
 ---
-- name: Validate module ali_instance
+- name: Validate module ali_eni
   hosts: localhost
   remote_user: root
+
+  vars:
+    name: ansible-testacc-ali_eni
 
   roles:
     - vpc
@@ -14,27 +17,27 @@
     - name: Changed. Modifying name.
       ali_eni:
         id: '{{ item}}'
-        name: '{{ name }}-ali_eni-modified'
+        name: '{{ name }}-modified'
       with_items: '{{enis.ids}}'
 
     - name: Changed. Modifying description.
       ali_eni:
         id: '{{ item}}'
-        description: '{{description}}ali_eni-modified'
+        description: '{{description}}-modified'
       with_items: '{{enis.ids}}'
 
     - name: No Changed. There is no any attribute changed
       ali_eni:
         id: '{{ item}}'
-        name: '{{ name }}-ali_eni-modified'
-        description: '{{description}}ali_eni-modified'
+        name: '{{ name }}-modified'
+        description: '{{description}}-modified'
       with_items: '{{enis.ids}}'
 
     - name: Changed. Go back init value.
       ali_eni:
         id: '{{item}}'
-        name: '{{ name }}-ali_eni'
-        description: '{{description}}ali_eni'
+        name: '{{ name }}'
+        description: '{{description}}'
       with_items: '{{enis.ids}}'
 
     - name: Creating a new security group
@@ -186,19 +189,22 @@
 #
     - name: Changed. Deleting security groups
       ali_security_group:
-        group_id: '{{item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vswitches
       ali_vswitch:
-        id: '{{item.id}}'
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
       ali_vpc:
-        vpc_id: '{{item.id}}'
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
         state: absent
       with_items: '{{vpcs.vpcs}}'
 

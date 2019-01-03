@@ -10,8 +10,8 @@
   ali_eni:
     vswitch_id: '{{ vswitches.vswitches.0.id }}'
     security_groups: ['{{ sgs.groups.0.id }}']
-    name: '{{ name }}-ali_eni'
-    description: '{{description}}ali_eni'
+    name: '{{ name }}'
+    description: '{{description}}'
     tags: '{{tags}}'
   when: not enis.interfaces
 
@@ -19,8 +19,8 @@
   ali_eni:
     vswitch_id: '{{ vswitches.vswitches.0.id }}'
     security_groups: ['{{ sgs.groups.0.id }}']
-    name: '{{ name }}-eni'
-    description: '{{description}}ali_eni'
+    name: '{{ name }}-ip'
+    description: '{{description}}'
     private_ip: '172.16.1.10'
     tags: '{{tags}}'
   when: not enis.interfaces

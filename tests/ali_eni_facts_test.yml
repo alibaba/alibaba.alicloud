@@ -1,7 +1,10 @@
 ---
-- name: Validate module ali_instance
+- name: Validate module ali_eni_facts
   hosts: localhost
   remote_user: root
+
+  vars:
+    name: ansible-testacc-ali_eni_facts
 
   roles:
     - vpc
@@ -10,7 +13,7 @@
     - network_interface
 
   tasks:
-    - name: Retrieving instances using eni_ids
+    - name: Retrieving enis using eni_ids
       ali_eni_facts:
         eni_ids: '{{ enis.ids}}'
 
@@ -18,7 +21,7 @@
       ali_eni:
         vswitch_id: '{{ vswitches.vswitches.0.id }}'
         security_groups: ['{{ sgs.groups.0.id }}']
-        name: '{{ name }}regex--ali_eni'
+        name: '{{ name }}regex'
         description: '{{description}}-name-regex-ali_eni'
         tags:
           Test: tags
@@ -32,10 +35,10 @@
         tags:
           Test: tags
 
-    - name: Retrieving all instances
+    - name: Retrieving all enis
       ali_eni_facts:
 
-    - name: Retrieving all instances based on name_regex
+    - name: Retrieving all enis based on name_regex
       ali_eni_facts:
         name_prefix: '{{name}}'
       register: enis
@@ -49,19 +52,22 @@
 
     - name: Changed. Deleting security groups
       ali_security_group:
-        group_id: '{{item}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         state: absent
-      with_items: '{{sgs.ids}}'
+      with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vswitches
       ali_vswitch:
-        id: '{{item}}'
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
         state: absent
-      with_items: '{{vswitches.ids}}'
+      with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
       ali_vpc:
-        vpc_id: '{{item}}'
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
         state: absent
-      with_items: '{{vpcs.ids}}'
+      with_items: '{{vpcs.vpcs}}'
 
