@@ -8,7 +8,7 @@ FEATURES:
 
 IMPROVEMENTS:
 
-- Improve test cases ([#152](https://github.com/alibaba/ansible-provider/pull/152))
+- Improve test cases ([#154](https://github.com/alibaba/ansible-provider/pull/154))
 - Improve inventory alicloud.py meta and use public_ip_address instead eip_address ([#152](https://github.com/alibaba/ansible-provider/pull/152))
 - Improve module ali_vpc and ali_security_group multi_ok ([#149](https://github.com/alibaba/ansible-provider/pull/149))
 - Improve module ali_slb_vsg and ali_slb_vsg_facts ([#148](https://github.com/alibaba/ansible-provider/pull/148))
