@@ -3,32 +3,60 @@
   hosts: localhost
   remote_user: root
 
+  vars:
+    name: ansible-testacc-ali_slb_lb
+
   roles:
+    - vpc
+    - vswitch
     - slb
 
   tasks:
     - name: Changed. Modifying internet charge type when C(present)
       ali_slb_lb:
-        name: '{{ slb.load_balancer.name }}'
+        name: '{{ slbpub.load_balancer.name }}'
         internet_charge_type: 'PayByBandwidth'
         bandwidth: 5
 
+    - name: Filter slb using name_regex
+      ali_slb_lb_facts:
+        name_prefix: '{{name}}'
+      register: slbs
+
     - name: Changed. Stop slb instance when C(stopped)
       ali_slb_lb:
-        name: '{{ slb.load_balancer.name }}'
+        name: '{{ item.name }}'
         state: stopped
+      with_items: '{{slbs.load_balancers}}'
 
     - name: Changed. Running slb instance when C(running)
       ali_slb_lb:
-        name: '{{ slb.load_balancer.name }}'
+        name: '{{ item.name }}'
         state: running
+      with_items: '{{slbs.load_balancers}}'
 
     - name: No Changed. There is no changed when C(running)
       ali_slb_lb:
-        name: '{{ slb.load_balancer.name }}'
+        name: '{{ item.name }}'
         state: running
+      with_items: '{{slbs.load_balancers}}'
 
     - name: Changed. Delete slb instance when C(absent)
       ali_slb_lb:
-        name: '{{ slb.load_balancer.name }}'
+        name: '{{ item.name }}'
         state: absent
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'

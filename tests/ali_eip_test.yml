@@ -5,6 +5,7 @@
 
   vars:
     allocate_public_ip: False
+    name: ansible-testacc-ali_eip-module
 
   roles:
     - vpc

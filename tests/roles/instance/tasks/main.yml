@@ -11,7 +11,7 @@
   ali_instance:
     image: '{{ image_id }}'
     type: '{{ instance_type }}'
-    instance_name: '{{ name }}-instance'
+    instance_name: '{{ name }}'
     description: '{{ instance_description }}'
     host_name: '{{ host_name }}'
     password: '{{ password }}'

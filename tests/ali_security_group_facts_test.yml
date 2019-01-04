@@ -3,7 +3,7 @@
   hosts: localhost
   remote_user: root
   vars:
-    name: ansible-testacc-ali_security_group_facts
+    name: ansible-testacc-ali_security_group_facts-module
   roles:
     - vpc
     - security_group

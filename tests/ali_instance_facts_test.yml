@@ -3,6 +3,9 @@
   hosts: localhost
   remote_user: root
 
+  vars:
+    name: ansible-testacc-ali_instance_facts-module
+
   roles:
     - vpc
     - vswitch
@@ -61,19 +64,22 @@
 
     - name: Changed. Deleting security groups
       ali_security_group:
-        group_id: '{{item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vswitches
       ali_vswitch:
-        id: '{{item.id}}'
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
       ali_vpc:
-        vpc_id: '{{item.id}}'
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
         state: absent
       with_items: '{{vpcs.vpcs}}'
 

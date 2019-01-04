@@ -4,13 +4,13 @@
   remote_user: root
   vars:
     number_of_instances: 2
-    name: ansible-testacc-ali_slb_vsg_facts
+    name: ansible-testacc-ali_slb_vsg_facts-module
   roles:
     - vpc
     - vswitch
     - security_group
-    - slb
     - instance
+    - slb
 
   tasks:
     - name: Changed. Create a VServer Group in public SLB
@@ -75,6 +75,14 @@
         instance_ids: '{{ instances.ids }}'
         force: True
         state: absent
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+      when: sgs.groups
 
     - name: Changed. Deleting vswitches
       ali_vswitch:
