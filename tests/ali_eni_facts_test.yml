@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_eni_facts
+    name: ansible-testacc-ali_eni_facts-module
 
   roles:
     - vpc

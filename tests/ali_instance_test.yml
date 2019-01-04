@@ -13,7 +13,7 @@
     - name: Changed. Modifying name, host name and description when C(present)
       ali_instance:
         instance_ids: '{{ instances.ids}}'
-        name: '{{ name }}-instance-modified'
+        name: '{{ name }}-modified'
         description: 'Test modify name, host name and description'
         host_name: 'modify-host-name'
 
@@ -40,14 +40,14 @@
       ali_instance:
         state: running
         instance_ids: '{{ instances.ids}}'
-        name: '{{ name }}-instance'
+        name: '{{ name }}'
         description: '{{instance_description}}'
         host_name: 'modify-host-name'
 
     - name: No Changed. There is no any attribute changed
       ali_instance:
         instance_ids: '{{ instances.ids}}'
-        name: '{{ name }}-instance'
+        name: '{{ name }}'
         description: '{{instance_description}}'
         host_name: 'modify-host-name'
         password: 'Test12345'
@@ -100,19 +100,22 @@
 
     - name: Changed. Deleting security groups
       ali_security_group:
-        group_id: '{{item.id}}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vswitches
       ali_vswitch:
-        id: '{{item.id}}'
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
       ali_vpc:
-        vpc_id: '{{item.id}}'
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
         state: absent
       with_items: '{{vpcs.vpcs}}'
 

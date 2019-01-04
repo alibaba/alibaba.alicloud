@@ -4,7 +4,7 @@
   remote_user: root
   vars:
     number_of_instances: 4
-    name: ansible-testacc-ali_slb_vsg
+    name: ansible-testacc-ali_slb_vsg-module
   roles:
     - vpc
     - vswitch
@@ -197,6 +197,14 @@
         instance_ids: '{{ instances.ids }}'
         force: True
         state: absent
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+      when: sgs.groups
 
     - name: Changed. Deleting vswitches
       ali_vswitch:

@@ -3,17 +3,22 @@
   hosts: localhost
   remote_user: root
 
+  vars:
+    name: ansible-testacc-ali_slb_lb_facts
+
   roles:
+    - vpc
+    - vswitch
     - slb
 
   tasks:
     - name: Retrieving slbs using ids
       ali_slb_lb_facts:
-        ids: '{{slb.load_balancer.id}}'
+        ids: '{{slbpub.load_balancer.id}}'
 
     - name: Create a slb and used to test name_regex
       ali_slb_lb:
-        name: '{{name}}regex-slb'
+        name: '{{name}}regex'
 
     - name: Filter slb using name_regex
       ali_slb_lb_facts:
@@ -32,4 +37,18 @@
         name: '{{ item.name }}'
         state: absent
       with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'
 

@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_vswitch
+    name: ansible-testacc-ali_vswitch-module
 
   roles:
     - vpc

@@ -3,6 +3,9 @@
   hosts: localhost
   remote_user: root
 
+  vars:
+    name: ansible-testacc-ali_eip_facts-module
+
   roles:
     - eip
 

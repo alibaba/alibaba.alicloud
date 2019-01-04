@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_security_group
+    name: ansible-testacc-ali_security_group-module
 
   roles:
     - vpc
