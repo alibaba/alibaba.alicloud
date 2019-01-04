@@ -291,10 +291,12 @@ class EcsInventory(object):
 
         # Select the best destination address
         if self.destination_variable:
-            if not instance.vswitch_id and self.destination_variable in ('private_ip_address', 'inner_ip_address'):
-                dest = getattr(instance, 'inner_ip_address', None)
-            else:
-                dest = getattr(instance, self.destination_variable, None)
+            if self.destination_variable == 'inner_ip_address':
+                self.destination_variable = 'private_ip_address'
+            elif self.destination_variable == 'eip_address':
+                self.destination_variable = 'public_ip_address'
+
+            dest = getattr(instance, self.destination_variable, None)
 
         if not dest:
             # Skip instances we cannot address
@@ -408,33 +410,8 @@ class EcsInventory(object):
         self.push(self.inventory, hostname, dest)
         self.push_group(self.inventory, 'alicloud', hostname)
 
-        self.inventory["_meta"]["hostvars"][hostname] = self.get_host_info_dict_from_instance(instance)
+        self.inventory["_meta"]["hostvars"][hostname] = instance.read()
         self.inventory["_meta"]["hostvars"][hostname]['ansible_ssh_host'] = dest
-
-    def get_host_info_dict_from_instance(self, instance):
-        instance_vars = {}
-        for key in vars(instance):
-            value = getattr(instance, key)
-
-            # Handle complex types
-            if type(value) in [int, bool]:
-                instance_vars[key] = value
-            elif isinstance(value, string_types):
-                instance_vars[key] = value.strip()
-            elif not value:
-                instance_vars[key] = ''
-            elif key == 'tags':
-                for k, v in value.items():
-                    if self.expand_csv_tags and ',' in v:
-                        v = map(lambda x: x.strip(), v.split(','))
-                    instance_vars['tag_' + k] = v
-            elif key == 'groups':
-                instance_vars["security_group_ids"] = ','.join([str(i) for i in value])
-            else:
-                pass
-                # TODO Product codes if someone finds them useful
-
-        return instance_vars
 
     def get_host_info(self):
         ''' Get variables about a specific host '''
@@ -453,7 +430,7 @@ class EcsInventory(object):
         region, instance_id, instance_name = self.index[self.args.host]
 
         instance = self.get_instance_by_id(region, instance_id)
-        return self.json_format_dict(self.get_host_info_dict_from_instance(instance), True)
+        return self.json_format_dict(instance.read(), True)
 
     def connect_to_ecs(self, module, region):
 
