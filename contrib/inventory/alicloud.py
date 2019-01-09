@@ -23,7 +23,6 @@ import os
 import argparse
 import re
 import yaml
-from ansible.module_utils.six import string_types
 
 from time import time
 from ansible.module_utils.alicloud_ecs import connect_to_acs
@@ -250,6 +249,12 @@ class EcsInventory(object):
                 elif key.startswith("tag:"):
                     tags[key[4:]] = value
                     continue
+                elif key in ['page_size', 'page_number']:
+                    try:
+                        if value and int(value):
+                            value = int(value)
+                    except Exception:
+                        raise
                 self.ecs_instance_filters[key] = value
             if tags:
                 self.ecs_instance_filters['tags'] = tags
@@ -267,11 +272,16 @@ class EcsInventory(object):
         ''' List ECS instances in a specified region '''
 
         conn = connect_to_acs(footmark.ecs, region, **self.credentials)
-
-        if self.ecs_instance_filters:
-            instances = conn.describe_instances(**self.ecs_instance_filters)
-        else:
-            instances = conn.describe_instances()
+        instances = []
+        page_number = 1
+        while True:
+            self.ecs_instance_filters['page_number'] = page_number
+            insts = conn.describe_instances(**self.ecs_instance_filters)
+            if insts and len(insts) >= self.ecs_instance_filters['page_size']:
+                page_number += 1
+                instances.extend(insts)
+                continue
+            break
 
         for instance in instances:
             self.add_instance(instance, region)

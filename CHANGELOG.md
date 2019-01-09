@@ -1,5 +1,10 @@
 # Ansible-Alicloud Change Log
 ## 1.10.0 (Unreleased)
+
+BUG FIXES:
+
+- Fix ecs_instance_filters's page_size bug ([#156](https://github.com/alibaba/ansible-provider/pull/156))
+
 ## 1.9.0 (4 January, 2019)
 
 FEATURES:
