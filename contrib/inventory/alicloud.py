@@ -277,9 +277,9 @@ class EcsInventory(object):
         while True:
             self.ecs_instance_filters['page_number'] = page_number
             insts = conn.describe_instances(**self.ecs_instance_filters)
-            if insts and len(insts) >= self.ecs_instance_filters['page_size']:
+            instances.extend(insts)
+            if insts and len(insts) == self.ecs_instance_filters['page_size']:
                 page_number += 1
-                instances.extend(insts)
                 continue
             break
 
