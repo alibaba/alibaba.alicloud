@@ -3,6 +3,8 @@
 
 BUG FIXES:
 
+- Default to describe all instances in all regions ([#158](https://github.com/alibaba/ansible-provider/pull/158))
+- Fix ecs_instance_filters last page describe bug ([#157](https://github.com/alibaba/ansible-provider/pull/157))
 - Fix ecs_instance_filters's page_size bug ([#156](https://github.com/alibaba/ansible-provider/pull/156))
 
 ## 1.9.0 (4 January, 2019)
