@@ -107,6 +107,7 @@ images:
     sample: [
         {
             "architecture": "x86_64",
+            "creation_time": "2019-03-27T09:47:10Z",
             "description": "",
             "disk_device_mappings": {
                 "disk_device_mapping": [
@@ -143,6 +144,7 @@ images:
         },
         {
             "architecture": "x86_64",
+            "creation_time": "2019-03-27T09:47:10Z",
             "description": "",
             "disk_device_mappings": {
                 "disk_device_mapping": [
@@ -204,6 +206,7 @@ def get_info(image):
     """
     return {
         'architecture': image.architecture,
+        'creation_time': image.creation_time,
         'description': image.description,
         'disk_device_mappings': image.disk_device_mappings,
         'image_id': image.image_id,
