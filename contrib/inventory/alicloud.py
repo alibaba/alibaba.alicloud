@@ -386,7 +386,7 @@ class EcsInventory(object):
 
         # Inventory: Group by security group
         if self.group_by_security_group:
-            for group in instance.security_group_ids:
+            for group in instance.security_group_ids['security_group_id']:
                 key = self.to_safe("security_group_" + group)
                 self.push(self.inventory, key, hostname)
                 if self.nested_groups:
