@@ -7,7 +7,8 @@ IMPROVEMENTS:
 
 BUG FIXES:
 
-- Fix grouping dynamic inventory on security group bug ([#165](https://github.com/alibaba/ansible-provider/pull/165))
+- Fix incorrect destination address when hostname_variable equals with destination_address ([#170](https://github.com/alibaba/ansible-provider/pull/170))
+- Fix grouping dynamic inventory on security group bug ([#169](https://github.com/alibaba/ansible-provider/pull/169))
 - Default to describe all instances in all regions ([#158](https://github.com/alibaba/ansible-provider/pull/158))
 - Fix ecs_instance_filters last page describe bug ([#157](https://github.com/alibaba/ansible-provider/pull/157))
 - Fix ecs_instance_filters's page_size bug ([#156](https://github.com/alibaba/ansible-provider/pull/156))
