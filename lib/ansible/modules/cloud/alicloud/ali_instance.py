@@ -157,6 +157,7 @@ options:
           If True, it means you have to specify all the desired tags on each task affecting an instance.
       default: False
       type: bool
+      version_added: '2.9'
     key_name:
       description:
         - The name of key pair which is used to access ECS instance in SSH.
@@ -171,7 +172,7 @@ author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 2.6"
-    - "footmark >= 1.7.0"
+    - "footmark >= 1.12.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -520,15 +521,17 @@ ids:
 '''
 
 import time
-from ansible.module_utils.basic import AnsibleModule
+import traceback
+from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
 HAS_FOOTMARK = False
-
+FOOTMARK_IMP_ERR = None
 try:
     from footmark.exception import ECSResponseError
     HAS_FOOTMARK = True
 except ImportError:
+    FOOTMARK_IMP_ERR = traceback.format_exc()
     HAS_FOOTMARK = False
 
 
@@ -537,6 +540,9 @@ def get_instances_info(connection, ids):
     instances = connection.describe_instances(instance_ids=ids)
     if len(instances) > 0:
         for inst in instances:
+            volumes = connection.describe_disks(instance_id=inst.id)
+            setattr(inst, 'block_device_mappings', volumes)
+            setattr(inst, 'user_data', inst.describe_user_data())
             result.append(inst.read())
     return result
 
@@ -621,6 +627,7 @@ def modify_instance(module, instance):
         password = module.params['password']
 
     # userdata can be modified only when instance is stopped
+    setattr(instance, "user_data", instance.describe_user_data())
     user_data = instance.user_data
     if state == "stopped":
         user_data = module.params['user_data']
@@ -669,7 +676,7 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec)
 
     if HAS_FOOTMARK is False:
-        module.fail_json(msg="Package 'footmark' required for the module ali_instance.")
+        module.fail_json(msg=missing_required_lib('footmark'), exception=FOOTMARK_IMP_ERR)
 
     ecs = ecs_connect(module)
     state = module.params['state']
@@ -830,8 +837,8 @@ def main():
                         changed = True
                         targets.append(inst.id)
                 if ecs.reboot_instances(instance_ids=targets, force_stop=module.params['force']):
-                        changed = True
-                        ids.extend(targets)
+                    changed = True
+                    ids.extend(targets)
             except Exception as e:
                 module.fail_json(msg='Reboot instances got an error: {0}'.format(e))
 

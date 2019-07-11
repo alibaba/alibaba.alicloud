@@ -3,6 +3,8 @@
 
 IMPROVEMENTS:
 
+- Sync alicloud instance modules with the latest ansible ([#165](https://github.com/alibaba/ansible-provider/pull/165))
+- Match the latest method describe_instances in footmark 1.12.0 ([#165](https://github.com/alibaba/ansible-provider/pull/165))
 - Add creation_time attribute in ali_image_facts results ([#164](https://github.com/alibaba/ansible-provider/pull/164))
 
 BUG FIXES:
