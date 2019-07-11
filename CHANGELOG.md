@@ -1,10 +1,12 @@
 # Ansible-Alicloud Change Log
-## 1.10.0 (Unreleased)
+## 1.11.0 (Unreleased)
+## 1.10.0 (11 July, 2019)
 
 IMPROVEMENTS:
 
-- Sync alicloud instance modules with the latest ansible ([#165](https://github.com/alibaba/ansible-provider/pull/165))
-- Match the latest method describe_instances in footmark 1.12.0 ([#165](https://github.com/alibaba/ansible-provider/pull/165))
+- Publish release 1.10.0 ([#172](https://github.com/alibaba/ansible-provider/pull/172))
+- Sync alicloud instance modules with the latest ansible ([#171](https://github.com/alibaba/ansible-provider/pull/171))
+- Match the latest method describe_instances in footmark 1.12.0 ([#171](https://github.com/alibaba/ansible-provider/pull/171))
 - Add creation_time attribute in ali_image_facts results ([#164](https://github.com/alibaba/ansible-provider/pull/164))
 
 BUG FIXES:
