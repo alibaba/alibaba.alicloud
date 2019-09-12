@@ -1,5 +1,10 @@
 # Ansible-Alicloud Change Log
 ## 1.11.0 (Unreleased)
+
+IMPROVEMENTS:
+
+- improve example alicloud-ecs-vpc ([#175](https://github.com/alibaba/ansible-provider/pull/175))
+
 ## 1.10.0 (11 July, 2019)
 
 IMPROVEMENTS:

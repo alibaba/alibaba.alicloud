@@ -1,7 +1,7 @@
 ---
 # common parameters
-alicloud_region: "cn-beijing"
-alicloud_zone: "cn-beijing-a"
+alicloud_region: "cn-hangzhou"
+alicloud_zone: "cn-hangzhou-i"
 
 # create vpc parameters
 vpc_cidr: "172.16.0.0/12"
@@ -50,7 +50,7 @@ group_outboundRules:
 
 # create ECS instance parameters
 image_id: "ubuntu_140405_64_40G_cloudinit_20161115.vhd"
-instance_type: "ecs.n4.small"
+instance_type: "ecs.t5-lc1m2.small"
 instance_name: "Instance_From_Ansible"
 instance_description: "Create a new ECS instance resource via Ansible example alicloud-ecs-vpc."
 host_name: "my-instance-from-ansible"
