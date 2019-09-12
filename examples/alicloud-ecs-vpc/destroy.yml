@@ -62,8 +62,8 @@
 
     - name: Delete the existing security groups
       ali_security_group:
-        alicloud_region: '{{ alicloud_region }}'
-        group_id: '{{ sgs.groups.0.id}}'
+        region: '{{ alicloud_region }}'
+        group_name: '{{ group_name }}'
         state: absent
       when: sgs.ids
 
@@ -79,13 +79,15 @@
       ali_vswitch:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
-        vswitch_id: '{{ vsws.vswitches.0.id }}'
+        cidr_block: '{{ vswitch_cidr }}'
+        vpc_id: '{{vpcs.vpcs.0.id}}'
         state: absent
       when: vsws.vswitches
 
     - name: Delete the existing vpc
       ali_vpc:
         alicloud_region: '{{ alicloud_region }}'
-        vpc_id: '{{ vpcs.vpcs.0.id}}'
+        vpc_name: '{{ vpc_name }}'
+        cidr_block: '{{ vpc_cidr }}'
         state: absent
       when: vpcs.vpcs
