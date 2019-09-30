@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -630,7 +630,7 @@ def modify_instance(module, instance):
     setattr(instance, "user_data", instance.describe_user_data())
     user_data = instance.user_data
     if state == "stopped":
-        user_data = module.params['user_data']
+        user_data = module.params['user_data'].encode()
 
     try:
         return instance.modify(name=name, description=description, host_name=host_name, password=password, user_data=user_data)
@@ -849,8 +849,8 @@ def main():
             if not tags:
                 removed = inst.tags
             else:
-                for key, value in inst.tags.items():
-                    if key not in tags.keys():
+                for key, value in list(inst.tags.items()):
+                    if key not in list(tags.keys()):
                         removed[key] = value
             try:
                 if inst.remove_tags(removed):

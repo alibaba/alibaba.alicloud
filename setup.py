@@ -18,7 +18,7 @@ AUTHOR = "xiaozhu"
 AUTHOR_EMAIL = "heguimin36@163.com"
 URL = "https://github.com/alibaba/ansible-provider/tree/master/lib/ansible"
 
-VERSION = "1.10.0"
+VERSION = "1.11.0"
 
 setup(
     name=NAME,
@@ -51,14 +51,13 @@ setup(
         'License :: OSI Approved :: MIT License',
 
         # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        # that you indicate whether you support Python 3.
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
     ],
 
     package_dir={'': 'lib'},
     packages=find_packages('lib'),
     include_package_data=True,
-    install_requires=['ansible', 'footmark>=1.12.0', 'importlib']
+    install_requires=['ansible', 'footmark>=1.13.0']
 )

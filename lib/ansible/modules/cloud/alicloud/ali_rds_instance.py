@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -367,7 +367,7 @@ def main():
         description=dict(type='str', aliases=['db_instance_description']),
         security_ips=dict(type='str'),
         instance_charge_type=dict(type='str', choices=["Postpaid", "Prepaid"]),
-        period=dict(type='int', choices=range(1, 10).extend([12, 24, 36])),
+        period=dict(type='int', choices=list(range(1, 10)).extend([12, 24, 36])),
         connection_mode=dict(type='str', choices=["Performance", "Safty"]),
         vpc_id=dict(type='str'),
         vswitch_id=dict(type='str'),
@@ -383,7 +383,7 @@ def main():
         dest_connection_string_prefix=dict(type='str'),
         dest_port=dict(type='str'),
         public_port=dict(type='str'),
-        private_port=dict(type='int', choices=range(3001, 4000)),
+        private_port=dict(type='int', choices=list(range(3001, 4000))),
         current_connection_string=dict(type='str'),
         instance_type=dict(type='str', aliases=['db_instance_class']),
         instance_storage=dict(type='int', aliases=['db_instance_storage'])

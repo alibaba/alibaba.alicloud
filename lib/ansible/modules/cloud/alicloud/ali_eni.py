@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -338,8 +338,8 @@ def main():
         if not tags:
             removed = eni.tags
         else:
-            for key, value in eni.tags.items():
-                if key not in tags.keys():
+            for key, value in list(eni.tags.items()):
+                if key not in list(tags.keys()):
                     removed[key] = value
         try:
             if eni.remove_tags(removed):
