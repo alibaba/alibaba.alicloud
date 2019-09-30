@@ -18,18 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-import sys
 import os
 import argparse
 import re
 import yaml
+import configparser
 
 from time import time
 from ansible.module_utils.alicloud_ecs import connect_to_acs
-if sys.version_info >= (3, 0):
-    import configparser
-else:
-    import ConfigParser as configparser
 
 try:
     import json
@@ -127,7 +123,7 @@ class EcsInventory(object):
     def read_settings(self):
         ''' Reads the settings from the alicloud.ini file '''
 
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
 
         ecs_default_ini_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'alicloud.ini')
         ecs_ini_path = os.path.expanduser(os.path.expandvars(os.environ.get('ALICLOUD_INI_PATH', ecs_default_ini_path)))
@@ -394,9 +390,9 @@ class EcsInventory(object):
 
         # Inventory: Group by tag keys
         if self.group_by_tag_keys:
-            for k, v in instance.tags.items():
+            for k, v in list(instance.tags.items()):
                 if self.expand_csv_tags and v and ',' in v:
-                    values = map(lambda x: x.strip(), v.split(','))
+                    values = [x.strip() for x in v.split(',')]
                 else:
                     values = [v]
 

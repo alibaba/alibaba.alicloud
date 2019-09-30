@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -221,7 +221,7 @@ def main():
     group_ids = module.params['group_ids']
     if not group_ids:
         group_ids = []
-    for key, value in filters.items():
+    for key, value in list(filters.items()):
         if key in ["SecurityGroupIds", "security_group_ids", "security_group_ids"] and isinstance(group_ids, list):
             for id in value:
                 if id not in group_ids:

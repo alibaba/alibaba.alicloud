@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -210,7 +210,7 @@ VALID_SERVER_PARAMS = ["server_id", "port", "weight", "type"]
 
 def check_backend_servers(module, servers):
     for s in servers:
-        for key in s.keys():
+        for key in list(s.keys()):
             if key not in VALID_SERVER_PARAMS:
                 module.fail_json(msg='Invalid backend server key {0}. Valid keys: {1}.'.format(key, VALID_SERVER_PARAMS))
 
@@ -220,7 +220,7 @@ def format_backend_servers(servers):
     if servers:
         for s in servers:
             server = {}
-            for key, value in s.items():
+            for key, value in list(s.items()):
                 split = []
                 for k in str(key).split("_"):
                     split.append(str.upper(k[0]) + k[1:])

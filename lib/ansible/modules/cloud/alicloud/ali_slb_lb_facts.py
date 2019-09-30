@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -278,7 +278,7 @@ def main():
     filters = module.params['filters']
     if not filters:
         filters = {}
-    for key, value in filters.items():
+    for key, value in list(filters.items()):
         if key in ["LoadBalancerId", "load-balancer-id", "load_balancer_id"] and value not in lb_ids:
             lb_ids.append(value)
     lbs = []

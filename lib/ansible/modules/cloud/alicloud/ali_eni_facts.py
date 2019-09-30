@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -203,7 +203,7 @@ def main():
     eni_ids = module.params["eni_ids"]
     if not eni_ids:
         eni_ids = []
-    for key, value in filters.items():
+    for key, value in list(filters.items()):
         if str(key).startswith("NetworkInterfaceId") or \
                 str(key).startswith("network_interface_id") or \
                 str(key).startswith("network-interface-id"):

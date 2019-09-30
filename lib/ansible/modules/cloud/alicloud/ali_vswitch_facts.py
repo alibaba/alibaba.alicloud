@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -198,7 +198,7 @@ def main():
     vswitch_ids = module.params['vswitch_ids']
     if not vswitch_ids:
         vswitch_ids = []
-    for key, value in filters.items():
+    for key, value in list(filters.items()):
         if key in ["VSwitchId", "vswitch_id", "vswitch-id"] and value not in vswitch_ids:
             vswitch_ids.append(value)
 
