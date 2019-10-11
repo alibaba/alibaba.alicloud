@@ -559,7 +559,7 @@ def create_instance(module, ecs, exact_count):
     description = module.params['description']
     internet_charge_type = module.params['internet_charge_type']
     max_bandwidth_out = module.params['max_bandwidth_out']
-    max_bandwidth_in = module.params['max_bandwidth_out']
+    max_bandwidth_in = module.params['max_bandwidth_in']
     host_name = module.params['host_name']
     password = module.params['password']
     system_disk_category = module.params['system_disk_category']

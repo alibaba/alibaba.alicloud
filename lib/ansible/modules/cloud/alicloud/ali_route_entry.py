@@ -307,7 +307,7 @@ def main():
     else:
         if route_entry:
             try:
-                changed = vpc.delete_route_entry(route_table_id, destination_cidrblock=destination_cidrblock, nexthop_id=nexthop_id)
+                changed = vpc.delete_route_entry(route_table_id=route_table_id, destination_cidrblock=destination_cidrblock, nexthop_id=nexthop_id)
             except VPCResponseError as e:
                 module.fail_json(msg='Unable to delete route entry, error: {0}'.format(e))
             module.exit_json(changed=changed, route_table_id=route_table_id, destination_cidrblock=destination_cidrblock)

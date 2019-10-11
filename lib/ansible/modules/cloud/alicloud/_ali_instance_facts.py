@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
-from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -26,13 +26,12 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: ali_instance_info
+module: ali_instance_facts
 version_added: "2.8"
-short_description: Gather information on instances of Alibaba Cloud ECS.
+short_description: Gather facts on instances of Alibaba Cloud ECS.
 description:
      - This module fetches data from the Open API in Alicloud.
        The module must be called from within the ECS instance itself.
-     - This module was called C(ali_instance_facts) before Ansible 2.9. The usage did not change.
 
 options:
     availability_zone:
@@ -50,7 +49,6 @@ options:
     name_prefix:
       description:
         - Use a instance name prefix to filter ecs instances.
-      version_added: '2.9'
     tags:
       description:
         - A hash/dictionaries of instance tags. C({"key":"value"})
@@ -62,7 +60,6 @@ options:
           Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
           connect different words in one parameter. 'InstanceIds' should be a list and it will be appended to
           I(instance_ids) automatically. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using I(tags) instead.
-      version_added: '2.9'
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -400,7 +397,7 @@ def main():
         filters = {}
     if not ids:
         ids = []
-    for key, value in filters.items():
+    for key, value in list(filters.items()):
         if key in ["InstanceIds", "instance_ids", "instance-ids"] and isinstance(ids, list):
             for id in value:
                 if id not in ids:
