@@ -1,9 +1,17 @@
 # Ansible-Alicloud Change Log
-## 1.11.0 (Unreleased)
+## 1.12.0 (Unreleased)
+
+## 1.11.0 (October 15, 2019)
 
 IMPROVEMENTS:
 
 - improve example alicloud-ecs-vpc ([#175](https://github.com/alibaba/ansible-provider/pull/175))
+- improve code to python3 （[#176](https://github.com/alibaba/ansible-provider/pull/176)）
+- Add ali_route_entry test case （[#177](https://github.com/alibaba/ansible-provider/pull/177)）
+
+BUG FIXES:
+
+- Fix create_instance's max_bandwidth_in error ([#177](https://github.com/alibaba/ansible-provider/pull/177)）
 
 ## 1.10.0 (11 July, 2019)
 
