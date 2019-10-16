@@ -168,7 +168,9 @@ def get_info(route_entry):
         'route_table_id': route_entry.route_table_id,
         'status': route_entry.status,
         'tags': route_entry.tags,
-        'type': route_entry.type
+        'type': route_entry.type,
+        'route_entry_id': route_entry.route_entry_id,
+        'route_entry_name': route_entry.route_entry_name
     }
 
 

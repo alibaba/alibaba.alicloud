@@ -49,7 +49,7 @@ group_outboundRules:
     priority: 2
 
 # create ECS instance parameters
-image_id: "ubuntu_140405_64_40G_cloudinit_20161115.vhd"
+image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
 instance_type: "ecs.t5-lc1m2.small"
 instance_name: "Instance_From_Ansible"
 instance_description: "Create a new ECS instance resource via Ansible example alicloud-ecs-vpc."
