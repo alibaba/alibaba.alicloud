@@ -54,6 +54,10 @@ options:
     default: 'Instance'
     choices: ['Instance', 'Tunnel', 'HaVip', 'RouterInterface', 'VpnGateway']
     aliases: ['hop_type']
+  name:
+    description:
+      - The route entry's name. It is required when modify RouteEntryName.
+    aliases: ['route_entry_name']
 notes:
   - The max items of route entry no more than 48 in the same route table.
   - The destination_cidrblock can't have the same cidr block as vswitch and can't belong to its in the same vpc.
@@ -205,21 +209,6 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_route_entry_basic(entry):
-    """
-    Format vpc result and returns it as a dictionary
-    """
-    return {'route_table_id': entry.route_table_id, 'destination_cidrblock': entry.destination_cidrblock}
-
-
-def get_route_entry_detail(entry):
-    """
-    Format vpc result and returns it as a dictionary
-    """
-    return {'route_table_id': entry.route_table_id, 'destination_cidrblock': entry.destination_cidrblock, 'type': entry.type,
-            "nexthop_type": entry.nexthop_type, 'nexthop_id': entry.nexthop_id, 'status': entry.status}
-
-
 def create_route_entry(module, vpc, route_table_id):
     """
     Create VSwitch
@@ -255,6 +244,7 @@ def main():
         nexthop_type=dict(default='Instance', aliases=['hop_type'], choices=['Instance', 'Tunnel', 'HaVip', 'RouterInterface']),
         nexthop_id=dict(aliases=['hop_id']),
         router_id=dict(type='str', required=True),
+        name=dict(aliases=['route_entry_name']),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -269,11 +259,13 @@ def main():
     destination_cidrblock = module.params['destination_cidrblock']
     router_id = module.params['router_id']
     nexthop_id = module.params['nexthop_id']
+    name = module.params['name']
     route_table_id = None
 
+    if str(name).startswith('http://') or str(name).startswith('https://'):
+        module.fail_json(msg='router_entry_name can not start with http:// or https://')
+
     changed = False
-    route_entries = []
-    route_entries_basic = []
     route_entry = None
 
     try:
@@ -284,9 +276,6 @@ def main():
             if entries and len(entries) > 0:
                 for entry in entries:
                     route_table_id = entry.route_table_id
-                    route_entries.append(entry)
-                    route_entries_basic.append(get_route_entry_basic(entry))
-
                     if destination_cidrblock and entry.destination_cidrblock == destination_cidrblock:
                         route_entry = entry
 
@@ -300,20 +289,24 @@ def main():
     if state == 'present':
         if not route_entry:
             changed, route_entry = create_route_entry(module, vpc, route_table_id)
-
-        module.exit_json(changed=changed, route_table_id=route_table_id, route_entry=get_route_entry_detail(route_entry),
-                         destination_cidrblock=route_entry.destination_cidrblock)
+            module.exit_json(changed=changed, route_entry=route_entry.get().read())
+        try:
+            changed = route_entry.modify(name)
+            module.exit_json(changed=changed, route_entry=route_entry.get().read())
+        except VPCResponseError as e:
+            module.fail_json(msg='Unable to modify route entry {0}, error: {1}'.format(route_entry.id, e))
 
     else:
         if route_entry:
             try:
                 changed = vpc.delete_route_entry(route_table_id=route_table_id, destination_cidrblock=destination_cidrblock, nexthop_id=nexthop_id)
+                module.exit_json(changed=changed, route_entry={})
             except VPCResponseError as e:
                 module.fail_json(msg='Unable to delete route entry, error: {0}'.format(e))
-            module.exit_json(changed=changed, route_table_id=route_table_id, destination_cidrblock=destination_cidrblock)
 
-        module.exit_json(changed=changed, msg="Please specify a route entry by using 'destination_cidrblock',"
-                                              "and expected vpcs: {0}".format(route_entries_basic))
+        module.exit_json(changed=changed, msg="Please specify a route entry by using 'destination_cidrblock', and "
+                                              "expected ""vpcs: {0}".format({"route_table_id": route_entry.route_table_id,
+                                                                             "destination_cidrblock": route_entry.destination_cidrblock}))
 
 
 if __name__ == '__main__':

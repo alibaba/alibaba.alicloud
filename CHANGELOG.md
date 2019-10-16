@@ -1,6 +1,10 @@
 # Ansible-Alicloud Change Log
 ## 1.12.0 (Unreleased)
 
+IMPROVEMENTS:
+
+- support modify route entry's name ([#179](https://github.com/alibaba/ansible-provider/pull/179))
+
 ## 1.11.0 (October 16, 2019)
 
 IMPROVEMENTS:
