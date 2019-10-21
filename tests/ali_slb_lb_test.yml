@@ -19,7 +19,7 @@
         bandwidth: 5
 
     - name: Filter slb using name_regex
-      ali_slb_lb_facts:
+      ali_slb_lb_info:
         name_prefix: '{{name}}'
       register: slbs
 

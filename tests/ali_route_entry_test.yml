@@ -22,7 +22,7 @@
         nexthop_type: 'Instance'
 
     - name: Get the existing route entry
-      ali_route_entry_facts:
+      ali_route_entry_info:
         vrouter_id: '{{ vpcs.vpcs.0.vrouter_id }}'
         route_table_id: '{{ vpcs.vpcs.0.router_table_ids.router_table_ids.0 }}'
       register: route_entries

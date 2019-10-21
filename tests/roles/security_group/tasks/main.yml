@@ -10,7 +10,7 @@
   register: group
 
 - name: Get the existing groups
-  ali_security_group_facts:
+  ali_security_group_info:
     name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{vpcs.vpcs.0.id}}'

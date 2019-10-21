@@ -63,6 +63,7 @@ options:
           connect different words in one parameter. 'InstanceIds' should be a list and it will be appended to
           I(instance_ids) automatically. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using I(tags) instead.
       version_added: '2.9'
+        
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -87,13 +88,13 @@ EXAMPLES = '''
       ali_instance_facts:
       register: all_instances
     - name: Find all instances based on the specified ids
-      ali_instance_facts:
+      ali_instance_info:
         instance_ids:
           - "i-35b333d9"
           - "i-ddav43kd"
       register: instances_by_ids
     - name: Find all instances based on the specified name_prefix
-      ali_instance_facts:
+      ali_instance_info:
         name_prefix: "ecs_instance_"
       register: instances_by_name_prefix
 
@@ -371,7 +372,7 @@ def main():
         instance_names=dict(type='list', aliases=['names']),
         name_prefix=dict(type='str'),
         tags=dict(type='dict', aliases=['instance_tags']),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -413,6 +414,7 @@ def main():
         filters['zone_id'] = zone_id
     if names:
         filters['instance_name'] = names[0]
+    filters['pagesize'] = 100
 
     for inst in ecs.describe_instances(**filters):
         if name_prefix:

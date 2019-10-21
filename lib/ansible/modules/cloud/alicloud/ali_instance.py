@@ -694,7 +694,8 @@ def main():
     if instance_ids:
         if not isinstance(instance_ids, list):
             module.fail_json(msg='The parameter instance_ids should be a list, aborting')
-        instances = ecs.describe_instances(zone_id=zone_id, instance_ids=instance_ids)
+        pagesize = 100
+        instances = ecs.describe_instances(zone_id=zone_id, instance_ids=instance_ids, pagesize=pagesize)
         if not instances:
             module.fail_json(msg="There are no instances in our record based on instance_ids {0}. "
                                  "Please check it and try again.".format(instance_ids))

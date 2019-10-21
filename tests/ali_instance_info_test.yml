@@ -14,7 +14,7 @@
 
   tasks:
     - name: Retrieving instances using instance_ids
-      ali_instance_facts:
+      ali_instance_info:
         instance_ids: '{{ instances.ids}}'
 
     - name: Add two new instances and used to test name_regex
@@ -40,18 +40,18 @@
           Tag2: "name_regex"
 
     - name: Filter instance using name_regex
-      ali_instance_facts:
+      ali_instance_info:
         name_prefix: '{{name}}-name'
 
     - name: Retrieving instance using tags
-      ali_instance_facts:
+      ali_instance_info:
         tags: '{{tags}}'
 
     - name: Retrieving all instances
-      ali_instance_facts:
+      ali_instance_info:
 
     - name: Retrieving all instances based on the name regex
-      ali_instance_facts:
+      ali_instance_info:
         name_prefix: '{{name}}'
       register: all_instances
 
