@@ -4,6 +4,7 @@
 IMPROVEMENTS:
 
 - support modify route entry's name ([#179](https://github.com/alibaba/ansible-provider/pull/179))
+- Add pagesize  attribute in ali_instance_info to query instance more than 10 results ([#180](https://github.com/alibaba/ansible-provider/pull/180))
 
 ## 1.11.0 (October 16, 2019)
 

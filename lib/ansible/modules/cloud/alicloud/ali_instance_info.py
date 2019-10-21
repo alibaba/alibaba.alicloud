@@ -63,6 +63,10 @@ options:
           connect different words in one parameter. 'InstanceIds' should be a list and it will be appended to
           I(instance_ids) automatically. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using I(tags) instead.
       version_added: '2.9'
+    pagesize:
+       description:
+        - The number of lines per page set when paging. Maximum: 100. Default: 10.      
+        
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -371,7 +375,8 @@ def main():
         instance_names=dict(type='list', aliases=['names']),
         name_prefix=dict(type='str'),
         tags=dict(type='dict', aliases=['instance_tags']),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
+        pagesize=dict(type='int'),
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -389,6 +394,7 @@ def main():
     name_prefix = module.params['name_prefix']
     names = module.params['instance_names']
     zone_id = module.params['availability_zone']
+    pagesize = module.params['pagesize']
     if ids and (not isinstance(ids, list) or len(ids) < 1):
         module.fail_json(msg='instance_ids should be a list of instances, aborting')
 
@@ -413,6 +419,8 @@ def main():
         filters['zone_id'] = zone_id
     if names:
         filters['instance_name'] = names[0]
+    if pagesize:
+        filters['pagesize'] = pagesize
 
     for inst in ecs.describe_instances(**filters):
         if name_prefix:
