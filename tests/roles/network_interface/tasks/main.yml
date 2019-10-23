@@ -1,6 +1,6 @@
 ---
 - name: Get the existing network interfaces
-  ali_eni_facts:
+  ali_eni_info:
     name_prefix: '{{name}}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
@@ -26,7 +26,7 @@
   when: not enis.interfaces
 
 - name: Get the existing network interfaces
-  ali_eni_facts:
+  ali_eni_info:
     name_prefix: '{{name}}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'

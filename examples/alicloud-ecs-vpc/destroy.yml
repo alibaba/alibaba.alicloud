@@ -5,7 +5,7 @@
 
   tasks:
     - name: Get the existing instances
-      ali_instance_facts:
+      ali_instance_info:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         instance_names:
@@ -22,7 +22,7 @@
       when: instances.ids
 
     - name: Get the existing disks
-      ali_disk_facts:
+      ali_disk_info:
         alicloud_region: '{{ alicloud_region }}'
         alicloud_zone: '{{ alicloud_zone }}'
         disk_names:
@@ -47,13 +47,13 @@
       when: disks.disks
 
     - name: Get the existing vpc
-      ali_vpc_facts:
+      ali_vpc_info:
         region: '{{alicloud_region}}'
         vpc_name: '{{vpc_name}}'
       register: vpcs
 
     - name: Get the existing groups
-      ali_security_group_facts:
+      ali_security_group_info:
         region: '{{alicloud_region}}'
         filters:
           vpc_id: '{{vpcs.vpcs.0.id}}'
@@ -68,7 +68,7 @@
       when: sgs.ids
 
     - name: Get the existing vswitches
-      ali_vswitch_facts:
+      ali_vswitch_info:
         region: '{{alicloud_region}}'
         filters:
           vpc_id: '{{vpcs.vpcs.0.id}}'

@@ -5,7 +5,7 @@
 
   tasks:
     - name: Get the existing instances
-      ali_instance_facts:
+      ali_instance_info:
         name_prefix: '{{ name }}'
       register: instances
 
@@ -17,7 +17,7 @@
       when: instances.ids
 #
 #    - name: Get the existing disks
-#      ali_disk_facts:
+#      ali_disk_info:
 #        alicloud_region: '{{ alicloud_region }}'
 #        alicloud_zone: '{{ alicloud_zone }}'
 #        disk_names:
@@ -42,7 +42,7 @@
 #      when: disks.disks
 
     - name: Retrieving all security groups based on name_regex
-      ali_security_group_facts:
+      ali_security_group_info:
         name_prefix: '{{name}}'
       register: sgs
 
@@ -55,7 +55,7 @@
       when: sgs.groups
 
     - name: Retrieving all slbs based on name_regex
-      ali_slb_lb_facts:
+      ali_slb_lb_info:
         name_prefix: '{{name}}'
       register: slbs
 
@@ -67,7 +67,7 @@
       when: slbs.load_balancers
 
     - name: Retrieving all vswitches based on name_regex
-      ali_vswitch_facts:
+      ali_vswitch_info:
         name_prefix: '{{name}}'
       register: vswitches
 
@@ -80,7 +80,7 @@
       when: vswitches.vswitches
 
     - name: Get the existing vpc
-      ali_vpc_facts:
+      ali_vpc_info:
         name_prefix: '{{name}}'
       register: vpcs
 

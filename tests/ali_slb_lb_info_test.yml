@@ -13,7 +13,7 @@
 
   tasks:
     - name: Retrieving slbs using ids
-      ali_slb_lb_facts:
+      ali_slb_lb_info:
         ids: '{{slbpub.load_balancer.id}}'
 
     - name: Create a slb and used to test name_regex
@@ -21,14 +21,14 @@
         name: '{{name}}regex'
 
     - name: Filter slb using name_regex
-      ali_slb_lb_facts:
+      ali_slb_lb_info:
         name_prefix: '{{name}}regex'
 
     - name: Retrieving all slbs
-      ali_slb_lb_facts:
+      ali_slb_lb_info:
 
     - name: Retrieving all slbs based on name_regex
-      ali_slb_lb_facts:
+      ali_slb_lb_info:
         name_prefix: '{{name}}'
       register: slbs
 

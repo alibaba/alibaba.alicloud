@@ -1,6 +1,6 @@
 ---
 - name: Get the existing groups
-  ali_security_group_facts:
+  ali_security_group_info:
     region: '{{alicloud_region}}'
     group_name: '{{ group_name }}'
     filters:
