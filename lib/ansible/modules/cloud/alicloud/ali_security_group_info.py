@@ -55,6 +55,11 @@ options:
         Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
         connect different words in one parameter. "Tag.n.Key" and "Tag.n.Value" use new filter I(tags) instead and
         it should be a dict. "SecurityGroupIds" should be a list and it will be appended to I(group_ids) automatically.
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -204,7 +209,8 @@ def main():
         name_prefix=dict(),
         tags=dict(type='dict'),
         group_ids=dict(type='list', aliases=['ids']),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

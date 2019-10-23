@@ -63,6 +63,11 @@ options:
           connect different words in one parameter. 'InstanceIds' should be a list and it will be appended to
           I(instance_ids) automatically. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using I(tags) instead.
       version_added: '2.9'
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -371,7 +376,8 @@ def main():
         instance_names=dict(type='list', aliases=['names']),
         name_prefix=dict(type='str'),
         tags=dict(type='dict', aliases=['instance_tags']),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
+        policy=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

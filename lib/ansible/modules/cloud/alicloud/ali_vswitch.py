@@ -66,6 +66,11 @@ options:
     description:
       - (Deprecated) VSwitch ID.
     aliases: ['subnet_id', 'id']
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 requirements:
     - "python >= 2.6"
     - "footmark >= 1.7.0"
@@ -199,6 +204,7 @@ def main():
         vpc_id=dict(required=True),
         name=dict(aliases=['vswitch_name', 'subnet_name']),
         vswitch_id=dict(aliases=['subnet_id', 'id']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

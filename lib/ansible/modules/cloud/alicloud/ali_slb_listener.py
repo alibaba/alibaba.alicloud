@@ -148,7 +148,11 @@ options:
   server_certificate_id:
     description:
       - Server certificate ID
-
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 requirements:
     - "python >= 2.6"
     - "footmark >= 1.1.18"
@@ -369,6 +373,7 @@ def main():
         persistence_timeout=dict(type='int', default=0, choices=[i for i in range(0, 3601)]),
         server_certificate_id=dict(type='str'),
         health_check_type=dict(type='str', default='tcp', choice=['tcp', 'http']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

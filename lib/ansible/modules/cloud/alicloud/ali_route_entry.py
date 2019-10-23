@@ -58,6 +58,11 @@ options:
     description:
       - The route entry's name. It is required when modify RouteEntryName.
     aliases: ['route_entry_name']
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 notes:
   - The max items of route entry no more than 48 in the same route table.
   - The destination_cidrblock can't have the same cidr block as vswitch and can't belong to its in the same vpc.
@@ -245,6 +250,7 @@ def main():
         nexthop_id=dict(aliases=['hop_id']),
         router_id=dict(type='str', required=True),
         name=dict(aliases=['route_entry_name']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

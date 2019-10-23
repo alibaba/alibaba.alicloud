@@ -46,6 +46,11 @@ options:
       description:
         - A list of ECS disk ids.
       aliases: ["ids"]
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -219,6 +224,7 @@ def main():
         alicloud_zone=dict(aliases=['zone_id', 'zone']),
         disk_ids=dict(type='list', aliases=['ids']),
         disk_names=dict(type='list', aliases=['names']),
+        policy=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

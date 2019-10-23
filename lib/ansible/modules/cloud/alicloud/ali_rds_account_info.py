@@ -40,6 +40,11 @@ options:
       description:
         - A list of RDS account names.
       aliases: ["names"]
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -154,7 +159,8 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         db_instance_id=dict(type='str', required=True),
-        account_names=dict(type='list', aliases=['names'])
+        account_names=dict(type='list', aliases=['names']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

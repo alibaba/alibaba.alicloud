@@ -4,4 +4,5 @@
     internet_charge_type: '{{ internet_charge_type }}'
     bandwidth: 1
     name: '{{ name }}-ali-eip'
+    policy: '{{ policy }}'
   register: eip

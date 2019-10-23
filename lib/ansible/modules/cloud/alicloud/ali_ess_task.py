@@ -105,7 +105,11 @@ options:
       description:
         - The ID of existing scheduled task.
       aliases: [ 'task_id' ]
-
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+           the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -222,7 +226,8 @@ def main():
         recurrence_endtime=dict(type='str', aliases=['endtime']),
         state=dict(type='str', default='present', choices=['present', 'absent']),
         enabled=dict(type='bool', default=True),
-        id=dict(type='str', aliases=['task_id'])
+        id=dict(type='str', aliases=['task_id']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

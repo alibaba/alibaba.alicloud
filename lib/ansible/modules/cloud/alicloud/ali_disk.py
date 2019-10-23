@@ -89,6 +89,11 @@ options:
         its value will be ignored and disk will be released along with terminating ECS instance.
     aliases: ['delete_on_termination']
     type: bool
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 notes:
   - At present, when attach disk, system allocates automatically disk device according to default order from /dev/xvdb to /dev/xvdz.
 requirements:
@@ -329,7 +334,8 @@ def main():
         snapshot_id=dict(aliases=['snapshot']),
         description=dict(aliases=['disk_description']),
         instance_id=dict(aliases=['instance']),
-        delete_with_instance=dict(aliases=['delete_on_termination'], default=None)
+        delete_with_instance=dict(aliases=['delete_on_termination'], default=None),
+        policy=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

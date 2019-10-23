@@ -94,7 +94,12 @@ options:
     description:
       - Image ID to be deregistered.
     required: false  
-       
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
+      
 requirements:
     - "python >= 2.7"
     - "footmark"
@@ -339,7 +344,8 @@ def main():
             'present', 'absent'
         ]),
         wait=dict(default=False, type=bool),
-        wait_timeout=dict(type='int', default='300')
+        wait_timeout=dict(type='int', default='300'),
+        policy=dict(type='str')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 

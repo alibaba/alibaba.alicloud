@@ -49,6 +49,11 @@ options:
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dashes ("-") to
         connect different words in one parameter. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using 'tags' instead.
         'NetworkInterfaceId.N' will be appended to I(eni_ids) automatically.
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -188,6 +193,7 @@ def main():
         name_prefix=dict(),
         tags=dict(type='dict'),
         filters=dict(type='dict'),
+        policy=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

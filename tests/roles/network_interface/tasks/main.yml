@@ -2,6 +2,7 @@
 - name: Get the existing network interfaces
   ali_eni_info:
     name_prefix: '{{name}}'
+    policy: '{{ policy }}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
   register: enis
@@ -13,6 +14,7 @@
     name: '{{ name }}'
     description: '{{description}}'
     tags: '{{tags}}'
+    policy: '{{ policy }}'
   when: not enis.interfaces
 
 - name: Creating a network interface with private ip
@@ -23,10 +25,12 @@
     description: '{{description}}'
     private_ip: '172.16.1.10'
     tags: '{{tags}}'
+    policy: '{{ policy }}'
   when: not enis.interfaces
 
 - name: Get the existing network interfaces
   ali_eni_info:
+    policy: '{{ policy }}'
     name_prefix: '{{name}}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'

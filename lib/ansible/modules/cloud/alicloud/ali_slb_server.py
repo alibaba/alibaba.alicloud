@@ -58,6 +58,11 @@ options:
           - The weight of backend server in the load balancer.
         choices: [0~100]
         default: 100
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 requirements:
     - "python >= 2.6"
     - "footmark >= 1.1.16"
@@ -368,6 +373,7 @@ def main():
         state=dict(choices=['present', 'absent'], default='present'),
         backend_servers=dict(required=True, type='list', aliases=['servers']),
         load_balancer_id=dict(required=True, aliases=['lb_id']),
+        policy=dict(type='str')
     ))
 
     # handling region parameter which is not required by this module

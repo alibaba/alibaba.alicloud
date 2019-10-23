@@ -72,6 +72,11 @@ options:
       - Account permission.Required when C(account_privilege != "")
     aliases: ['privilege']
     choices: ['ReadOnly', 'ReadWrite']
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 author:
   - "Li Qiang"
 requirements:
@@ -299,6 +304,7 @@ def main():
         account_privilege=dict(aliases=['privilege'], choices=['ReadOnly', 'ReadWrite']),
         description=dict(type='str'),
         account_type=dict(default='Normal', type='str', choices=['Normal', 'Super']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

@@ -32,6 +32,7 @@
     count: '{{ number_of_instances }}'
 
     tags: '{{ tags }}'
+    policy: '{{ policy }}'
   when: not instances.instances
 
 - name: Get the existing ECS instances
@@ -41,4 +42,5 @@
       vpc_id: '{{ vpcs.vpcs.0.id }}'
       page_size: 100
     tags: '{{ tags }}'
+    policy: '{{ policy }}'
   register: instances

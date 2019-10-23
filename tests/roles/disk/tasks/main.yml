@@ -10,6 +10,7 @@
     disk_tags: '{{ disk_tags }}'
     instance_id: '{{ instance.instances.0.id }}'
     delete_with_instance: '{{ delete_with_instance }}'
+    policy: '{{ policy }}'
   register: disk_details
 
 - name: Create a new disk and attach it to an instance
@@ -23,4 +24,5 @@
     disk_tags: '{{ disk_tags }}'
     instance_id: '{{ instance.instances.1.id }}'
     delete_with_instance: '{{ delete_with_instance }}'
+    policy: '{{ policy }}'
   register: disk_details

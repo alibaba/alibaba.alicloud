@@ -51,6 +51,11 @@ options:
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/27582.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
         connect different words in one parameter. 'LoadBalancerId' will be appended to I(load_balancer_ids) automatically.
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -263,7 +268,8 @@ def main():
         load_balancer_name=dict(type='list', aliases=['name']),
         load_balancer_ids=dict(type='list', aliases=['ids']),
         name_prefix=dict(type='str'),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

@@ -6,11 +6,13 @@
     vswitch_name: '{{ name }}'
     description: '{{ vswitch_description }}'
     vpc_id: '{{vpc.vpc.id}}'
+    policy: '{{ policy }}'
   register: vswitch
 
 - name: Get the existing vswitch
   ali_vswitch_info:
     name_prefix: '{{ name }}'
+    policy: '{{ policy }}'
     filters:
       vpc_id: '{{vpc.vpc.id}}'
   register: vswitches

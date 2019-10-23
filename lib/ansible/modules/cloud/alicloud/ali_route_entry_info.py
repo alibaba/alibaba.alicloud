@@ -39,8 +39,13 @@ options:
         - Id of vrouter of vpc
       aliases: ["id"]
     route_table_id:
-     description:
+      description:
         - The ID of the route table.
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -178,7 +183,8 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         vrouter_id=dict(type='str', required=True, aliases=['id']),
-        route_table_id=dict(type='str')
+        route_table_id=dict(type='str'),
+        policy=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

@@ -54,6 +54,11 @@ options:
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35739.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
         connect different words in one parameter. 'VpcId' will be appended to I(vpc_ids) automatically.
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -178,7 +183,8 @@ def main():
         vpc_name=dict(aliases=['name']),
         name_prefix=dict(),
         cidr_prefix=dict(),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
+        policy=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

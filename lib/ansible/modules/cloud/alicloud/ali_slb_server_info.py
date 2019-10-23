@@ -42,6 +42,11 @@ options:
       description:
         - A list of backend server listening ports.
       aliases: [ "ports" ]
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -149,6 +154,7 @@ def main():
     argument_spec.update(dict(
         load_balancer_id=dict(required=True, aliases=['lb_id']),
         listener_ports=dict(type='list', aliases=['ports']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

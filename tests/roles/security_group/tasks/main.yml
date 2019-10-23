@@ -2,6 +2,7 @@
 - name: Create a VPC security group
   ali_security_group:
     state: 'present'
+    policy: '{{ policy }}'
     name: '{{ name }}'
     description: '{{ group_description }}'
     vpc_id: '{{vpc.vpc.id}}'
@@ -11,6 +12,7 @@
 
 - name: Get the existing groups
   ali_security_group_info:
+    policy: '{{ policy }}'
     name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{vpcs.vpcs.0.id}}'

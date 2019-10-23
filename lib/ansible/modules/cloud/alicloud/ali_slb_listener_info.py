@@ -49,6 +49,11 @@ options:
         - Port used by the Server Load Balancer instance frontend
       required: true
       choices: [1~65535]
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -140,7 +145,8 @@ def main():
     argument_spec.update(dict(
         listener_port=dict(type='int', required=True, choices=[i for i in range(1, 65536)]),
 		load_balancer_id=dict(type='str', aliases=['lb_id']),
-        listener_type=dict(type='str', choices=['http', 'https', 'tcp', 'udp'])
+        listener_type=dict(type='str', choices=['http', 'https', 'tcp', 'udp']),
+        policy=dict(type='str')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 

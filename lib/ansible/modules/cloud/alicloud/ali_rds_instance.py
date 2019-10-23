@@ -160,6 +160,11 @@ options:
   current_connection_string:
     description:
       - Instance of a current connection string. Required when C(current_connection_string != None)
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 author:
     - "liu Qiang"
 requirements:
@@ -386,7 +391,8 @@ def main():
         private_port=dict(type='int', choices=list(range(3001, 4000))),
         current_connection_string=dict(type='str'),
         instance_type=dict(type='str', aliases=['db_instance_class']),
-        instance_storage=dict(type='int', aliases=['db_instance_storage'])
+        instance_storage=dict(type='int', aliases=['db_instance_storage']),
+        policy=dict(type='str')
     ))
     modules = AnsibleModule(argument_spec=argument_spec)
 

@@ -92,6 +92,11 @@ options:
         with the same I(name). Specify this as true if you want duplicate Load Balancers created.
     default: False
     type: bool
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 notes:
   - The change in internet charge type will take effect from the early morning of the next day.
     It can not be changed twice in one day, otherwise, a error "Operation.NotAllowed" will appear.
@@ -319,7 +324,8 @@ def main():
         slave_zone_id=dict(),
         load_balancer_spec=dict(type='str', aliases=['spec', 'lb_spec'],
                                 choices=['slb.s1.small', 'slb.s2.small', 'slb.s2.medium', 'slb.s3.small', 'slb.s3.medium', 'slb.s3.large']),
-        multi_ok=dict(type='bool', default=False)
+        multi_ok=dict(type='bool', default=False),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

@@ -73,6 +73,11 @@ options:
         There will be conflict when I(multi_ok=True) and I(recent=True).
     default: False
     type: bool
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 notes:
   - There will be launch a virtual router along with creating a vpc successfully.
   - There is only one virtual router in one vpc and one route table in one virtual router.
@@ -224,6 +229,7 @@ def main():
         multi_ok=dict(type='bool', default=False),
         description=dict(),
         recent=dict(type='bool', default=False),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

@@ -54,7 +54,11 @@ options:
       choices: [ 'AutoCreated', 'Attached' ]
       default: 'Attached'
       aliases: [ 'type' ]
-
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+           the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -127,7 +131,8 @@ def main():
         state=dict(type=str, default='present', choices=['present', 'absent']),
         group_id=dict(type=str, required=True),
         instance_ids=dict(type=list),
-        creation_type=dict(type=str, default='Attached', choices=['AutoCreated', 'Attached'], aliases=['type'])
+        creation_type=dict(type=str, default='Attached', choices=['AutoCreated', 'Attached'], aliases=['type']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

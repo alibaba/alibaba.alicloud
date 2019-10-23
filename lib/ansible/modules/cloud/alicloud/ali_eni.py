@@ -77,6 +77,11 @@ options:
         If True, it means you have to specify all the desired tags on each task affecting a network interface.
     default: False
     type: bool
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -271,7 +276,8 @@ def main():
             state=dict(default='present', choices=['present', 'absent']),
             attached=dict(default=None, type='bool'),
             tags=dict(type='dict'),
-            purge_tags=dict(type='bool', default=False)
+            purge_tags=dict(type='bool', default=False),
+            policy=dict(type='str')
         )
     )
 

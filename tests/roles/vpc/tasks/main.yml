@@ -5,9 +5,11 @@
     cidr_block: '{{ vpc_cidr }}'
     vpc_name: '{{ name }}'
     description: '{{ vpc_description }}'
+    policy: '{{ policy }}'
   register: vpc
 
 - name: Get the existing vpc
   ali_vpc_info:
-    name_prefix: '{{name}}'
+    name_prefix: '{{ name }}'
+    policy: '{{ policy }}'
   register: vpcs

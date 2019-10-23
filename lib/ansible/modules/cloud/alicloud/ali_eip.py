@@ -82,6 +82,11 @@ options:
          ECS or SLB Instance to be re-associated with the specified instance.
     type: bool
     default: False
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 notes:
   - A ip address or a instance id which has been associated with EIP can ensure idempotence.
 requirements:
@@ -254,7 +259,8 @@ def main():
             release_on_disassociation=dict(type='bool', default=False),
             allow_reassociation=dict(type='bool', default=False),
             name=dict(type='str'),
-            description=dict(type='str')
+            description=dict(type='str'),
+            policy=dict(type='str')
         )
     )
 

@@ -85,7 +85,11 @@ options:
       description:
         - ID of the active scaling configuration in the scaling group. Required when C(state=active).
       aliases: [ 'scaling_configuration_id' ]
-
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+           the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -215,7 +219,8 @@ def main():
         load_balancer_ids=dict(type=list, aliases=['lb_ids']),
         db_instance_ids=dict(type=list, aliases=['db_ids']),
         vswitch_ids=dict(type=list, aliases=['subnet_ids']),
-        configuration_id=dict(type=str, aliases=['scaling_configuration_id'])
+        configuration_id=dict(type=str, aliases=['scaling_configuration_id']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

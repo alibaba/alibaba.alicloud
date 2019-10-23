@@ -45,6 +45,11 @@ options:
   name_prefix:
     description:
       - Use a vritual server group name prefix to filter vserver groups.
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -159,7 +164,8 @@ def main():
     argument_spec.update(dict(
         load_balancer_id=dict(type='str', aliases=['lb_id'], required=True),
         vserver_group_ids=dict(type='list', aliases=['group_ids', 'ids']),
-        name_prefix=dict(type='str')
+        name_prefix=dict(type='str'),
+        policy=dict(type='str')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 

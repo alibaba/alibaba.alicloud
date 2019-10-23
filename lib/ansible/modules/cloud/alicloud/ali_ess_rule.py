@@ -76,7 +76,11 @@ options:
       description:
         - The ID of existing scaling rule.
       aliases: [ 'rule_id' ]
-
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+           the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -184,7 +188,8 @@ def main():
         name=dict(type='str', aliases=['rule_name']),
         cooldown=dict(type='int'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
-        id=dict(type='str', aliases=['rule_id'])
+        id=dict(type='str', aliases=['rule_id']),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

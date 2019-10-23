@@ -63,6 +63,8 @@ system_disk_category: "cloud_ssd"
 system_disk_size: 50
 
 number_of_instances: 2
+policy: '{"Statement": [{"Action": ["*"],"Effect": "Allow","Resource": "*"}],"Version": "1"}'
+
 
 # create ECS disk parameters
 disk_name: "Disk_From_Ansible"

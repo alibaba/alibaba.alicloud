@@ -100,6 +100,11 @@ options:
         There will be conflict when I(multi_ok=True) and I(recent=True).
     default: False
     type: bool
+  policy:
+    description:
+      - This parameter can limit the permissions of the generated STS token. If not specified, 
+        the returned token has all the permissions of the specified role.
+    required: false
 requirements:
     - "python >= 2.6"
     - "footmark >= 1.7.0"
@@ -343,6 +348,7 @@ def main():
         group_id=dict(type='str', aliases=['id']),
         multi_ok=dict(type='bool', default=False),
         recent=dict(type='bool', default=False),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

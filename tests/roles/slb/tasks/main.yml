@@ -6,6 +6,7 @@
     is_internet: True
     spec: slb.s1.small
     state: 'present'
+    policy: '{{ policy }}'
   register: slbpub
 
 - name: Creating a private SLB instance
@@ -15,4 +16,5 @@
     spec: slb.s1.small
     vswitch_id: '{{ vswitches.vswitches.0.id }}'
     state: 'present'
+    policy: '{{ policy }}'
   register: slbpri

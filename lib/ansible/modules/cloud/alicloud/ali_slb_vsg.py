@@ -75,6 +75,11 @@ options:
           with the same I(name). Specify this as true if you want duplicate Load Balancers created.
       default: False
       type: bool
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+           the returned token has all the permissions of the specified role.
+      required: false
 requirements:
     - "python >= 2.6"
     - "footmark >= 1.9.0"
@@ -269,7 +274,8 @@ def main():
         backend_servers=dict(type='list'),
         vserver_group_id=dict(type='str', aliases=['group_id']),
         purge_backend_servers=dict(type='bool', default=False),
-        multi_ok=dict(type='bool', default=False)
+        multi_ok=dict(type='bool', default=False),
+        policy=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec,

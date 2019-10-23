@@ -5,6 +5,7 @@ IMPROVEMENTS:
 
 - support modify route entry's name ([#179](https://github.com/alibaba/ansible-provider/pull/179))
 - support query instance more than 10 results ([#182](https://github.com/alibaba/ansible-provider/pull/182))
+- support assume role ([#184](https://github.com/alibaba/ansible-provider/pull/184)
 
 ## 1.11.0 (October 16, 2019)
 

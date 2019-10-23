@@ -121,6 +121,11 @@ options:
       description:
         - The name of the instance RAM role.
       aliases: ['ram_role']
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 
 author:
     - "He Guimin (@xiaozhu36)"
@@ -272,7 +277,8 @@ def main():
         user_data=dict(type='str'),
         data_disks=dict(type='list'),
         security_group_id=dict(type='str'),
-        ram_role_name=dict(type='str', aliases=['ram_role'])
+        ram_role_name=dict(type='str', aliases=['ram_role']),
+        policy=dict(type='str')
     ))
 
 

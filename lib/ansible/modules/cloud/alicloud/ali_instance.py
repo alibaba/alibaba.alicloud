@@ -168,6 +168,11 @@ options:
         - User-defined data to customize the startup behaviors of an ECS instance and to pass data into an ECS instance.
           It only will take effect when launching the new ECS instances.
       required: false
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -670,7 +675,8 @@ def main():
         instance_ids=dict(type='list'),
         auto_renew_period=dict(type='int', choices=[1, 2, 3, 6, 12]),
         key_name=dict(type='str', aliases=['keypair']),
-        user_data=dict(type='str')
+        user_data=dict(type='str'),
+        policy=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

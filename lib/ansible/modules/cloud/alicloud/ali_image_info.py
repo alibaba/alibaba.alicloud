@@ -42,6 +42,11 @@ options:
       description:
         - A list of ECS image names.
       aliases: [ "names" ]
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -236,6 +241,7 @@ def main():
     argument_spec.update(dict(
         image_ids=dict(type='list', aliases=['ids']),
         image_names=dict(type='list', aliases=['names']),
+        policy=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

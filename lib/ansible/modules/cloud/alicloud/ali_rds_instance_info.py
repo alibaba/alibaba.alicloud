@@ -53,7 +53,11 @@ options:
     tags:
       description:
         - Database tags.
-      
+    policy:
+      description:
+        - This parameter can limit the permissions of the generated STS token. If not specified, 
+          the returned token has all the permissions of the specified role.
+      required: false   
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -254,7 +258,8 @@ def main():
         dbinstance_type=dict(type='str'),
         instance_network_type=dict(type='str'),
         connection_mode=dict(type='str'),
-        tags = dict(type='dict')
+        tags=dict(type='dict'),
+        policy=dict(type='str')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 
