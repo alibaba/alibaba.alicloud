@@ -12,7 +12,7 @@
 
   tasks:
     - name: Retrieving vswitches using ids
-      ali_vswitch_facts:
+      ali_vswitch_info:
         ids: '{{vswitches.ids}}'
 
     - name: Add a vswitch and used to test name_regex
@@ -24,14 +24,14 @@
         description: '{{vswitch_description}} name regex.'
 
     - name: Filter vswitch using name_regex
-      ali_vswitch_facts:
+      ali_vswitch_info:
         name_prefix: '{{name}}regex'
 
     - name: Retrieving all vswitches
-      ali_vswitch_facts:
+      ali_vswitch_info:
 
     - name: Retrieving all vswitches based on name_regex
-      ali_vswitch_facts:
+      ali_vswitch_info:
         name_prefix: '{{name}}'
       register: vswitches
 

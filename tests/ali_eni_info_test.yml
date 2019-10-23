@@ -14,7 +14,7 @@
 
   tasks:
     - name: Retrieving enis using eni_ids
-      ali_eni_facts:
+      ali_eni_info:
         eni_ids: '{{ enis.ids}}'
 
     - name: Add two new enis and used to test name_regex and tags
@@ -27,19 +27,19 @@
           Test: tags
 
     - name: Filter instance using name_regex
-      ali_eni_facts:
+      ali_eni_info:
         name_prefix: '{{name}}regex'
 
     - name: Retrieving instance using tags
-      ali_eni_facts:
+      ali_eni_info:
         tags:
           Test: tags
 
     - name: Retrieving all enis
-      ali_eni_facts:
+      ali_eni_info:
 
     - name: Retrieving all enis based on name_regex
-      ali_eni_facts:
+      ali_eni_info:
         name_prefix: '{{name}}'
       register: enis
 

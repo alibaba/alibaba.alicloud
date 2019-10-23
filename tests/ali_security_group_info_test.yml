@@ -10,7 +10,7 @@
 
   tasks:
     - name: Retrieving groups using ids
-      ali_security_group_facts:
+      ali_security_group_info:
         ids: '{{sgs.ids}}'
 
     - name: Add a group and used to test name_regex
@@ -20,14 +20,14 @@
         vpc_id: '{{vpcs.vpcs.0.id}}'
 
     - name: Filter security group using name_regex
-      ali_security_group_facts:
+      ali_security_group_info:
         name_prefix: '{{name}}regex'
 
     - name: Retrieving all security groups
-      ali_security_group_facts:
+      ali_security_group_info:
 
     - name: Retrieving all security groups based on name_regex
-      ali_security_group_facts:
+      ali_security_group_info:
         name_prefix: '{{name}}'
       register: sgs
 

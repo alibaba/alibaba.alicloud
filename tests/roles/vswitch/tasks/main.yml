@@ -9,7 +9,7 @@
   register: vswitch
 
 - name: Get the existing vswitch
-  ali_vswitch_facts:
+  ali_vswitch_info:
     name_prefix: '{{ name }}'
     filters:
       vpc_id: '{{vpc.vpc.id}}'

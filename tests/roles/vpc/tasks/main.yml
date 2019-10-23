@@ -8,6 +8,6 @@
   register: vpc
 
 - name: Get the existing vpc
-  ali_vpc_facts:
+  ali_vpc_info:
     name_prefix: '{{name}}'
   register: vpcs
