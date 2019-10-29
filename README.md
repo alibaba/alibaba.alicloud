@@ -1,6 +1,11 @@
 # Ansible ECS Module
 
 Ansible Alicloud Module is a new ansible module, and you can manage Alicloud ECS and other services more flexibly and conveniently via it. Next to introduce simply this module.
+
+<a href="https://shell.aliyun.com/?action=git_open&git_repo=https://code.aliyun.com/labs/tutorial-cli-ansible.git&tutorial=tutorial-zh.md#/" target="try_ansible_in_cloudshell">
+  <img src="https://img.alicdn.com/tfs/TB1wt1zq9zqK1RjSZFpXXakSXXa-1066-166.png" width="180" />
+</a>
+
 ## lib/ansible/modules/cloud/alicloud
 There are several files in the module directory, and these files describe some function that can operate alicloud products.
 
