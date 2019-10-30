@@ -413,8 +413,7 @@ class EcsInventory(object):
             if self.nested_groups:
                 self.push_group(self.inventory, 'tags', 'tag_none')
 
-        self.push(self.inventory, hostname, dest)
-        self.push_group(self.inventory, 'alicloud', hostname)
+        self.push(self.inventory, 'alicloud', hostname)
 
         self.inventory["_meta"]["hostvars"][hostname] = instance.read()
         self.inventory["_meta"]["hostvars"][hostname]['ansible_ssh_host'] = dest
