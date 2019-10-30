@@ -316,7 +316,7 @@ def main():
             params['network_interface_name'] = module.params.get("name")
             params['client_token'] = "Ansible-Alicloud-{0}-{1}".format(hash(str(module.params)), str(time.time()))
             eni = ecs.create_network_interface(**params)
-            changed = True
+            module.exit_json(changed=True, interface=eni.get().read())
         except Exception as e:
             module.fail_json(msg="{0}".format(e))
 
