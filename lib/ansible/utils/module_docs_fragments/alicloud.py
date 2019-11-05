@@ -25,24 +25,50 @@ class ModuleDocFragment(object):
 options:
   alicloud_access_key:
     description:
-      - Aliyun Cloud access key. If not set then the value of environment variable C(ALICLOUD_ACCESS_KEY),
+      - Alibaba Cloud access key. If not set then the value of environment variable C(ALICLOUD_ACCESS_KEY),
         C(ALICLOUD_ACCESS_KEY_ID) will be used instead.
     aliases: ['access_key_id', 'access_key']
   alicloud_secret_key:
     description:
-      - Aliyun Cloud secret key. If not set then the value of environment variable C(ALICLOUD_SECRET_KEY),
+      - Alibaba Cloud secret key. If not set then the value of environment variable C(ALICLOUD_SECRET_KEY),
         C(ALICLOUD_SECRET_ACCESS_KEY) will be used instead.
     aliases: ['secret_access_key', 'secret_key']
   alicloud_region:
     description:
-      - The Aliyun Cloud region to use. If not specified then the value of environment variable
+      - The Alibaba Cloud region to use. If not specified then the value of environment variable
         C(ALICLOUD_REGION), C(ALICLOUD_REGION_ID) will be used instead.
     aliases: ['region', 'region_id']
   alicloud_security_token:
     description:
-      - The Aliyun Cloud security token. If not specified then the value of environment variable
+      - The Alibaba Cloud security token. If not specified then the value of environment variable
         C(ALICLOUD_SECURITY_TOKEN) will be used instead.
     aliases: ['security_token']
+  alicloud_assume_role_arn:
+    description:
+      - The Alibaba Cloud role_arn. (Required) The ARN of the role to assume. If ARN is set to an empty string, 
+        it does not perform role switching. It supports environment variable ALICLOUD_ASSUME_ROLE_ARN. 
+        ansible will execute with provided credentials.
+    aliases: ['assume_role_arn']
+  alicloud_assume_role_session_name:
+    description:
+      - The Alibaba Cloud session_name. (Optional) The session name to use when assuming the role. If omitted, 
+        'ansible' is passed to the AssumeRole call as session name. It supports environment variable 
+        ALICLOUD_ASSUME_ROLE_SESSION_NAME
+    aliases: ['assume_role_session_name']
+  alicloud_assume_role_session_expiration:
+    description:
+      - The Alibaba Cloud session_expiration. (Optional) The time after which the established session for assuming 
+        role expires. Valid value range: [900-3600] seconds. Default to 3600 (in this case Alicloud use own default 
+        value). It supports environment variable ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION
+    aliases: ['assume_role_session_expiration']
+  alicloud_assume_role_policy:
+    description:
+      - The Alibaba Cloud policy. (Optional) A more restrictive policy to apply to the temporary credentials. 
+        This gives you a way to further restrict the permissions for the resulting temporary security credentials. 
+        You cannot use the passed policy to grant permissions that are in excess of those allowed by the access policy
+        of the role that is being assumed.
+    aliases: ['assume_role_policy']   
+
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
