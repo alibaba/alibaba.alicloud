@@ -46,12 +46,13 @@ class AnsibleACSError(Exception):
 
 def acs_common_argument_spec():
     return dict(
-        alicloud_access_key=dict(required=True, aliases=['access_key_id', 'access_key'], no_log=True,
+        alicloud_access_key=dict(aliases=['access_key_id', 'access_key'], no_log=True,
                                  fallback=(env_fallback, ['ALICLOUD_ACCESS_KEY', 'ALICLOUD_ACCESS_KEY_ID'])),
-        alicloud_secret_key=dict(required=True, aliases=['secret_access_key', 'secret_key'], no_log=True,
+        alicloud_secret_key=dict(aliases=['secret_access_key', 'secret_key'], no_log=True,
                                  fallback=(env_fallback, ['ALICLOUD_SECRET_KEY', 'ALICLOUD_SECRET_ACCESS_KEY'])),
         alicloud_security_token=dict(aliases=['security_token'], no_log=True,
                                      fallback=(env_fallback, ['ALICLOUD_SECURITY_TOKEN'])),
+        ecs_role_name=dict(aliases=['role_name'], fallback=(env_fallback, ['ALICLOUD_ECS_ROLE_NAME']))
     )
 
 
@@ -71,6 +72,7 @@ def get_acs_connection_info(module):
     ecs_params = dict(acs_access_key_id=module.params.get('alicloud_access_key'),
                       acs_secret_access_key=module.params.get('alicloud_secret_key'),
                       security_token=module.params.get('alicloud_security_token'),
+                      ecs_role_name=module.params.get('ecs_role_name'),
                       user_agent='Ansible-Provider-Alicloud')
 
     return module.params.get('alicloud_region'), ecs_params
