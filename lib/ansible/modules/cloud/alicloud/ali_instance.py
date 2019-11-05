@@ -168,6 +168,9 @@ options:
         - User-defined data to customize the startup behaviors of an ECS instance and to pass data into an ECS instance.
           It only will take effect when launching the new ECS instances.
       required: false
+    ram_role_name:
+      description:
+        - The name of the instance RAM role.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -573,7 +576,7 @@ def create_instance(module, ecs, exact_count):
     auto_renew_period = module.params['auto_renew_period']
     user_data = module.params['user_data']
     key_name = module.params['key_name']
-
+    ram_role_name = module.params['ram_role_name']
     # check whether the required parameter passed or not
     if not image_id:
         module.fail_json(msg='image_id is required for new instance')
@@ -598,7 +601,7 @@ def create_instance(module, ecs, exact_count):
                                          count=exact_count, allocate_public_ip=allocate_public_ip,
                                          instance_charge_type=instance_charge_type, period=period, period_unit="Month",
                                          auto_renew=auto_renew, auto_renew_period=auto_renew_period, key_pair_name=key_name,
-                                         user_data=user_data, client_token=client_token)
+                                         user_data=user_data, client_token=client_token, ram_role_name=ram_role_name)
 
     except Exception as e:
         module.fail_json(msg='Unable to create instance, error: {0}'.format(e))
@@ -670,7 +673,8 @@ def main():
         instance_ids=dict(type='list'),
         auto_renew_period=dict(type='int', choices=[1, 2, 3, 6, 12]),
         key_name=dict(type='str', aliases=['keypair']),
-        user_data=dict(type='str')
+        user_data=dict(type='str'),
+        ram_role_name=dict(type='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
