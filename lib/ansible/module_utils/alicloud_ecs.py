@@ -35,6 +35,7 @@ try:
     import footmark.vpc
     import footmark.rds
     import footmark.ess
+    import footmark.sts
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -62,6 +63,12 @@ def ecs_argument_spec():
         dict(
             alicloud_region=dict(required=True, aliases=['region', 'region_id'],
                                  fallback=(env_fallback, ['ALICLOUD_REGION', 'ALICLOUD_REGION_ID'])),
+            alicloud_assume_role_arn=dict(aliases=['assume_role_arn'], fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_ARN'])),
+            alicloud_assume_role_session_name=dict(aliases=['session_name'],
+                                       fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_NAME'])),
+            alicloud_assume_role_session_expiration=dict(aliases=['session_expiration'],
+                                             fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION'])),
+            alicloud_assume_role_policy=dict(aliases=['assume_role_policy']),
         )
     )
     return spec
@@ -90,6 +97,25 @@ def connect_to_acs(acs_module, region, **params):
     return conn
 
 
+def get_assume_role(module):
+    """ Return new params """
+    region, sts_params = get_acs_connection_info(module)
+    assume_role_params = {
+        'role_arn': module.params.get('alicloud_assume_role_arn'),
+        'role_session_name': module.params.get('alicloud_assume_role_session_name'),
+        'duration_seconds': module.params.get('alicloud_assume_role_session_expiration'),
+        'policy': module.params.get('alicloud_assume_role_policy')
+    }
+
+    try:
+        sts = connect_to_acs(footmark.sts, region, **sts_params).assume_role(**assume_role_params).read()
+        sts_params['acs_access_key_id'], sts_params['acs_secret_access_key'], sts_params['security_token'] \
+            = sts['access_key_id'], sts['access_key_secret'], sts['security_token']
+    except AnsibleACSError as e:
+        module.fail_json(msg=str(e))
+    return sts_params
+
+
 def ecs_connect(module):
     """ Return an ecs connection"""
 
@@ -97,6 +123,8 @@ def ecs_connect(module):
     # If we have a region specified, connect to its endpoint.
     if region:
         try:
+            if module.params['alicloud_assume_role_arn']:
+                ecs_params = get_assume_role(module)
             ecs = connect_to_acs(footmark.ecs, region, **ecs_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -111,6 +139,8 @@ def slb_connect(module):
     # If we have a region specified, connect to its endpoint.
     if region:
         try:
+            if module.params['alicloud_assume_role_arn']:
+                slb_params = get_assume_role(module)
             slb = connect_to_acs(footmark.slb, region, **slb_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -125,6 +155,8 @@ def vpc_connect(module):
     # If we have a region specified, connect to its endpoint.
     if region:
         try:
+            if module.params['alicloud_assume_role_arn']:
+                vpc_params = get_assume_role(module)
             vpc = connect_to_acs(footmark.vpc, region, **vpc_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -139,6 +171,8 @@ def rds_connect(module):
     # If we have a region specified, connect to its endpoint.
     if region:
         try:
+            if module.params['alicloud_assume_role_arn']:
+                rds_params = get_assume_role(module)
             rds = connect_to_acs(footmark.rds, region, **rds_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -153,6 +187,8 @@ def ess_connect(module):
     # If we have a region specified, connect to its endpoint.
     if region:
         try:
+            if module.params['alicloud_assume_role_arn']:
+                ess_params = get_assume_role(module)
             ess = connect_to_acs(footmark.ess, region, **ess_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))

@@ -33,6 +33,7 @@
 
     tags: '{{ tags }}'
     ram_role_name: '{{ ram_role_name }}'
+    policy: '{{ policy }}'
   when: not instances.instances
 
 - name: Get the existing ECS instances
