@@ -45,25 +45,25 @@ options:
     aliases: ['security_token']
   alicloud_assume_role_arn:
     description:
-      - The Alibaba Cloud role_arn. (Required) The ARN of the role to assume. If ARN is set to an empty string, 
+      - The Alibaba Cloud role_arn. The ARN of the role to assume. If ARN is set to an empty string, 
         it does not perform role switching. It supports environment variable ALICLOUD_ASSUME_ROLE_ARN. 
         ansible will execute with provided credentials.
     aliases: ['assume_role_arn']
   alicloud_assume_role_session_name:
     description:
-      - The Alibaba Cloud session_name. (Optional) The session name to use when assuming the role. If omitted, 
+      - The Alibaba Cloud session_name. The session name to use when assuming the role. If omitted, 
         'ansible' is passed to the AssumeRole call as session name. It supports environment variable 
         ALICLOUD_ASSUME_ROLE_SESSION_NAME
     aliases: ['assume_role_session_name']
   alicloud_assume_role_session_expiration:
     description:
-      - The Alibaba Cloud session_expiration. (Optional) The time after which the established session for assuming 
+      - The Alibaba Cloud session_expiration. The time after which the established session for assuming 
         role expires. Valid value range: [900-3600] seconds. Default to 3600 (in this case Alicloud use own default 
         value). It supports environment variable ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION
     aliases: ['assume_role_session_expiration']
   alicloud_assume_role_policy:
     description:
-      - The Alibaba Cloud policy. (Optional) A more restrictive policy to apply to the temporary credentials. 
+      - The Alibaba Cloud policy. A more restrictive policy to apply to the temporary credentials. 
         This gives you a way to further restrict the permissions for the resulting temporary security credentials. 
         You cannot use the passed policy to grant permissions that are in excess of those allowed by the access policy
         of the role that is being assumed.
