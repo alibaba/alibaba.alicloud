@@ -64,9 +64,9 @@ def ecs_argument_spec():
             alicloud_region=dict(required=True, aliases=['region', 'region_id'],
                                  fallback=(env_fallback, ['ALICLOUD_REGION', 'ALICLOUD_REGION_ID'])),
             alicloud_assume_role_arn=dict(aliases=['assume_role_arn'], fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_ARN'])),
-            alicloud_assume_role_session_name=dict(aliases=['session_name'],
+            alicloud_assume_role_session_name=dict(aliases=['assume_role_session_name'],
                                        fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_NAME'])),
-            alicloud_assume_role_session_expiration=dict(aliases=['session_expiration'],
+            alicloud_assume_role_session_expiration=dict(aliases=['assume_role_session_expiration'],
                                              fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION'])),
             alicloud_assume_role_policy=dict(aliases=['assume_role_policy']),
         )
