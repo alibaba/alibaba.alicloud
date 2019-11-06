@@ -66,6 +66,15 @@ options:
     description:
       - (Deprecated) VSwitch ID.
     aliases: ['subnet_id', 'id']
+  tags:
+    description:
+      - A hash/dictionaries of vswitch tags. C({"key":"value"})
+  purge_tags:
+    description:
+      - Delete existing tags on the vswitch that are not specified in the task.
+        If True, it means you have to specify all the desired tags on each task affecting a vswitch.
+    default: False
+    type: bool
 requirements:
     - "python >= 2.6"
     - "footmark >= 1.7.0"
@@ -199,6 +208,8 @@ def main():
         vpc_id=dict(required=True),
         name=dict(aliases=['vswitch_name', 'subnet_name']),
         vswitch_id=dict(aliases=['subnet_id', 'id']),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=False)
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -251,6 +262,23 @@ def main():
     except VPCResponseError as e:
         module.fail_json(msg='Unable to modify vswitch attribute, error: {0}'.format(e))
 
+    tags = module.params['tags']
+    if module.params['purge_tags']:
+        if not tags:
+            tags = vswitch.tags
+        try:
+            if vswitch.remove_tags(tags):
+                changed = True
+            module.exit_json(changed=changed, vswitch=vswitch.get().read())
+        except Exception as e:
+            module.fail_json(msg="{0}".format(e))
+
+    if tags:
+        try:
+            if vswitch.add_tags(tags):
+                changed = True
+        except Exception as e:
+            module.fail_json(msg="{0}".format(e))
     module.exit_json(changed=changed, vswitch=vswitch.get().read())
 
 

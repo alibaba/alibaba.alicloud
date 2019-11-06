@@ -57,6 +57,9 @@ options:
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35748.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
         connect different words in one parameter. 'VSwitchId' will be appended to I(vswitch_ids) automatically.
+  tags:
+    description:
+      - A hash/dictionaries of vswitch tags. C({"key":"value"})
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -182,7 +185,8 @@ def main():
         name_prefix=dict(),
         cidr_prefix=dict(),
         vswitch_ids=dict(type='list', aliases=['ids', 'subnet_ids']),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
+        tags=dict(type='dict')
     )
     )
 
@@ -206,6 +210,7 @@ def main():
     cidr_block = module.params['cidr_block']
     name_prefix = module.params['name_prefix']
     cidr_prefix = module.params['cidr_prefix']
+    tags = module.params['tags']
 
     try:
         vswitches = []
@@ -223,6 +228,13 @@ def main():
                     continue
                 if cidr_prefix and not str(vsw.cidr_block).startswith(cidr_prefix):
                     continue
+                if tags:
+                    flag = False
+                    for key, value in list(tags.items()):
+                        if key in list(vsw.tags.keys()) and value == vsw.tags[key]:
+                            flag = True
+                    if not flag:
+                        continue
                 vswitches.append(vsw.read())
                 ids.append(vsw.id)
             if not vswitch_ids:

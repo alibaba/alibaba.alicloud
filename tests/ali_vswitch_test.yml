@@ -18,6 +18,77 @@
         name: '{{ name }}-modified'
       with_items: '{{vswitches.vswitches}}'
 
+    - name: Changed. Add Tags.
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Filter vswitches using tags
+      ali_vswitch_info:
+        tags:
+          Test1: "add1"
+
+    - name: Get the existing vswitch
+      ali_vswitch_info:
+        name_prefix: '{{ name }}'
+        filters:
+          vpc_id: '{{vpc.vpc.id}}'
+      register: vswitches
+
+    - name: Changed. Modify Tags.
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: No Changed. No tags need to be added
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Get the existing vswitch
+      ali_vswitch_info:
+        name_prefix: '{{ name }}'
+        filters:
+          vpc_id: '{{vpc.vpc.id}}'
+      register: vswitches
+
+    - name: Changed. Removing tags.
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: No Changed. No tags need to be removed.
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Get the existing vswitch
+      ali_vswitch_info:
+        name_prefix: '{{ name }}'
+        filters:
+          vpc_id: '{{vpc.vpc.id}}'
+      register: vswitches
+
     - name: Changed. Modify description.
       ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'

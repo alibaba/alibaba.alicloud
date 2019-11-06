@@ -49,6 +49,9 @@ options:
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/36018.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dashes ("-") to
         connect different words in one parameter. 'AllocationId' will be appended to I(eip_ids) automatically.
+  tags:
+    description:
+      - A hash/dictionaries of eip tags. C({"key":"value"})
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -185,6 +188,7 @@ def main():
             name_prefix=dict(),
             ip_address_prefix=dict(type='str', aliases=['ip_prefix']),
             filters=dict(type='dict'),
+            tags=dict(type='dict')
         )
     )
 
@@ -210,6 +214,7 @@ def main():
 
     name_prefix = module.params["name_prefix"]
     address_prefix = module.params["ip_address_prefix"]
+    tags = module.params["tags"]
 
     try:
         for eip in vpc_connect(module).describe_eip_addresses(**new_filters):
@@ -219,6 +224,13 @@ def main():
                 continue
             if eip_ids and eip.allocation_id not in eip_ids:
                 continue
+            if tags:
+                flag = False
+                for key, value in list(tags.items()):
+                    if key in list(eip.tags.keys()) and value == eip.tags[key]:
+                        flag = True
+                if not flag:
+                    continue
             eips.append(eip.read())
             ids.append(eip.id)
 

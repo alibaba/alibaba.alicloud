@@ -54,6 +54,9 @@ options:
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35739.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
         connect different words in one parameter. 'VpcId' will be appended to I(vpc_ids) automatically.
+  tags:
+    description:
+      - A hash/dictionaries of vpc tags. C({"key":"value"})
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -178,7 +181,8 @@ def main():
         vpc_name=dict(aliases=['name']),
         name_prefix=dict(),
         cidr_prefix=dict(),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
+        tags=dict(type='dict')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -200,6 +204,7 @@ def main():
     name = module.params['vpc_name']
     name_prefix = module.params['name_prefix']
     cidr_prefix = module.params['cidr_prefix']
+    tags = module.params['tags']
 
     try:
         vpcs = []
@@ -215,6 +220,13 @@ def main():
                     continue
                 if cidr_prefix and not str(vpc.cidr_block).startswith(cidr_prefix):
                     continue
+                if tags:
+                    flag = False
+                    for key, value in list(tags.items()):
+                        if key in list(vpc.tags.keys()) and value == vpc.tags[key]:
+                            flag = True
+                    if not flag:
+                        continue
                 vpcs.append(vpc.read())
                 ids.append(vpc.id)
             if not vpc_ids:

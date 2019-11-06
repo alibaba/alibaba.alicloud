@@ -82,6 +82,15 @@ options:
          ECS or SLB Instance to be re-associated with the specified instance.
     type: bool
     default: False
+  tags:
+    description:
+      - A hash/dictionaries of eip tags. C({"key":"value"})
+  purge_tags:
+    description:
+      - Delete existing tags on the eip that are not specified in the task.
+        If True, it means you have to specify all the desired tags on each task affecting a eip.
+    default: False
+    type: bool
 notes:
   - A ip address or a instance id which has been associated with EIP can ensure idempotence.
 requirements:
@@ -254,7 +263,9 @@ def main():
             release_on_disassociation=dict(type='bool', default=False),
             allow_reassociation=dict(type='bool', default=False),
             name=dict(type='str'),
-            description=dict(type='str')
+            description=dict(type='str'),
+            tags=dict(type='dict'),
+            purge_tags=dict(type='bool', default=False)
         )
     )
 
@@ -331,6 +342,24 @@ def main():
             changed = True
     except VPCResponseError as e:
         module.fail_json(msg='Modify EIP attribute with an error {0}.'.format(e))
+
+    tags = module.params['tags']
+    if module.params['purge_tags']:
+        if not tags:
+            tags = eip.tags
+        try:
+            if eip.remove_tags(tags):
+                changed = True
+            module.exit_json(changed=changed, eip=eip.get().read())
+        except Exception as e:
+            module.fail_json(msg="{0}".format(e))
+
+    if tags:
+        try:
+            if eip.add_tags(tags):
+                changed = True
+        except Exception as e:
+            module.fail_json(msg="{0}".format(e))
 
     # Associate instance
     if instance_id:
