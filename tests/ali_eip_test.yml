@@ -98,6 +98,59 @@
         description: "{{ description }}-ali-eip"
         bandwidth: 2
 
+    - name: Changed. Add Tags.
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+
+    - name: Filter eip using tags
+      ali_eip_info:
+        tags:
+          Test1: "add1"
+
+    - name: Get the existing eip
+      ali_eip_info:
+        name_prefix: '{{name}}'
+
+    - name: Changed. Modify Tags.
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+
+    - name: No Changed. No tags need to be added
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+
+    - name: Get the existing eip
+      ali_eip_info:
+        name_prefix: '{{name}}'
+
+    - name: Changed. Removing tags.
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        purge_tags: True
+        tags:
+          Test1: "add1"
+
+    - name: No Changed. No tags need to be removed.
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        purge_tags: True
+        tags:
+          Test1: "add1"
+
+    - name: Get the existing eip
+      ali_eip_info:
+        name_prefix: '{{name}}'
+      register: eips
+
     - name: Changed. Release ips.
       ali_eip:
         ip_address: "{{ eip.eip.ip_address }}"

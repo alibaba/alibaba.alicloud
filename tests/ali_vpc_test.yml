@@ -32,6 +32,68 @@
 #        new_name: '{{ item.vpc_name }}-modified'
 #      with_items: '{{vpcs.vpcs}}'
 
+    - name: Changed. Add Tags.
+      ali_vpc:
+        cidr_block: '{{ vpc_cidr }}'
+        name: '{{ item.vpc_name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+      with_items: '{{vpcs.vpcs}}'
+
+    - name: Get the existing vpc
+      ali_vpc_info:
+        name_prefix: '{{name}}'
+
+    - name: Filter vpc using tags
+      ali_vpc_info:
+        tags:
+          Test1: "add1"
+
+    - name: Changed. Modify Tags.
+      ali_vpc:
+        cidr_block: '{{ vpc_cidr }}'
+        name: '{{ item.vpc_name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{vpcs.vpcs}}'
+
+    - name: No Changed. No tags need to be added
+      ali_vpc:
+        cidr_block: '{{ vpc_cidr }}'
+        name: '{{ item.vpc_name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{vpcs.vpcs}}'
+
+    - name: Get the existing vpc
+      ali_vpc_info:
+        name_prefix: '{{name}}'
+
+    - name: Changed. Removing tags.
+      ali_vpc:
+        cidr_block: '{{ vpc_cidr }}'
+        name: '{{ item.vpc_name }}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+      with_items: '{{vpcs.vpcs}}'
+
+    - name: No Changed. No tags need to be removed.
+      ali_vpc:
+        cidr_block: '{{ vpc_cidr }}'
+        name: '{{ item.vpc_name }}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+      with_items: '{{ vpcs.vpcs }}'
+
+    - name: Get the existing vpc
+      ali_vpc_info:
+        name_prefix: '{{ name }}'
+
     - name: Changed. Modify description.
       ali_vpc:
         cidr_block: '{{ vpc_cidr }}'
