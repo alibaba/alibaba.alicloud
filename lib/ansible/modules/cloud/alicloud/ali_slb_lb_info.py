@@ -263,7 +263,8 @@ def main():
         load_balancer_name=dict(type='list', aliases=['name']),
         load_balancer_ids=dict(type='list', aliases=['ids']),
         name_prefix=dict(type='str'),
-        filters=dict(type='dict')
+        filters=dict(type='dict'),
+        tags=dict(type='dict')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -276,8 +277,20 @@ def main():
         lb_ids = []
     name_prefix = module.params['name_prefix']
     filters = module.params['filters']
+
     if not filters:
         filters = {}
+
+    res = []
+    tags = module.params['tags']
+    if tags:
+        for key, value in tags.items():
+            tmp = {}
+            tmp['tagKey'] = key
+            tmp['tagValue'] = value
+            res.append(tmp)
+        filters['tags'] = res
+
     for key, value in list(filters.items()):
         if key in ["LoadBalancerId", "load-balancer-id", "load_balancer_id"] and value not in lb_ids:
             lb_ids.append(value)
