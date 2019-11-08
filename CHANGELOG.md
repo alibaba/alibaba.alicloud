@@ -1,10 +1,19 @@
 # Ansible-Alicloud Change Log
-## 1.12.0 (Unreleased)
+## 1.13.0 (Unreleased)
+
+## 1.12.0 (12 November, 2019)
 
 IMPROVEMENTS:
-
 - support modify route entry's name ([#179](https://github.com/alibaba/ansible-provider/pull/179))
 - support query instance more than 10 results ([#182](https://github.com/alibaba/ansible-provider/pull/182))
+- change facts to info ([#183](https://github.com/alibaba/ansible-provider/pull/183))
+- fix ali_eni module bug caused by not passing description ([#188](https://github.com/alibaba/ansible-provider/pull/188))
+- resolve warning of the same name ([#186](https://github.com/alibaba/ansible-provider/pull/186))
+- add 'try in cloud shell' button into readme ([#182](https://github.com/alibaba/ansible-provider/pull/182))
+- add ram_role_name param for ecs ([#190](https://github.com/alibaba/ansible-provider/pull/190))
+- support ecs role name ([#191](https://github.com/alibaba/ansible-provider/pull/191))
+- support assume role ([#189](https://github.com/alibaba/ansible-provider/pull/189))
+- improve(vpc): add tags param ([#192](https://github.com/alibaba/ansible-provider/pull/192))
 
 ## 1.11.0 (October 16, 2019)
 
