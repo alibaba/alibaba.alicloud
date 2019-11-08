@@ -319,7 +319,9 @@ def main():
         slave_zone_id=dict(),
         load_balancer_spec=dict(type='str', aliases=['spec', 'lb_spec'],
                                 choices=['slb.s1.small', 'slb.s2.small', 'slb.s2.medium', 'slb.s3.small', 'slb.s3.medium', 'slb.s3.large']),
-        multi_ok=dict(type='bool', default=False)
+        multi_ok=dict(type='bool', default=False),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=False)
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -396,6 +398,23 @@ def main():
             changed = True
     except Exception as e:
         module.fail_json(msg="Failed to modify Load Balancer status: {0}".format(e))
+
+    tags = module.params['tags']
+    if module.params['purge_tags']:
+        if not tags:
+            tags = matching.tags
+        try:
+            if matching.remove_tags(tags):
+                changed = True
+        except Exception as e:
+            module.fail_json(msg="{0}".format(e))
+
+    if tags:
+        try:
+            if matching.add_tags(tags):
+                changed = True
+        except Exception as e:
+            module.fail_json(msg="{0}".format(e))
 
     module.exit_json(changed=changed, load_balancer=matching.get().read())
 

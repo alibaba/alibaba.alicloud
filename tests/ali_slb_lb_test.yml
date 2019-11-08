@@ -23,6 +23,43 @@
         name_prefix: '{{name}}'
       register: slbs
 
+    - name: Changed. Add Tags.
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Filter slb using tags
+      ali_slb_lb_info:
+        tags:
+          Test1: "add1"
+
+    - name: Changed. Modify Tags.
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: No Changed. No tags need to be added
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Removing tags.
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+      with_items: '{{slbs.load_balancers}}'
+
     - name: Changed. Stop slb instance when C(stopped)
       ali_slb_lb:
         name: '{{ item.name }}'
