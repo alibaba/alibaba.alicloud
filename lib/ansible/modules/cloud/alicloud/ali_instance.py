@@ -171,6 +171,15 @@ options:
     ram_role_name:
       description:
         - The name of the instance RAM role.
+    spot_price_limit:
+      description:
+        - The maximum hourly price for the preemptible instance. This parameter supports a maximum of three decimal 
+          places and takes effect when the SpotStrategy parameter is set to SpotWithPriceLimit.
+    spot_strategy:
+      description:
+         - The bidding mode of the pay-as-you-go instance. This parameter is valid when InstanceChargeType is set to 
+         PostPaid.
+      choices: ['NoSpot', 'SpotWithPriceLimit', 'SpotAsPriceGo']
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -516,6 +525,18 @@ instances:
             returned: always
             type: dict
             sample: vpc-0011223344
+        spot_price_limit:
+          description:
+            - The maximum hourly price for the preemptible instance. 
+          returned: always
+          type: float
+          sample: 0.97
+        spot_strategy:
+          description:
+             - The bidding mode of the pay-as-you-go instance. 
+          returned: always
+          type: string
+          sample: NoSpot
 ids:
     description: List of ECS instance IDs
     returned: always
@@ -577,6 +598,8 @@ def create_instance(module, ecs, exact_count):
     user_data = module.params['user_data']
     key_name = module.params['key_name']
     ram_role_name = module.params['ram_role_name']
+    spot_price_limit = module.params['spot_price_limit']
+    spot_strategy = module.params['spot_strategy']
     # check whether the required parameter passed or not
     if not image_id:
         module.fail_json(msg='image_id is required for new instance')
@@ -601,7 +624,8 @@ def create_instance(module, ecs, exact_count):
                                          count=exact_count, allocate_public_ip=allocate_public_ip,
                                          instance_charge_type=instance_charge_type, period=period, period_unit="Month",
                                          auto_renew=auto_renew, auto_renew_period=auto_renew_period, key_pair_name=key_name,
-                                         user_data=user_data, client_token=client_token, ram_role_name=ram_role_name)
+                                         user_data=user_data, client_token=client_token, ram_role_name=ram_role_name,
+                                         spot_price_limit=spot_price_limit, spot_strategy=spot_strategy)
 
     except Exception as e:
         module.fail_json(msg='Unable to create instance, error: {0}'.format(e))
@@ -674,7 +698,9 @@ def main():
         auto_renew_period=dict(type='int', choices=[1, 2, 3, 6, 12]),
         key_name=dict(type='str', aliases=['keypair']),
         user_data=dict(type='str'),
-        ram_role_name=dict(type='str')
+        ram_role_name=dict(type='str'),
+        spot_price_limit=dict(type='float'),
+        spot_strategy=dict(type='str', default='NoSpot', choices=['NoSpot', 'SpotWithPriceLimit', 'SpotAsPriceGo'])
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
