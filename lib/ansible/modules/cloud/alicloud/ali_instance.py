@@ -80,6 +80,7 @@ options:
     max_bandwidth_out:
       description:
         - Maximum outgoing bandwidth to the public network, measured in Mbps (Megabits per second).
+          Required when C(allocate_public_ip=True). Ignored when C(allocate_public_ip=False).
       default: 0
     host_name:
       description:
@@ -571,7 +572,7 @@ def get_instances_info(connection, ids):
     return result
 
 
-def create_instance(module, ecs, exact_count):
+def run_instance(module, ecs, exact_count):
     if exact_count <= 0:
         return None
     zone_id = module.params['availability_zone']
@@ -614,15 +615,14 @@ def create_instance(module, ecs, exact_count):
 
     try:
         # call to create_instance method from footmark
-        instances = ecs.create_instances(image_id=image_id, instance_type=instance_type, security_group_id=security_groups[0],
+        instances = ecs.run_instances(image_id=image_id, instance_type=instance_type, security_group_id=security_groups[0],
                                          zone_id=zone_id, instance_name=instance_name, description=description,
                                          internet_charge_type=internet_charge_type, internet_max_bandwidth_out=max_bandwidth_out,
                                          internet_max_bandwidth_in=max_bandwidth_in, host_name=host_name, password=password,
                                          io_optimized='optimized', system_disk_category=system_disk_category,
                                          system_disk_size=system_disk_size, system_disk_disk_name=system_disk_name,
                                          system_disk_description=system_disk_description, vswitch_id=vswitch_id,
-                                         count=exact_count, allocate_public_ip=allocate_public_ip,
-                                         instance_charge_type=instance_charge_type, period=period, period_unit="Month",
+                                         amount=exact_count, instance_charge_type=instance_charge_type, period=period, period_unit="Month",
                                          auto_renew=auto_renew, auto_renew_period=auto_renew_period, key_pair_name=key_name,
                                          user_data=user_data, client_token=client_token, ram_role_name=ram_role_name,
                                          spot_price_limit=spot_price_limit, spot_strategy=spot_strategy)
@@ -718,6 +718,7 @@ def main():
     zone_id = module.params['availability_zone']
     key_name = module.params['key_name']
     tags = module.params['tags']
+    max_bandwidth_out = module.params['max_bandwidth_out']
     instance_charge_type = module.params['instance_charge_type']
     if instance_charge_type == "PrePaid":
         module.params['spot_strategy'] = ''
@@ -755,6 +756,11 @@ def main():
         except Exception as e:
             module.fail_json(msg='Delete instance got an error: {0}'.format(e))
 
+    if module.params['allocate_public_ip'] and max_bandwidth_out < 0:
+        module.fail_json(msg="'max_bandwidth_out' should be greater than 0 when 'allocate_public_ip' is True.")
+    if not module.params['allocate_public_ip']:
+        module.params['max_bandwidth_out'] = 0
+
     if state == 'present':
         if not instance_ids:
             if len(instances) > count:
@@ -771,29 +777,12 @@ def main():
                     instances.pop(len(instances) - 1)
             else:
                 try:
-                    new_instances = create_instance(module, ecs, count - len(instances))
+                    new_instances = run_instance(module, ecs, count - len(instances))
                     if new_instances:
                         changed = True
                         instances.extend(new_instances)
                 except Exception as e:
                     module.fail_json(msg="Create new instances got an error: {0}".format(e))
-
-        # Allocate instance public ip
-        if module.params['allocate_public_ip']:
-            for inst in instances:
-                if inst.public_ip_address:
-                    continue
-                if inst.allocate_public_ip():
-                    changed = True
-
-        # start the stopped instances
-        stopped = []
-        for inst in instances:
-            if inst.status == "stopped":
-                stopped.append(inst.id)
-        if stopped:
-            if ecs.start_instances(instance_ids=stopped):
-                changed = True
 
         # Security Group join/leave begin
         security_groups = module.params['security_groups']
