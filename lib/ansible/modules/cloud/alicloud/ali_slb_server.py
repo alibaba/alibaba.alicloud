@@ -190,7 +190,7 @@ def add_set_backend_servers(module, slb, load_balancer_id, backend_servers):
 
     try:
 
-        load_balancer_info = slb.describe_load_balancer_attribute(load_balancer_id)
+        load_balancer_info = slb.describe_load_balancer_attribute(load_balancer_id=load_balancer_id)
 
         # Verifying if server load balancer Object is present
         if load_balancer_info:
