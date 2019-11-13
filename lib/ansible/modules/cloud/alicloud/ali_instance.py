@@ -718,6 +718,9 @@ def main():
     zone_id = module.params['availability_zone']
     key_name = module.params['key_name']
     tags = module.params['tags']
+    instance_charge_type = module.params['instance_charge_type']
+    if instance_charge_type == "PrePaid":
+        module.params['spot_strategy'] = ''
     changed = False
 
     instances = []
