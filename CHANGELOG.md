@@ -1,6 +1,10 @@
 # Ansible-Alicloud Change Log
 ## 1.13.0 (Unreleased)
 
+## 1.12.1 (13 November, 2019)
+- improve(ecs): improve(ecs): support create spot instance ([#196](https://github.com/alibaba/ansible-provider/pull/196))
+- improve(slb): Fix the error of passing parameters and add testcase ([#199](https://github.com/alibaba/ansible-provider/pull/199))
+
 ## 1.12.0 (12 November, 2019)
 
 IMPROVEMENTS:
