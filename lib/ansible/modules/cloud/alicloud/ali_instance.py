@@ -700,7 +700,7 @@ def main():
         user_data=dict(type='str'),
         ram_role_name=dict(type='str'),
         spot_price_limit=dict(type='float'),
-        spot_strategy=dict(type='str', default='NoSpot', choices=['NoSpot', 'SpotWithPriceLimit', 'SpotAsPriceGo'])
+        spot_strategy=dict(type='str', choices=['NoSpot', 'SpotWithPriceLimit', 'SpotAsPriceGo'])
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
