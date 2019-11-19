@@ -36,6 +36,7 @@ try:
     import footmark.rds
     import footmark.ess
     import footmark.sts
+    import footmark.dns
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -146,6 +147,22 @@ def slb_connect(module):
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return slb
+
+
+def dns_connect(module):
+    """ Return an dns connection"""
+
+    region, dns_params = get_acs_connection_info(module)
+    # If we have a region specified, connect to its endpoint.
+    if region:
+        try:
+            if module.params['alicloud_assume_role_arn']:
+                dns_params = get_assume_role(module)
+            dns = connect_to_acs(footmark.dns, region, **dns_params)
+        except AnsibleACSError as e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return dns
 
 
 def vpc_connect(module):
