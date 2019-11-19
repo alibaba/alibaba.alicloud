@@ -78,3 +78,7 @@ disk_tags: [{tag_key: "created_by", tag_value: "Ansible-Alicloud"}, {tag_key: "c
 delete_with_instance: False
 
 delete: False
+
+# create DNS domain parameters
+domain_name: ansibletest.abc
+remark: ansible_test_dns_domain

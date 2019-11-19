@@ -1,0 +1,27 @@
+---
+- name: Validate module ali_dns_domain
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - dns
+
+  tasks:
+    - name: Changed. Changed. Modify remark.
+      ali_dns_domain:
+        domain_name: '{{ domain_name }}'
+        remark: 'new--{{ remark }}'
+
+    - name: No Changed. No remark changed.
+      ali_dns_domain:
+        domain_name: '{{ domain_name }}'
+        remark: 'new--{{ remark }}'
+
+    - name: Get the existing dns
+      ali_dns_domain_info:
+        domain_name: '{{ domain_name }}'
+
+    - name: Changed. Deleting dns
+      ali_dns_domain:
+        domain_name: '{{ domain_name }}'
+        state: absent
