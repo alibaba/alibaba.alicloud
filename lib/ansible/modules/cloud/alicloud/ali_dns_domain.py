@@ -31,16 +31,16 @@ version_added: "2.8"
 short_description: Configure Alibaba Cloud DNS (DNS)
 description:
     - Create, Delete Alicloud cloud DNS(DNS).
-      It supports updating DNS remark.
+      It supports updating DNS remark and change domain group.
 options:
   domain_name:
     description:
       -  The name to give your DNS.
     required: True
     aliases: ['name']
-  group_id:
+  group_name:
     description:
-      - Domain name group, which is, by default, the GroupId of the “Default Group”.
+      - Specify name of group, when change domain group.
   lang:
     description:
       - The language which you choose
@@ -79,6 +79,11 @@ EXAMPLES = """
   ali_dns_domain:
     domain_name: '{{ domain_name }}'
     remark: 'new--{{ remark }}'
+
+- name: Changed. change domain group.
+  ali_dns_domain:
+    domain_name: '{{ domain_name }}'
+    group_name: '{{ group_name }}'
 
 - name: Changed. Deleting dns
   ali_dns_domain:
@@ -191,7 +196,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         domain_name=dict(type='str', aliases=['name'], required=True),
-        group_id=dict(type='str'),
+        group_name=dict(type='str'),
         lang=dict(type='str'),
         resource_group_id=dict(type='str'),
         remark=dict(type='str'),
@@ -210,6 +215,7 @@ def main():
     state = module.params['state']
     domain_name = module.params['domain_name']
     remark = module.params['remark']
+    group_name = module.params['group_name']
     changed = False
 
     # Check if VPC exists
@@ -231,6 +237,14 @@ def main():
                 changed = True
         except DNSResponseError as e:
             module.fail_json(msg='Unable to create dns, error: {0}'.format(e))
+
+    if domain_name and group_name:
+        try:
+            res = dns.change_domain_group(group_name=group_name, domain_name=domain_name)
+            if res:
+                changed = True
+        except DNSResponseError as e:
+            module.fail_json(msg='Unable to change domain group, error: {0}'.format(e))
 
     if remark:
         try:

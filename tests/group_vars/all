@@ -82,3 +82,7 @@ delete: False
 # create DNS domain parameters
 domain_name: ansibletest.abc
 remark: ansible_test_dns_domain
+
+# create DNS group parameters
+group_name: ansible_test
+domain_count: 10
