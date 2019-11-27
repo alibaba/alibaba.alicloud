@@ -26,7 +26,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: ali_domain_group_info
+module: ali_dns_group_info
 version_added: "2.8"
 short_description: Gather facts on domain group of Alibaba Cloud.
 description:

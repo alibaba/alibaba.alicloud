@@ -1,0 +1,117 @@
+---
+- name: Validate module ali_rds_instance
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Changed. Add Tags.
+      ali_rds_instance:
+        db_instance_name: '{{ rds.instances.0.name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+
+    - name: Filter rds using tags
+      ali_rds_instance_info:
+        tags:
+          Test1: "add1"
+
+    - name: Changed. Modify Tags.
+      ali_rds_instance:
+        db_instance_name: '{{ rds.instances.0.name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+
+    - name: No Changed. No tags need to be added
+      ali_rds_instance:
+        db_instance_name: '{{ rds.instances.0.name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+
+    - name: Changed. Removing tags.
+      ali_rds_instance:
+        db_instance_name: '{{ rds.instances.0.name }}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+
+    - name: Changed. allocate instance public connection string
+      ali_rds_instance:
+        db_instance_name: '{{ rds.instances.0.name }}'
+        connection_string_prefix: publicave-89asd
+        port: 3165
+
+    - name: release instance public connection string
+      ali_rds_instance:
+        state: absent
+        db_instance_name: '{{ rds.instances.0.name }}'
+        current_connection_string: publicave-89asd.mysql.rds.aliyuncs.com
+
+    - name: Get the existing rds
+      ali_rds_instance_info:
+        name_prefix: '{{ rds.instances.0.name }}'
+      register: rds
+
+    - name: restart rds instance
+      ali_rds_instance:
+        db_instance_name: '{{ rds.instances.0.name }}'
+        state: restart
+
+    - name: Changed. modify instance spec
+      ali_rds_instance:
+        db_instance_name: '{{ rds.instances.0.name }}'
+        db_instance_class: rds.mysql.c2.xlarge
+        db_instance_storage: 40
+
+    - name: No Changed. modify instance spec
+      ali_rds_instance:
+        db_instance_name: '{{ rds.instances.0.name }}'
+        db_instance_class: rds.mysql.c2.xlarge
+        db_instance_storage: 40
+
+    - name: Changed. modify instance current connection string
+      ali_rds_instance:
+        current_connection_string: '{{ rds.instances.0.id }}.mysql.rds.aliyuncs.com'
+        db_instance_name: '{{ rds.instances.0.name }}'
+        connection_string_prefix: private-ansible
+        port: 3307
+
+    - name: No Changed. modify instance current connection string
+      ali_rds_instance:
+        current_connection_string: '{{ rds.instances.0.id }}.mysql.rds.aliyuncs.com'
+        db_instance_name: '{{ rds.instances.0.name }}'
+        connection_string_prefix: private-ansible
+        port: 3307
+
+    - name: Get the existing rds
+      ali_rds_instance_info:
+        name_prefix: '{{ rds.instances.0.name }}'
+      register: rds
+
+    - name: Changed. Deleting rds
+      ali_rds_instance:
+        state: absent
+        db_instance_name: '{{ rds.instances.0.name }}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{vpc.vpc.vpc_name}}'
+        cidr_block: '{{vpc.vpc.cidr_block}}'
+        state: absent
+
+
+

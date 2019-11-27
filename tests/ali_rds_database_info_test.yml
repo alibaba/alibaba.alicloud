@@ -1,0 +1,51 @@
+---
+- name: Validate module ali_rds_database
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Create Database
+      ali_rds_database:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        db_name: ansible_test
+        character_set_name: utf8
+        db_description: create for ansible test
+        state: present
+
+    - name: Get the existing databse with name prefix
+      ali_rds_database_info:
+        name_prefix: ansible_
+        db_instance_id: '{{ rds.instances.0.id }}'
+
+    - name: Get the existing databse with status
+      ali_rds_database_info:
+        db_status: Running
+        db_instance_id: '{{ rds.instances.0.id }}'
+
+    - name: Retrieving all database
+      ali_rds_database_info:
+        db_instance_id: '{{ rds.instances.0.id }}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{vpc.vpc.vpc_name}}'
+        cidr_block: '{{vpc.vpc.cidr_block}}'
+        state: absent
+
+    - name: Changed. Deleting rds
+      ali_rds_instance:
+        state: absent
+        db_instance_description: '{{ rds.instances.0.name }}'
+
