@@ -1,0 +1,43 @@
+---
+- name: Validate module ali_rds_instance
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Get the existing rds with name prefix
+      ali_rds_instance_info:
+        name_prefix: ansible_test_rds
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+
+    - name: Retrieving all rds
+      ali_rds_instance_info:
+
+    - name: get rds instance net info
+      ali_rds_instance_info:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        get_netinfo: True
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{vpc.vpc.vpc_name}}'
+        cidr_block: '{{vpc.vpc.cidr_block}}'
+        state: absent
+
+    - name: Changed. Deleting rds
+      ali_rds_instance:
+        state: absent
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+
+

@@ -1,0 +1,108 @@
+---
+- name: Validate module ali_rds_instance
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Changed. modify rds instance description
+      ali_rds_instance:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        db_instance_description: ansible_test_rds_new
+
+    - name: Get the existing rds
+      ali_rds_instance_info:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+      register: rds
+
+    - name: No Changed. modify rds instance description
+      ali_rds_instance:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        db_instance_description: ansible_test_rds_new
+
+    - name: Changed. Create read only db instance
+      ali_rds_instance:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        is_readonly: True
+        zone_id: cn-beijing-b
+        db_instance_class: rds.mysql.s1.small
+        db_instance_storage: 30
+        pay_type: Postpaid
+        engine_version: 5.6
+
+    - name: Changed. allocate instance public connection string
+      ali_rds_instance:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        connection_string_prefix: publicave-89asd
+        port: 3165
+
+    - name: get rds instance net info
+      ali_rds_instance_info:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        get_netinfo: True
+
+    - name: release instance public connection string
+      ali_rds_instance:
+        state: absent
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        current_connection_string: publicave-89asd.mysql.rds.aliyuncs.com
+
+    - name: get rds instance net info
+      ali_rds_instance_info:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        get_netinfo: True
+
+    - name: Get the existing rds
+      ali_rds_instance_info:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+      register: rds
+
+    - name: restart rds instance
+      ali_rds_instance:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        state: restart
+
+    - name: get rds instance net info
+      ali_rds_instance_info:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        get_netinfo: True
+
+    - name: Changed. modify instance network type
+      ali_rds_instance:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        instance_network_type: Classic
+
+    - name: No Changed. modify instance network type
+      ali_rds_instance:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        instance_network_type: Classic
+
+    - name: Get the existing rds
+      ali_rds_instance_info:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+      register: rds
+
+    - name: Changed. Deleting rds
+      ali_rds_instance:
+        state: absent
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{vpc.vpc.vpc_name}}'
+        cidr_block: '{{vpc.vpc.cidr_block}}'
+        state: absent
+
+
+

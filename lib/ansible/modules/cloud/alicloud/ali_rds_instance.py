@@ -36,13 +36,13 @@ options:
     description:
       - The state of the instance after operating.
     default: 'present'
-    choices: [ 'present', 'restart', 'absent' ]
+    choices: ['present', 'restart', 'absent']
     aliases: ['status']
-  alicloud_zone:
+  zone_id:
     description:
       - Aliyun availability zone ID in which to launch the instance.
         If it is not specified, it will be allocated by system automatically.
-    aliases: ['zone_id', 'zone']
+    aliases: ['alicloud_zone']
   engine:
     description:
       - Database type. Required when C(state=present).
@@ -55,11 +55,11 @@ options:
         PostgreSQL: 9.4;
         PPAS: 9.3.
         Required when C(state=present).
-  instance_type:
+  db_instance_class:
     description:
       - Instance specification. Required when C(state=present).
-    aliases: ['db_instance_class']
-  instance_storage:
+    aliases: ['instance_class']
+  db_instance_storage:
     description:
       - Customize storage, range:
         MySQL / PostgreSQL / PPAS dual high-availability version of [5,2000];
@@ -68,20 +68,20 @@ options:
         SQL Server 2012 standalone basic version of [20,2000];
         Increased every 5G. Unit: GB.
         Required when C(state=present).
-    aliases: ['db_instance_storage']
-  instance_net_type:
+    aliases: ['instance_storage']
+  db_instance_net_type:
     description:
       - Instance of the network connection type: Internet on behalf of the public network, Intranet on behalf of the private network.
         Required when C(state=present).
     choices: ["Internet", "Intranet"]
-    aliases: ['db_instance_net_type']
+    aliases: ['instance_net_type']
   description:
     description:
       - Instance description or memo information, no more than 256 bytes;
         Note: You can not start with http: //, https: //. Start with Chinese and English letters.
         Can contain Chinese, English characters, "_", "-", the number of characters length 2 ~ 256.
     aliases: ['db_instance_description']
-  security_ips:
+  security_ip_list:
     description:
       - Allow access to the IP list of all databases under this instance,
         separated by commas, not repeatable, up to 1000;
@@ -90,7 +90,7 @@ options:
         / 24 indicates the length of the prefix in the address,
         the range [1,32]) where 0.0.0.0 / 0, that does not limit
         Required when C(state=present).
-  instance_charge_type:
+  pay_type:
     description:
       - Type of payment. Postpaid: postpaid instance; Prepaid: prepaid instance. Required when C(state=present).
     choices: [ "Postpaid", "Prepaid" ]
@@ -109,10 +109,10 @@ options:
   private_ip_address:
     description:
       - Users can specify VSvitchId under vpcIp, if not input, the system automatically assigned.
-  instance_id:
+  db_instance_id:
     description:
       - Instance id, the unique identifier if the instance. Required when C(state in ["present", "absent", "restart"])
-  aliases: ['db_instance_id']
+  aliases: ['instance_id']
   tags:
     description:
       - The query is bound to an instance of this tag,
@@ -139,27 +139,18 @@ options:
     description:
       - Automatic renewal. Required when C(auto_renew != None)
     type: bool
-  public_connection_string_prefix:
+  port:
     description:
-      - The prefix of the outer network connection string. Required when C(state in ['present', 'absent']).
-  dest_connection_string_prefix:
-    description:
-      - The prefix of the outer network connection string. Required when C(state in ['present', 'absent']).
-  private_connection_string_prefix:
-    description:
-      - The prefix of the outer network connection string. Required when C(state in ['present', 'absent']).
-  public_port:
-    description:
-      - Port of public net work.
-  private_port:
-    description:
-      - Port of private net work.
-  dest_port:
-    description:
-      - Port to replace the old.
+      - Port of net work.
   current_connection_string:
     description:
       - Instance of a current connection string. Required when C(current_connection_string != None)
+  connection_string_prefix:
+    description:
+      - Destination connection address prefix.
+  is_readonly:
+    description:
+      - If true, create a read-only instance 
 author:
     - "liu Qiang"
 requirements:
@@ -343,50 +334,34 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_info(obj):
-    if not obj:
-        return None
-    return dict(db_instance_id=obj.dbinstance_id,
-                db_instance_status=obj.dbinstance_status,
-                db_instance_storage=obj.dbinstance_storage,
-                db_instance_type=obj.dbinstance_type,
-                db_instance_net_type=obj.dbinstance_net_type,
-                engine=obj.engine,
-                engine_version=obj.engine_version,
-                connection_string=obj.connection_string)
-
-
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default="present", choices=["present", "absent", "restart"], alias=['status']),
-        alicloud_zone=dict(type='str', aliases=['zone_id', 'zone']),
+        zone_id=dict(type='str', aliases=['alicloud_zone']),
         engine=dict(type='str', choices=["MySQL", "SQLServer", "PostgreSQL", "PPAS"]),
         engine_version=dict(type='str'),
-        instance_net_type=dict(type='str', choices=["Internet", "Intranet"], aliases=['db_instance_net_type']),
-        description=dict(type='str', aliases=['db_instance_description']),
-        security_ips=dict(type='str'),
-        instance_charge_type=dict(type='str', choices=["Postpaid", "Prepaid"]),
+        db_instance_net_type=dict(type='str', choices=["Internet", "Intranet"], aliases=['instance_net_type']),
+        db_instance_description=dict(type='str', aliases=['description']),
+        security_ip_list=dict(type='str', aliases=['security_ips']),
+        pay_type=dict(type='str', choices=["Postpaid", "Prepaid"]),
         period=dict(type='int', choices=list(range(1, 10)).extend([12, 24, 36])),
         connection_mode=dict(type='str', choices=["Performance", "Safty"]),
-        vpc_id=dict(type='str'),
         vswitch_id=dict(type='str'),
         private_ip_address=dict(type='str'),
-        instance_id=dict(type='str', aliases=['db_instance_id']),
+        db_instance_id=dict(type='str', aliases=['instance_id']),
         tags=dict(type='str', aliases=['instance_tags']),
         page_size=dict(type='int', default=30, choices=[30, 50, 100]),
         page_number=dict(type='int', default=1),
         auto_renew_period=dict(type='int', choices=[1, 2, 3, 6, 12]),
-        auto_renew=dict(type='bool'),
-        public_connection_string_prefix=dict(type='str'),
-        private_connection_string_prefix=dict(type='str'),
-        dest_connection_string_prefix=dict(type='str'),
-        dest_port=dict(type='str'),
-        public_port=dict(type='str'),
-        private_port=dict(type='int', choices=list(range(3001, 4000))),
+        auto_pay=dict(type='bool', aliases=['auto_renew']),
+        connection_string_prefix=dict(type='str'),
+        port=dict(type='str'),
         current_connection_string=dict(type='str'),
-        instance_type=dict(type='str', aliases=['db_instance_class']),
-        instance_storage=dict(type='int', aliases=['db_instance_storage'])
+        db_instance_class=dict(type='str', aliases=['instance_class']),
+        db_instance_storage=dict(type='int', aliases=['instance_storage']),
+        instance_network_type=dict(type='str', default='Classic'),
+        is_readonly=dict(type='bool', default=False)
     ))
     modules = AnsibleModule(argument_spec=argument_spec)
 
@@ -397,48 +372,30 @@ def main():
     vpc = vpc_connect(modules)
 
     state = modules.params['state']
-    alicloud_zone = modules.params['alicloud_zone']
-    engine = modules.params['engine']
-    engine_version = modules.params['engine_version']
-    instance_net_type = modules.params['instance_net_type']
-    description = modules.params['description']
-    security_ips = modules.params['security_ips']
-    instance_charge_type = modules.params['instance_charge_type']
-    period = modules.params['period']
-    connection_mode = modules.params['connection_mode']
     vswitch_id = modules.params['vswitch_id']
-    private_ip_address = modules.params['private_ip_address']
-    instance_id = modules.params['instance_id']
+    instance_id = modules.params['db_instance_id']
     tags = modules.params['tags']
-    page_size = modules.params['page_size']
-    page_number = modules.params['page_number']
-    auto_renew_period = modules.params['auto_renew_period']
-    auto_renew = modules.params['auto_renew']
-    public_connection_string_prefix = modules.params['public_connection_string_prefix']
-    private_connection_string_prefix = modules.params['private_connection_string_prefix']
-    public_port = modules.params['public_port']
-    private_port = modules.params['private_port']
+    connection_string_prefix = modules.params['connection_string_prefix']
+    port = modules.params['port']
     current_connection_string = modules.params['current_connection_string']
-    dest_connection_string_prefix = modules.params['dest_connection_string_prefix']
-    dest_port = modules.params['dest_port']
-    instance_type = modules.params['instance_type']
-    instance_storage = modules.params['instance_storage']
-
-    vpc_id = None
-    instance_network_type = 'Classic'
+    is_readonly = modules.params['is_readonly']
+    instance_network_type = modules.params['instance_network_type']
+    db_instance_description = modules.params['db_instance_description']
+    auto_renew_period = modules.params['auto_renew_period']
+    auto_pay = modules.params['auto_pay']
     current_instance = None
     changed = False
     if vswitch_id:
-        instance_network_type = 'VPC'
+        modules.params['instance_network_type'] = 'VPC'
         try:
-            vswitch_obj = vpc.get_vswitch_attribute(vswitch_id)
+            vswitch_obj = vpc.describe_vswitch_attributes(vswitch_id=vswitch_id)
             if vswitch_obj:
-                vpc_id = vswitch_obj.vpc_id
+                modules.params['vpc_id'] = vswitch_obj.vpc_id
         except Exception as e:
             modules.fail_json(msg=str("Unable to get vswitch, error:{0}".format(e)))
     if instance_id:
         try:
-            current_instance = rds.describe_db_instance_attribute(instance_id)
+            current_instance = rds.describe_d_b_instances(db_instance_id=instance_id)[0]
         except Exception as e:
             modules.fail_json(msg=str("Unable to describe instance, error:{0}".format(e)))
 
@@ -446,73 +403,66 @@ def main():
         if current_instance:
             if current_connection_string:
                 try:
-                    changed = current_instance.release_public_connection_string(current_connection_string)
-                    modules.exit_json(changed=changed, instance=get_info(current_instance))
+                    changed = rds.release_instance_public_connection(current_connection_string=current_connection_string, db_instance_id=instance_id)
+                    modules.exit_json(changed=changed, instance=current_instance.read())
                 except Exception as e:
                     modules.fail_json(msg=str("Unable to release public connection string error: {0}".format(e)))
             try:
-                changed = current_instance.terminate()
-                modules.exit_json(changed=changed, instance=get_info(current_instance))
+                current_instance.delete()
+                modules.exit_json(changed=True, instance={})
             except Exception as e:
                 modules.fail_json(msg=str("Unable to release instance error: {0}".format(e)))
         modules.fail_json(msg=str("Unable to operate your instance, please check your instance_id and try again!"))
+
     if state == 'restart':
         if current_instance:
             try:
                 changed = current_instance.restart()
-                modules.exit_json(changed=changed, instance=get_info(current_instance))
+                modules.exit_json(changed=changed, instance=current_instance.read())
             except Exception as e:
                 modules.fail_json(msg=str("Unable to restart instance error: {0}".format(e)))
         modules.fail_json(msg=str("Unable to restart your instance, please check your instance_id and try again!"))
+
     if not current_instance:
         try:
-            client_token = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
-            current_instance = rds.create_rds_instance(engine=engine,
-                                                       engine_version=engine_version,
-                                                       db_instance_class=instance_type,
-                                                       db_instance_storage=instance_storage,
-                                                       db_instance_net_type=instance_net_type,
-                                                       security_ip_list=security_ips,
-                                                       pay_type=instance_charge_type,
-                                                       client_token=client_token,
-                                                       instance_network_type=instance_network_type,
-                                                       period='Month',
-                                                       used_time=period,
-                                                       alicloud_zone=alicloud_zone,
-                                                       db_instance_description=description,
-                                                       connection_mode=connection_mode,
-                                                       vpc_id=vpc_id,
-                                                       vswitch_id=vswitch_id,
-                                                       private_ip_address=private_ip_address)
-            instance_id = current_instance.dbinstance_id
+            modules.params['client_token'] = "Ansible-Alicloud-%s-%s" % (hash(str(modules.params)), str(time.time()))
+            current_instance = rds.create_d_b_instance(**modules.params)
+            changed = True
         except Exception as e:
             modules.fail_json(msg=str("Unable to create rds instance error: {0}".format(e)))
-    if auto_renew:
+
+    if is_readonly:
         try:
-            changed = current_instance.modify_auto_renewal_attribute(duration=auto_renew_period, auto_renew=auto_renew)
+            read_only_obj = rds.create_read_only_d_b_instance(**modules.params)
+            if read_only_obj:
+                modules.exit_json(changed=True, instance=read_only_obj.read())
         except Exception as e:
-            modules.fail_json(msg=str("Unable to modify rds instance auto renewal attribute error: {0}".format(e)))
-    if public_connection_string_prefix and public_port:
+            modules.fail_json(msg=str("Unable to create read only db instance error: {0}".format(e)))
+
+    if db_instance_description:
         try:
-            changed = current_instance.allocate_public_connection_string(public_connection_string_prefix, public_port)
+            res = current_instance.modify_description(db_instance_description=db_instance_description)
+            modules.exit_json(changed=res, instance=current_instance.read())
+        except Exception as e:
+            modules.fail_json(msg=str("Unable to modify read db instance description error: {0}".format(e)))
+
+    if connection_string_prefix and port:
+        try:
+            res = current_instance.allocate_public_connection_string(connection_string_prefix=connection_string_prefix, port=port)
+            if res:
+                modules.exit_json(changed=True, instance=current_instance.get().read())
         except Exception as e:
             modules.fail_json(msg=str("Unable to allocate public connection error: {0}".format(e)))
-    if private_connection_string_prefix:
+
+    if instance_network_type:
         try:
-            changed = current_instance.allocate_private_connection_string(private_connection_string_prefix, private_port)
+            res = current_instance.modify_network_type(instance_network_type=instance_network_type)
+            if res:
+                modules.exit_json(changed=True, instance=current_instance.get().read())
         except Exception as e:
-            modules.fail_json(msg=str("Unable to allocate private connection string error: {0}".format(e)))
-    if current_connection_string:
-        try:
-            changed = current_instance.modify_connection_string(current_connection_string, dest_connection_string_prefix, dest_port)
-        except Exception as e:
-            modules.fail_json(msg=str("Unable to modify current connection string error: {0}".format(e)))
-    # get newest instance
-    try:
-        current_instance = rds.describe_db_instance_attribute(instance_id)
-    except Exception as e:
-        modules.fail_json(msg=str("Unable to describe instance error: {0}".format(e)))
-    modules.exit_json(changed=changed, instance=get_info(current_instance))
+            modules.fail_json(msg=str("Unable to modify instance network type error: {0}".format(e)))
+
+    modules.exit_json(changed=changed, instance=current_instance.get().read())
 
 
 if __name__ == '__main__':

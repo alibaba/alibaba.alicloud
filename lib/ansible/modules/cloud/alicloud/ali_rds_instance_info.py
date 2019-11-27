@@ -34,10 +34,10 @@ description:
        The module must be called from within the RDS instance itself.
 
 options:
-    instance_ids:
+    db_instance_id:
       description:
-        - A list of RDS database instance ids.
-      aliases: [ "db_instance_ids" ]
+        - RDS database instance id.
+      aliases: [ "instance_id" ]
     engine:
       description:
         - Type of the database.
@@ -53,7 +53,12 @@ options:
     tags:
       description:
         - Database tags.
-      
+    get_netinfo:
+      description:
+        - if True, return db instance's netinfo. otherwise return rds db instances
+    name_prefix:
+      description:
+        - Use instance name prefix to filter rds.        
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -219,83 +224,47 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_info(obj):
-    if not obj:
-        return None
-    return dict(
-        resource_group_id=obj.resource_group_id,
-        region_id=obj.region_id,
-        mutri_orsignle=obj.mutri_orsignle,
-        create_time=obj.create_time,
-        dbinstance_class=obj.dbinstance_class,
-        dbinstance_net_type=obj.dbinstance_net_type,
-        lock_mode=obj.lock_mode,
-        pay_type=obj.pay_type,
-        read_only_dbinstance_ids=obj.read_only_dbinstance_ids,
-        dbinstance_type=obj.dbinstance_type,
-        engine=obj.engine,
-        instance_network_type=obj.instance_network_type,
-        dbinstance_status=obj.dbinstance_status,
-        expire_time=obj.expire_time,
-        dbinstance_id=obj.dbinstance_id,
-        zone_id=obj.zone_id,
-        lock_reason=obj.lock_reason,
-        connection_mode=obj.connection_mode,
-        ins_id=obj.ins_id,
-        engine_version=obj.engine_version
-    )
-
-
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        instance_ids=dict(type='list', aliases=['db_instance_ids']),
+        db_instance_id=dict(type='str', aliases=['instance_id']),
         engine=dict(type='str'),
-        dbinstance_type=dict(type='str'),
+        db_instance_type=dict(type='str', aliases=['instance_type']),
         instance_network_type=dict(type='str'),
         connection_mode=dict(type='str'),
-        tags = dict(type='dict')
+        tags=dict(type='dict'),
+        get_netinfo=dict(type='bool', default=False),
+        name_prefix=dict(type='str')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
+    rds = rds_connect(module)
+    get_netinfo = module.params['get_netinfo']
+    db_instance_id = module.params['db_instance_id']
+    name_prefix = module.params['name_prefix']
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for this module.")
 
     result = []
     ids = []
-    instance_ids = module.params['instance_ids']
-    engine = module.params['engine']
-    dbinstance_type = module.params['dbinstance_type']
-    instance_network_type = module.params['instance_network_type']
-    connection_mode = module.params['connection_mode']
-    tags = module.params['tags']
-
-    if instance_ids and (not isinstance(instance_ids, list) or len(instance_ids)) < 1:
-        module.fail_json(msg='instance_ids should be a list of db_instance id, aborting')
+    if get_netinfo:
+        try:
+            for info in rds.describe_d_b_instance_net_info(**module.params):
+                result.append(info.read())
+            ids.append(db_instance_id)
+            module.exit_json(changed=False, db_instance_ids=ids, db_instances_netinfo=result)
+        except Exception as e:
+            module.fail_json(msg="Unable to describe rds db instance, and got an error: {0}.".format(e))
 
     try:
-        rds = rds_connect(module)
-        # list rds db_instance by instance ids
-        if instance_ids:
-            instance_id = ",".join(instance_ids)
-
-            for rds_instance in rds.get_rds_instances(instance_id=instance_id, engine=engine,
-                                                      dbinstance_type=dbinstance_type,
-                                                      instance_network_type=instance_network_type,
-                                                      connection_mode=connection_mode, tags=tags):
-                result.append(get_info(rds_instance))
-                ids.append(rds_instance.dbinstance_id)
-
-        # list all db_instance available in specified region
-        else:
-            for rds_instance in rds.get_rds_instances():
-                result.append(get_info(rds_instance))
-                ids.append(rds_instance.dbinstance_id)
-
+        for rds_instance in rds.describe_d_b_instances(**module.params):
+            if name_prefix and rds_instance.db_instance_description != name_prefix:
+                continue
+            result.append(rds_instance.read())
+            ids.append(rds_instance.dbinstance_id)
+        module.exit_json(changed=False, db_instance_ids=ids, rds_db_instances=result, total=len(result))
     except Exception as e:
         module.fail_json(msg="Unable to describe rds db instance, and got an error: {0}.".format(e))
-
-    module.exit_json(changed=False, db_instance_ids=ids, rds_db_instances=result, total=len(result))
 
 
 if __name__ == '__main__':
