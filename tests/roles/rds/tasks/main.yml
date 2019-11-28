@@ -8,7 +8,7 @@
     db_instance_storage: 30
     db_instance_net_type: Intranet
     security_ip_list: 10.23.12.24/24
-    pay_type: Prepaid
+    pay_type: Postpaid
     vswitch_id: '{{ vswitches.vswitches.0.id }}'
     db_instance_description: ansible_test_rds
   register: rds

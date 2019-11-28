@@ -81,6 +81,25 @@
         db_instance_id: '{{ rds.rds_db_instances.0.id }}'
         instance_network_type: Classic
 
+    - name: Changed. modify instance current connection string
+      ali_rds_instance:
+        current_connection_string: '{{ rds.rds_db_instances.0.id }}.mysql.rds.aliyuncs.com'
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        connection_string_prefix: private-ansible
+        port: 3307
+
+    - name: get rds instance net info
+      ali_rds_instance_info:
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        get_netinfo: True
+
+    - name: No Changed. modify instance current connection string
+      ali_rds_instance:
+        current_connection_string: '{{ rds.rds_db_instances.0.id }}.mysql.rds.aliyuncs.com'
+        db_instance_id: '{{ rds.rds_db_instances.0.id }}'
+        connection_string_prefix: private-ansible
+        port: 3307
+
     - name: Get the existing rds
       ali_rds_instance_info:
         db_instance_id: '{{ rds.rds_db_instances.0.id }}'

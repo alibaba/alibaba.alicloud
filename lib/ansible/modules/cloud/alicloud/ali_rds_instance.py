@@ -381,8 +381,6 @@ def main():
     is_readonly = modules.params['is_readonly']
     instance_network_type = modules.params['instance_network_type']
     db_instance_description = modules.params['db_instance_description']
-    auto_renew_period = modules.params['auto_renew_period']
-    auto_pay = modules.params['auto_pay']
     current_instance = None
     changed = False
     if vswitch_id:
@@ -427,7 +425,7 @@ def main():
         try:
             modules.params['client_token'] = "Ansible-Alicloud-%s-%s" % (hash(str(modules.params)), str(time.time()))
             current_instance = rds.create_d_b_instance(**modules.params)
-            changed = True
+            modules.exit_json(changed=True, instance=current_instance.read())
         except Exception as e:
             modules.fail_json(msg=str("Unable to create rds instance error: {0}".format(e)))
 
@@ -447,22 +445,25 @@ def main():
             modules.fail_json(msg=str("Unable to modify read db instance description error: {0}".format(e)))
 
     if connection_string_prefix and port:
-        try:
-            res = current_instance.allocate_public_connection_string(connection_string_prefix=connection_string_prefix, port=port)
-            if res:
-                modules.exit_json(changed=True, instance=current_instance.get().read())
-        except Exception as e:
-            modules.fail_json(msg=str("Unable to allocate public connection error: {0}".format(e)))
+        if current_connection_string:
+            try:
+                res = current_instance.modify_db_instance_connection_string(current_connection_string=current_connection_string, connection_string_prefix=connection_string_prefix, port=port)
+                modules.exit_json(changed=res, instance=current_instance.read())
+            except Exception as e:
+                modules.fail_json(msg=str("Unable to modify current string error: {0}".format(e)))
+        else:
+            try:
+                res = current_instance.allocate_public_connection_string(connection_string_prefix=connection_string_prefix, port=port)
+                modules.exit_json(changed=res, instance=current_instance.read())
+            except Exception as e:
+                modules.fail_json(msg=str("Unable to allocate public connection error: {0}".format(e)))
 
     if instance_network_type:
         try:
             res = current_instance.modify_network_type(instance_network_type=instance_network_type)
-            if res:
-                modules.exit_json(changed=True, instance=current_instance.get().read())
+            modules.exit_json(changed=res, instance=current_instance.get().read())
         except Exception as e:
             modules.fail_json(msg=str("Unable to modify instance network type error: {0}".format(e)))
-
-    modules.exit_json(changed=changed, instance=current_instance.get().read())
 
 
 if __name__ == '__main__':
