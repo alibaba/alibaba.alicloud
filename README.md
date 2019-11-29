@@ -64,4 +64,4 @@ If not, please install it using the following command:
 
 Ansible Document: https://docs.ansible.com/ansible/latest/
 
-Ansible Alicloud: [Docs Details](http://47.95.33.19:8080/ansible_alicloud/latest/list_of_all_modules.html)
+Ansible Alicloud: [Docs Details](http://47.88.222.42:8080/ansible-alicloud/latest/modules/list_of_cloud_modules.html)
