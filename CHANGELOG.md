@@ -1,5 +1,10 @@
 # Ansible-Alicloud Change Log
-## 1.13.0 (Unreleased)
+## 1.14.0 (Unreleased)
+
+## 1.13.0 (3 December, 2019)
+- Add new module ali_dns_domain, ali_dns_domain_info and test case([#201](https://github.com/alibaba/ansible-provider/pull/201))
+- Add new module ali_dns_group, ali_dns_group_info and test case ([#202](https://github.com/alibaba/ansible-provider/pull/202))
+- improve(ecs): change method create_instances to run_instances ([#194](https://github.com/alibaba/ansible-provider/pull/194))
 
 ## 1.12.1 (13 November, 2019)
 - improve(ecs): improve(ecs): support create spot instance ([#196](https://github.com/alibaba/ansible-provider/pull/196))
