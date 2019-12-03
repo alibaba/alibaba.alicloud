@@ -26,6 +26,8 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import os
+import json
 from ansible.module_utils.basic import env_fallback
 
 try:
@@ -64,26 +66,25 @@ def ecs_argument_spec():
         dict(
             alicloud_region=dict(required=True, aliases=['region', 'region_id'],
                                  fallback=(env_fallback, ['ALICLOUD_REGION', 'ALICLOUD_REGION_ID'])),
-            alicloud_assume_role_arn=dict(aliases=['assume_role_arn'], fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_ARN'])),
-            alicloud_assume_role_session_name=dict(aliases=['assume_role_session_name'],
-                                       fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_NAME'])),
-            alicloud_assume_role_session_expiration=dict(aliases=['assume_role_session_expiration'],
-                                             fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION'])),
-            alicloud_assume_role_policy=dict(aliases=['assume_role_policy']),
+            alicloud_assume_role_arn=dict(fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_ARN'])),
+            alicloud_assume_role_session_name=dict(fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_NAME'])),
+            alicloud_assume_role_session_expiration=dict(fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION'])),
+            alicloud_assume_role=dict(aliases=['assume_role']),
+            profile=dict(fallback=(env_fallback, ['ALICLOUD_PROFILE'])),
+            shared_credentials_file=dict(fallback=(env_fallback, ['ALICLOUD_SHARED_CREDENTIALS_FILE']))
         )
     )
     return spec
 
 
-def get_acs_connection_info(module):
+def get_acs_connection_info(params):
 
-    ecs_params = dict(acs_access_key_id=module.params.get('alicloud_access_key'),
-                      acs_secret_access_key=module.params.get('alicloud_secret_key'),
-                      security_token=module.params.get('alicloud_security_token'),
-                      ecs_role_name=module.params.get('ecs_role_name'),
+    ecs_params = dict(acs_access_key_id=params.get('alicloud_access_key'),
+                      acs_secret_access_key=params.get('alicloud_secret_key'),
+                      security_token=params.get('alicloud_security_token'),
+                      ecs_role_name=params.get('ecs_role_name'),
                       user_agent='Ansible-Provider-Alicloud')
-
-    return module.params.get('alicloud_region'), ecs_params
+    return ecs_params
 
 
 def connect_to_acs(acs_module, region, **params):
@@ -98,34 +99,80 @@ def connect_to_acs(acs_module, region, **params):
     return conn
 
 
-def get_assume_role(module):
+def get_assume_role(params):
     """ Return new params """
-    region, sts_params = get_acs_connection_info(module)
+    sts_params = get_acs_connection_info(params)
+    assume_role = {}
+    if params.get('assume_role'):
+        assume_role['alicloud_assume_role_arn'] = params['assume_role'].get('role_arn')
+        assume_role['alicloud_assume_role_session_name'] = params['assume_role'].get('session_name')
+        assume_role['alicloud_assume_role_session_expiration'] = params['assume_role'].get('session_expiration')
+        assume_role['alicloud_assume_role_policy'] = params['assume_role'].get('policy')
+
     assume_role_params = {
-        'role_arn': module.params.get('alicloud_assume_role_arn'),
-        'role_session_name': module.params.get('alicloud_assume_role_session_name'),
-        'duration_seconds': module.params.get('alicloud_assume_role_session_expiration'),
-        'policy': module.params.get('alicloud_assume_role_policy')
+        'role_arn': params.get('alicloud_assume_role_arn') if params.get('alicloud_assume_role_arn') else assume_role.get('alicloud_assume_role_arn'),
+        'role_session_name': params.get('alicloud_assume_role_session_name') if params.get('alicloud_assume_role_session_name') else assume_role.get('alicloud_assume_role_session_name'),
+        'duration_seconds': params.get('alicloud_assume_role_session_expiration') if params.get('alicloud_assume_role_session_expiration') else assume_role.get('alicloud_assume_role_session_expiration', 3600),
+        'policy': assume_role.get('alicloud_assume_role_policy', {})
     }
 
     try:
-        sts = connect_to_acs(footmark.sts, region, **sts_params).assume_role(**assume_role_params).read()
+        sts = connect_to_acs(footmark.sts, params.get('alicloud_region'), **sts_params).assume_role(**assume_role_params).read()
         sts_params['acs_access_key_id'], sts_params['acs_secret_access_key'], sts_params['security_token'] \
             = sts['access_key_id'], sts['access_key_secret'], sts['security_token']
     except AnsibleACSError as e:
-        module.fail_json(msg=str(e))
+        params.fail_json(msg=str(e))
     return sts_params
+
+
+def get_profile(params):
+    if not params['alicloud_access_key'] and not params['ecs_role_name'] and params['profile']:
+        path = params['shared_credentials_file'] if params['shared_credentials_file'] else os.getenv('HOME')+'/.aliyun/config.json'
+        auth = {}
+        with open(path, 'r') as f:
+            for pro in json.load(f)['profiles']:
+                if params['profile'] == pro['name']:
+                    auth = pro
+        if auth:
+            if auth['mode'] == 'AK' and auth.get('access_key_id') and auth.get('access_key_secret'):
+                params['alicloud_access_key'] = auth.get('access_key_id')
+                params['alicloud_secret_key'] = auth.get('access_key_secret')
+                params['alicloud_region'] = auth.get('region_id')
+                params = get_acs_connection_info(params)
+            elif auth['mode'] == 'StsToken' and auth.get('access_key_id') and auth.get('access_key_secret') and auth.get('sts_token'):
+                params['alicloud_access_key'] = auth.get('access_key_id')
+                params['alicloud_secret_key'] = auth.get('access_key_secret')
+                params['security_token'] = auth.get('sts_token')
+                params['alicloud_region'] = auth.get('region_id')
+                params = get_acs_connection_info(params)
+            elif auth['mode'] == 'EcsRamRole':
+                params['ecs_role_name'] = auth.get('ram_role_name')
+                params['alicloud_region'] = auth.get('region_id')
+                params = get_acs_connection_info(params)
+            elif auth['mode'] == 'RamRoleArn' and auth.get('ram_role_arn'):
+                params['alicloud_access_key'] = auth.get('access_key_id')
+                params['alicloud_secret_key'] = auth.get('access_key_secret')
+                params['security_token'] = auth.get('sts_token')
+                params['ecs_role_name'] = auth.get('ram_role_name')
+                params['alicloud_assume_role_arn'] = auth.get('ram_role_arn')
+                params['alicloud_assume_role_session_name'] = auth.get('ram_session_name')
+                params['alicloud_assume_role_session_expiration'] = auth.get('expired_seconds')
+                params['alicloud_region'] = auth.get('region_id')
+                params = get_assume_role(params)
+    elif params.get('alicloud_assume_role_arn') or params.get('assume_role'):
+        params = get_assume_role(params)
+    else:
+        params = get_acs_connection_info(params)
+    return params
 
 
 def ecs_connect(module):
     """ Return an ecs connection"""
-
-    region, ecs_params = get_acs_connection_info(module)
+    ecs_params = get_profile(module.params)
     # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
     if region:
         try:
-            if module.params['alicloud_assume_role_arn']:
-                ecs_params = get_assume_role(module)
             ecs = connect_to_acs(footmark.ecs, region, **ecs_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -135,13 +182,11 @@ def ecs_connect(module):
 
 def slb_connect(module):
     """ Return an slb connection"""
-
-    region, slb_params = get_acs_connection_info(module)
+    slb_params = get_profile(module.params)
     # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
     if region:
         try:
-            if module.params['alicloud_assume_role_arn']:
-                slb_params = get_assume_role(module)
             slb = connect_to_acs(footmark.slb, region, **slb_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -151,13 +196,11 @@ def slb_connect(module):
 
 def dns_connect(module):
     """ Return an dns connection"""
-
-    region, dns_params = get_acs_connection_info(module)
+    dns_params = get_profile(module.params)
     # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
     if region:
         try:
-            if module.params['alicloud_assume_role_arn']:
-                dns_params = get_assume_role(module)
             dns = connect_to_acs(footmark.dns, region, **dns_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -167,13 +210,11 @@ def dns_connect(module):
 
 def vpc_connect(module):
     """ Return an vpc connection"""
-
-    region, vpc_params = get_acs_connection_info(module)
+    vpc_params = get_profile(module.params)
     # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
     if region:
         try:
-            if module.params['alicloud_assume_role_arn']:
-                vpc_params = get_assume_role(module)
             vpc = connect_to_acs(footmark.vpc, region, **vpc_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -183,13 +224,11 @@ def vpc_connect(module):
 
 def rds_connect(module):
     """ Return an rds connection"""
-
-    region, rds_params = get_acs_connection_info(module)
+    rds_params = get_profile(module.params)
     # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
     if region:
         try:
-            if module.params['alicloud_assume_role_arn']:
-                rds_params = get_assume_role(module)
             rds = connect_to_acs(footmark.rds, region, **rds_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
@@ -199,13 +238,11 @@ def rds_connect(module):
 
 def ess_connect(module):
     """ Return an ess connection"""
-
-    region, ess_params = get_acs_connection_info(module)
+    ess_params = get_profile(module.params)
     # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
     if region:
         try:
-            if module.params['alicloud_assume_role_arn']:
-                ess_params = get_assume_role(module)
             ess = connect_to_acs(footmark.ess, region, **ess_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))

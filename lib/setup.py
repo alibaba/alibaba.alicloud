@@ -15,7 +15,7 @@ DESCRIPTION = "The dependence of Ansible Provider Alicloud modules."
 AUTHOR = "xiaozhu"
 AUTHOR_EMAIL = "heguimin36@163.com"
 
-VERSION = '1.2.0'
+VERSION = '1.3.0'
 
 setup(
     name=NAME,
@@ -43,12 +43,10 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
     ],
 
     packages=['ansible.module_utils'],
     include_package_data=True,
-    install_requires=['ansible', 'footmark>=1.3.0']
+    install_requires=['ansible', 'footmark>=1.16.0']
 )
