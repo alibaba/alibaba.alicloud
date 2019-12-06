@@ -25,7 +25,7 @@ import yaml
 import configparser
 
 from time import time
-from ansible.module_utils.alicloud_ecs import connect_to_acs
+from ansible.module_utils.alicloud_ecs import connect_to_acs, get_profile
 
 try:
     import json
@@ -141,11 +141,52 @@ class EcsInventory(object):
         if not security_token:
             security_token = self.get_option(config, 'credentials', 'alicloud_security_token')
 
-        self.credentials = {
-            'acs_access_key_id': access_key,
-            'acs_secret_access_key': secret_key,
+        alicloud_region = os.environ.get('ALICLOUD_REGION', None)
+        if not alicloud_region:
+            alicloud_region = self.get_option(config, 'credentials', 'alicloud_region')
+
+        ecs_role_name = os.environ.get('ALICLOUD_ECS_ROLE_NAME', None)
+        if not ecs_role_name:
+            ecs_role_name = self.get_option(config, 'credentials', 'alicloud_ecs_role_name')
+
+        profile = os.environ.get('ALICLOUD_PROFILE', None)
+        if not profile:
+            profile = self.get_option(config, 'credentials', 'alicloud_profile')
+
+        shared_credentials_file = os.environ.get('ALICLOUD_SHARED_CREDENTIALS_FILE', None)
+        if not shared_credentials_file:
+            shared_credentials_file = self.get_option(config, 'credentials', 'alicloud_shared_credentials_file')
+
+        assume_role = self.get_option(config, 'credentials', 'assume_role')
+
+        role_arn = os.environ.get('ALICLOUD_ASSUME_ROLE_ARN', None)
+        if not role_arn:
+            role_arn = assume_role.get('role_arn')
+
+        session_name = os.environ.get('ALICLOUD_ASSUME_ROLE_SESSION_NAME', None)
+        if not session_name:
+            session_name = assume_role.get('session_name')
+
+        session_expiration = os.environ.get('ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION', None)
+        if not session_expiration:
+            session_expiration = assume_role.get('session_expiration')
+
+        policy = assume_role.get('policy')
+        credentials = {
+            'alicloud_access_key': access_key,
+            'alicloud_secret_key': secret_key,
             'security_token': security_token,
+            'ecs_role_name': ecs_role_name,
+            'profile': profile,
+            'shared_credentials_file': shared_credentials_file,
+            'assume_role': {
+                'policy': policy,
+                'role_arn': role_arn,
+                'session_name': session_name,
+                'session_expiration': session_expiration},
+            'alicloud_region': alicloud_region
         }
+        self.credentials = get_profile(credentials)
 
         # Regions
         config_regions = self.get_option(config, 'ecs', 'regions')
@@ -441,7 +482,7 @@ class EcsInventory(object):
 
         # Check module args for credentials, then check environment vars access key pair and region
         connect_args = self.credentials
-        connect_args['user_agent'] = 'Ansible-Provider-Alicloud'
+        connect_args['user_agent'] = 'Ansible-Provider-Alicloud/Dynamic-Inventory'
         conn = connect_to_acs(module, region, **connect_args)
         if conn is None:
             self.fail_with_error("region name: %s likely not supported. Connection to region failed." % region)
