@@ -28,235 +28,164 @@ DOCUMENTATION = """
 ---
 module: ali_rds_account
 version_added: "1.5.0"
-short_description: Create, Delete, Modyfy, Reset rds account, Grant or Revoke privilege.
+short_description: Create, Delete, Modyfy, Reset rds account, Grant or Revoke privilege in Alibaba Cloud.
 description:
   - This module allows the user to manage rds account. Includes support for creating, deleting,
     reseting and modifying rds account, granting or revoking privilege.
+  - An unique ali_rds_account module is co-determined by parameters db_instance_id and account_name. 
 options:
   state:
     description:
-      - The state of the account after operating.
+      - If I(state=present), account will be created.
+      - If I(state=present) and account_password, account exists, it will reset account password.
+      - If I(state=present) and account_description exists, it will modify description.
+      - If I(state=present) and db_name, account_privilege exists, it will grant account privilege.
+      - If I(state=absent), and db_name exists, it will revoke account privilege.
+      - If I(state=absent), account will be removed.      
     default: present
-    choices: [ 'present', 'absent']
+    choices: ['present', 'absent']
   db_instance_id:
     description:
-      - Id of rds instance.
+      - The ID of the instance.
+      - This is used in combination with C(account_name) to determine if the account already exists.
+    aliases: ['instance_id']
     required: true
   account_name:
     description:
-      - Operation account requiring a uniqueness check.
-        It may consist of lower case letters, numbers and underlines, and must start with a letter and have no more than 16 characters.
+      - It may consist of lower case letters, numbers and underlines, and must start with a letter and have no more than 16 characters.
+      - This is used in combination with C(db_instance_id) to determine if the account already exists.
     required: true
     aliases: ['name']
   account_password:
     description:
-      - Operation password. It may consist of letters, digits, or underlines, with a length of 6 to 32 characters, Required when C(account_password != "")
+      - The password of the database account. It contains 8 to 32 characters. at least three of the following four character.
+        types (uppercase letters, lowercase letters, digits, and special characters).
+        The allowed special characters are ( ! @ # $ & % ^ * ( ) _ + - = )
     aliases: ['password']
-  description:
+  account_description:
     description:
       - Account remarks, which cannot exceed 256 characters. It cannot begin with http:// , https:// .
         It must start with a Chinese character or English letter. It can include Chinese and
         English characters/letters, underlines (_), hyphens (-), and numbers. The length may be 2-256 characters,
+    aliases: ['description']
   account_type:
     description:
       - Privilege type of account. Normal for Common privilege; Super for High privilege; Default value is Normal.
-        This parameter is valid for MySQL 5.5/5.6 only
     default: Normal
     aliases: ['type']
-    choices: [ 'Normal', 'Super']
+    choices: ['Normal', 'Super']
   db_name:
     description:
-      - Name of the database associated with this account, Required when C(db_name != "").
+      - The name of the database that the account needs to access.
   account_privilege:
     description:
-      - Account permission.Required when C(account_privilege != "")
+      - The account privilege. For MySQL and MariaDB, the values are ReadWrite, ReadOnly, DDLOnly, and DMLOnly.
+        For SＱL Server, the values are ReadWrite, ReadOnly, and DBOwner. For PostgreSQL, the value is DBOwner.
     aliases: ['privilege']
-    choices: ['ReadOnly', 'ReadWrite']
+    choices: ['ReadOnly', 'ReadWrite', 'DDLOnly', 'DMLOnly', 'DBOwner']
 author:
-  - "Li Qiang"
+  - "Li Xue"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "python >= 3.6"
+    - "footmark >= 1.16.0"
 extends_documentation_fragment:
     - alicloud
 """
 
 EXAMPLES = """
 # basic provisioning example to create account
-- name: create account
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-beijing
-    db_instance_id: <your-rds-instance-id>
-    account_name: test
-    account_password: rohit@123
-    description: normal account
-    account_type: normal
-  tasks:
-    - name: create account
-      ali_rds_account:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        state: present
-        db_instance_id: '{{ db_instance_id }}'
-        account_name: '{{ account_name }}'
-        account_password: '{{ account_password }}'
-        description: '{{ description }}'
-        account_type: '{{ account_type }}'
-      register: result
-    - debug: var=result
+- name: Changed. Create rds account.
+  ali_rds_account:
+    db_instance_id: '{{ db_instance_id }}'
+    account_name: account
+    account_password: Ansible12345
+    account_description: account from ansible
+    account_type: Normal
 
-# basic provisioning example to modify account description
-- name: modify description
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-beijing
-    db_instance_id: <your-rds-instance-id>
-    account_name: test
-    description: normal account
-  tasks:
-    - name: modify description
-      ali_rds_account:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        state: present
-        db_instance_id: '{{ db_instance_id }}'
-        account_name: '{{ account_name }}'
-        description: '{{ description }}'
-      register: result
-    - debug: var=result
+- name: Changed. Modify rds account password.
+  ali_rds_account:
+    db_instance_id: '{{ db_instance_id }}'
+    account_name: account
+    account_password: Ansible12345_new
 
-# basic provisioning example to reset an account password
-- name: Reset an account password
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-beijing
-    db_instance_id: <your-rds-instance-id>
-    account_name: test
-    account_password: rohit@123
-  tasks:
-    - name: reset an account password
-      ali_rds_account:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        state: present
-        db_instance_id: '{{ db_instance_id }}'
-        account_name: '{{ account_name }}'
-        account_password: '{{ account_password }}'
-      register: result
-    - debug: var=result
+- name: Changed. Modify rds account description.
+  ali_rds_account:
+    db_instance_id: '{{ db_instance_id }}'
+    account_name: account
+    account_description: account from ansible
 
-# basic provisioning example to delete an account
-- name: Delete account
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-hongkong
+- name: Changed. Grant rds account privilege
+  ali_rds_account:
+    db_instance_id: '{{ db_instance_id }}'
+    account_name: account
+    db_name: '{{ db.database.0.name }}'
+    account_privilege: ReadWrite
+
+- name: Changed. revoke account privilege
+  ali_rds_account:
+    db_instance_id: '{{ db_instance_id }}'
+    account_name: account
+    db_name: '{{ db.database.0.name }}'
     state: absent
-    db_instance_id: <your-rds-instance-id>
-    account_name: test
-  tasks:
-    - name: delete account
-      rds_account:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        state: present
-        db_instance_id: '{{ db_instance_id }}'
-        account_name: '{{ account_name }}'
-      register: result
-    - debug: var=result
 
-# basic provisioning example to grant account permission
-- name: grant account permission
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-hongkong
-    db_instance_id: <your-rds-instance-id>
-    db_name: test
-    account_name: account-test
-    account_privilege: ReadOnly
-  tasks:
-    - name: grant account permission
-      rds_account:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        state: present
-        db_instance_id: '{{ db_instance_id }}'
-        db_name: '{{ db_name }}'
-        account_name: '{{ account_name }}'
-        account_privilege: '{{ account_privilege }}'
-      register: result
-    - debug: var=result
-
-# basic provisioning example to revoke account permission
-- name: revoke account permission
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-hongkong
-    db_instance_id: <your-rds-instance-id>
-    db_name: db-test
-    account_name: account-test
-  tasks:
-    - name: revoke account permission
-      rds_account:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        state: present
-        db_instance_id: '{{ db_instance_id }}'
-        db_name: '{{ db_name }}'
-        account_name: '{{ account_name }}'
-      register: result
-    - debug: var=result
+- name: Changed. Deleting account
+  ali_rds_account:
+    state: absent
+    db_instance_id: '{{ db_instance_id }}'
+    account_name: account
 """
 
 RETURN = '''
 account:
     description: account info.
     returned: when success
-    type: dict
-    sample: {
-        "account_description": "",
-        "account_name": "testdemoaccount",
-        "account_status": "Available",
-        "account_type": "Normal",
-        "database_privileges": {
-            "database_privilege": [
-                {
-                    "account_privilege": "ReadOnly",
-                    "dbname": "testtest"
-                }
-            ]
-         },
-         "db_instance_id": "rm-2zey7ir50261bmg42"
-    }
-account_name:
-    description: name of account.
-    returned: when success
-    type: str
-    sample: "testname"
+    type: complex
+    contains:
+        account_description:
+            description: Account remarks
+            returned: always
+            type: string
+            sample: account from ansible
+        account_name:
+            description: The name of account.
+            returned: always
+            type: string
+            sample: account
+        account_type:
+            description: Privilege type of account.
+            returned: always
+            type: string
+            sample: Normal
+        db_instance_id:
+            description: The ID of the instance to which the account belongs.
+            returned: always
+            type: string
+            sample: rm-2zeib35bbexxxxxx
+        name:
+            description: alias of account_name.
+            returned: always
+            type: string
+            sample: account
+        account_status:
+            description: The status of the account.
+            returned: always
+            type: string
+            sample: Available
+        account_type:
+            description: The type of the account.
+            returned: always
+            type: string
+            sample: Super
+        status:
+            description: alias of status.
+            returned: always
+            type: string
+            sample: Available
+        type:
+            description: alias of type.
+            returned: always
+            type: string
+            sample: Super
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -271,34 +200,17 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_info(obj):
-    """
-    get info from account obj
-    :type obj: account object
-    :param obj: the object of account
-    :return: dict of account info
-    """
-    if obj:
-        return dict(db_instance_id=obj.dbinstance_id,
-                    account_name=obj.account_name,
-                    account_status=obj.account_status,
-                    account_type=obj.account_type,
-                    account_description=obj.account_description,
-                    database_privileges=obj.database_privileges)
-    return {}
-
-
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
         db_name=dict(type='str'),
-        db_instance_id=dict(type='str', required=True),
+        db_instance_id=dict(type='str', aliases=['instance_id'], required=True),
         account_name=dict(type='str', aliases=['name'], required=True),
         account_password=dict(type='str', aliases=['password']),
-        account_privilege=dict(aliases=['privilege'], choices=['ReadOnly', 'ReadWrite']),
-        description=dict(type='str'),
-        account_type=dict(default='Normal', type='str', choices=['Normal', 'Super']),
+        account_privilege=dict(aliases=['privilege'], choices=['ReadOnly', 'ReadWrite', 'DDLOnly', 'DMLOnly', 'DBOwner']),
+        account_description=dict(type='str', aliases=['description']),
+        account_type=dict(default='Normal', type='str', choices=['Normal', 'Super'])
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -313,16 +225,14 @@ def main():
     account_name = module.params['account_name']
     account_password = module.params['account_password']
     account_privilege = module.params['account_privilege']
-    description = module.params['description']
-    account_type = module.params['account_type']
+    account_description = module.params['account_description']
     db_name = module.params['db_name']
 
-    account_list = []
     current_account = None
     changed = False
 
     try:
-        current_account_list = rds.list_account(db_instance_id, account_name)
+        current_account_list = rds.describe_accounts(db_instance_id=db_instance_id, account_name=account_name)
         if len(current_account_list) == 1:
             current_account = current_account_list[0]
     except Exception as e:
@@ -333,42 +243,41 @@ def main():
             if db_name:
                 try:
                     changed = current_account.revoke_privilege(db_instance_id, db_name)
-                    current_account = rds.list_account(db_instance_id, account_name)[0]
-                    module.exit_json(changed=True, account_name=account_name, account=get_info(current_account))
+                    module.exit_json(changed=True, account=current_account.get().read())
                 except Exception as e:
                     module.fail_json(msg=str("Unable to revoke privilege error:{0}".format(e)))
             try:
-                changed = current_account.delete(db_instance_id)
-                module.exit_json(changed=True, account_name=account_name, account=get_info(current_account))
+                changed = current_account.delete()
+                module.exit_json(changed=True, account={})
             except Exception as e:
                 module.fail_json(msg=str("Unable to delete account error:{0}".format(e)))
         module.fail_json(msg="There is no account to revoke database privilege or delete. Please specify an account using 'account_name', and try again.")
+
     if account_password and current_account:
         try:
-            changed = current_account.reset(db_instance_id, account_password)
+            changed = current_account.reset(account_password)
         except Exception as e:
             module.fail_json(msg=str("Unable to reset account password error:{0}".format(e)))
+
     if not current_account:
         try:
-            current_account = rds.create_account(db_instance_id, account_name, account_password, description, account_type)
+            current_account = rds.create_account(**module.params)
+            changed = True
         except Exception as e:
             module.fail_json(msg=str("Unable to create account error:{0}".format(e)))
-    if description and description != current_account.account_description:
+
+    if account_description and account_description != current_account.description:
         try:
-            changed = current_account.modify_description(db_instance_id, description)
-            current_account.account_description = description
+            changed = current_account.modify_description(description=account_description)
         except Exception as e:
             module.fail_json(msg=str("Unable to modify account description error:{0}".format(e)))
-    if db_name:
-        if account_privilege:
-            try:
-                changed = current_account.grant_privilege(db_instance_id, db_name, account_privilege)
-                current_account = current_account_list[0]
-            except Exception as e:
-                module.fail_json(msg=str("Unable to grant privilege error:{0}".format(e)))
-        else:
-            module.fail_json(msg="grant privilege failed. Please check your account_privilege and try again.")
-    module.exit_json(changed=changed, account_name=account_name, account=get_info(current_account))
+
+    if db_name and account_privilege:
+        try:
+            changed = current_account.grant_privilege(db_name, account_privilege)
+        except Exception as e:
+            module.fail_json(msg=str("Unable to grant privilege error:{0}".format(e)))
+    module.exit_json(changed=changed, account=current_account.read())
 
 
 if __name__ == "__main__":
