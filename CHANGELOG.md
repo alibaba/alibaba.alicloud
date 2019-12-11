@@ -1,5 +1,9 @@
 # Ansible-Alicloud Change Log
-## 1.14.0 (Unreleased)
+## 1.15.0 (Unreleased)
+
+## 1.14.0 (11 December, 2019)
+- support profile authentication ([#208](https://github.com/alibaba/ansible-provider/pull/208))
+- improve(inventory): Support more authentication methods ([#209](https://github.com/alibaba/ansible-provider/pull/209))
 
 ## 1.13.0 (3 December, 2019)
 - Add new module ali_dns_domain, ali_dns_domain_info and test case([#201](https://github.com/alibaba/ansible-provider/pull/201))
