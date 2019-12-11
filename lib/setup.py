@@ -48,5 +48,5 @@ setup(
 
     packages=['ansible.module_utils'],
     include_package_data=True,
-    install_requires=['ansible', 'footmark>=1.16.0']
+    install_requires=['ansible', 'footmark>=1.15.0']
 )
