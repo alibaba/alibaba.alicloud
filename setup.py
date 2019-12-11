@@ -59,5 +59,5 @@ setup(
     package_dir={'': 'lib'},
     packages=find_packages('lib'),
     include_package_data=True,
-    install_requires=['ansible', 'footmark>=1.15.0']
+    install_requires=['ansible', 'footmark>=1.16.0', 'ansible_alicloud_module_utils>=1.3.0']
 )
