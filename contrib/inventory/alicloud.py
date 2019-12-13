@@ -161,19 +161,18 @@ class EcsInventory(object):
         assume_role_params = {}
 
         role_arn = os.environ.get('ALICLOUD_ASSUME_ROLE_ARN', None)
-        if not role_arn and assume_role is not None:
+        if not role_arn and assume_role:
             assume_role_params['role_arn'] = assume_role.get('role_arn')
 
         session_name = os.environ.get('ALICLOUD_ASSUME_ROLE_SESSION_NAME', None)
-        if not session_name and assume_role is not None:
+        if not session_name and assume_role:
             assume_role_params['session_name'] = assume_role.get('session_name')
 
         session_expiration = os.environ.get('ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION', None)
-        if not session_expiration and assume_role is not None:
+        if not session_expiration and assume_role:
             assume_role_params['session_expiration'] = assume_role.get('session_expiration')
 
-        policy = os.environ.get('ALICLOUD_ASSUME_ROLE_POLICY', None)
-        if not policy and assume_role is not None:
+        if assume_role:
             assume_role_params['policy'] = assume_role.get('policy')
 
         credentials = {
