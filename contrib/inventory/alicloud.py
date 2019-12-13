@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -158,20 +158,24 @@ class EcsInventory(object):
             shared_credentials_file = self.get_option(config, 'credentials', 'alicloud_shared_credentials_file')
 
         assume_role = self.get_option(config, 'credentials', 'assume_role')
+        assume_role_params = {}
 
         role_arn = os.environ.get('ALICLOUD_ASSUME_ROLE_ARN', None)
-        if not role_arn:
-            role_arn = assume_role.get('role_arn')
+        if not role_arn and assume_role is not None:
+            assume_role_params['role_arn'] = assume_role.get('role_arn')
 
         session_name = os.environ.get('ALICLOUD_ASSUME_ROLE_SESSION_NAME', None)
-        if not session_name:
-            session_name = assume_role.get('session_name')
+        if not session_name and assume_role is not None:
+            assume_role_params['session_name'] = assume_role.get('session_name')
 
         session_expiration = os.environ.get('ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION', None)
-        if not session_expiration:
-            session_expiration = assume_role.get('session_expiration')
+        if not session_expiration and assume_role is not None:
+            assume_role_params['session_expiration'] = assume_role.get('session_expiration')
 
-        policy = assume_role.get('policy')
+        policy = os.environ.get('ALICLOUD_ASSUME_ROLE_POLICY', None)
+        if not policy and assume_role is not None:
+            assume_role_params['policy'] = assume_role.get('policy')
+
         credentials = {
             'alicloud_access_key': access_key,
             'alicloud_secret_key': secret_key,
@@ -179,11 +183,7 @@ class EcsInventory(object):
             'ecs_role_name': ecs_role_name,
             'profile': profile,
             'shared_credentials_file': shared_credentials_file,
-            'assume_role': {
-                'policy': policy,
-                'role_arn': role_arn,
-                'session_name': session_name,
-                'session_expiration': session_expiration},
+            'assume_role': assume_role_params,
             'alicloud_region': alicloud_region
         }
         self.credentials = get_profile(credentials)
