@@ -1,0 +1,40 @@
+---
+- name: Validate module ali_rds_instance
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Changed. Create read only db instance
+      ali_rds_read_only_instance:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        zone_id: cn-beijing-b
+        db_instance_class: rds.mysql.s1.small
+        db_instance_storage: 30
+        pay_type: PostPaid
+        engine_version: 5.6
+
+    - name: Changed. Deleting rds
+      ali_rds_instance:
+        state: absent
+        db_instance_description: '{{ rds.instances.0.name }}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{vpc.vpc.vpc_name}}'
+        cidr_block: '{{vpc.vpc.cidr_block}}'
+        state: absent
+
+
+
