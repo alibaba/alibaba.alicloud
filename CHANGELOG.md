@@ -1,5 +1,15 @@
 # Ansible-Alicloud Change Log
-## 1.15.0 (Unreleased)
+## 1.16.0 (Unreleased)
+
+## 1.15.0 (21 January, 2020)
+- fix inventory bug use ecs role name ([#230](https://github.com/alibaba/ansible-provider/pull/230))
+- improve(rds): Add rds policy module ([#221](https://github.com/alibaba/ansible-provider/pull/221))
+- improve(rds): Modify rds account module ([#222](https://github.com/alibaba/ansible-provider/pull/222))
+- improve(rds): Add rds backup module ([#223](https://github.com/alibaba/ansible-provider/pull/223))
+- improve(ecs): add new param unique_suffix ([#228](https://github.com/alibaba/ansible-provider/pull/228))
+- improve (rds): modify rds instance and database ([#205](https://github.com/alibaba/ansible-provider/pull/205))
+- fix inventory bug ([#217](https://github.com/alibaba/ansible-provider/pull/217))
+- improve(slb): Add tags ([#219](https://github.com/alibaba/ansible-provider/pull/219))
 
 ## 1.14.0 (11 December, 2019)
 - support profile authentication ([#208](https://github.com/alibaba/ansible-provider/pull/208))
