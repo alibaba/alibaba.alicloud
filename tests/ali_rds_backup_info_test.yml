@@ -1,0 +1,26 @@
+---
+- name: Validate module ali_rds_backup_info
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Changed. Create backup
+      ali_rds_backup:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        backup_method: Logical
+        state: present
+
+    - name: Get the existing backup with backup_status
+      ali_rds_backup_info:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        backup_status: Success
+
+    - name: Get the existing backup with backup_mode
+      ali_rds_backup_info:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        backup_mode: Automated
