@@ -28,97 +28,93 @@ DOCUMENTATION = """
 ---
 module: ali_rds_account_info
 version_added: "1.5.0"
-short_description: Gather facts on RDS accounts of Alibaba Cloud.
+short_description: Gather info on RDS accounts of Alibaba Cloud.
 description:
-     - This module fetches data from the Open API in Alicloud.
-       The module must be called from within the RDS account itself.
+     - Gather info on RDS accounts of Alibaba Cloud and Support to use name_prefix to filter accounts.
 options:
     db_instance_id:
       description:
-        - ID of RDS instance.
-    account_names:
+        - The ID of the instance.
+      aliases: ['instance_id']
+      required: True
+    name_prefix:
       description:
-        - A list of RDS account names.
-      aliases: ["names"]
+        - Use name prefix to filter accounts.
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark"
+    - "python >= 3.6"
+    - "footmark >= 1.16.0"
 extends_documentation_fragment:
     - alicloud
 """
 
 EXAMPLES = """
 # Fetch rds account details according to setting different filters
-- name: fetch rds account details example
-  hosts: localhost
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-beijing
-    db_instance_id: rm-dj13c34832w21g47j
-    account_names:
-      - demoaccount
-      - testaccount
-  tasks:
-    - name: Find all accounts in the rds instance
-      ali_rds_account_info:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        db_instance_id: '{{ db_instance_id }}'
-      register: all_accounts
-    - debug: var=all_accounts
-    
-    - name: Find accounts in the rds instance by account name
-      ali_rds_account_info:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        db_instance_id: '{{ db_instance_id }}'
-        account_names: '{{ account_names }}'
-      register: accounts_by_name
-    - debug: var=accounts_by_name
+- name: No Changed. get rds account with name_prefix.
+  ali_rds_account_info:
+    db_instance_id: '{{ db_instance_id }}'
+    name_prefix: account_
+
+- name: No Changed. Retrieving all rds account
+  ali_rds_account_info:
+    db_instance_id: '{{ db_instance_id }}'
 """
 
 RETURN = '''
-account_names:
-    description: List all account's name of rds instance.
-    returned: when success
-    type: list
-    sample: [ "demoaccount", "testaccount" ]
 rds_accounts:
-    description: Details about the rds accounts that were created.
+    description: Details about the rds accounts.
     returned: when success
     type: list
-    sample: [
+    contains: [
         {
-            "account_description": "",
-            "account_name": "demoaccount",
-            "account_status": "Available",
-            "account_type": "Normal",
-            "database_privileges": {
-                "database_privilege": []
-            },
-            "db_instance_id": "rm-dj13c34832w21g47j"
-        },        
-        {
-            "account_description": "",
-            "account_name": "testaccount",
-            "account_status": "Available",
-            "account_type": "Normal",
-            "database_privileges": {
-                "database_privilege": []
-            },
-            "db_instance_id": "rm-dj13c34832w21g47j"
+        account_description:
+            description: Account remarks
+            returned: always
+            type: string
+            sample: account from ansible
+        account_name:
+            description: The name of account.
+            returned: always
+            type: string
+            sample: account
+        account_type:
+            description: Privilege type of account.
+            returned: always
+            type: string
+            sample: Normal
+        db_instance_id:
+            description: The ID of the instance to which the account belongs.
+            returned: always
+            type: string
+            sample: rm-2zeib35bbexxxxxx
+        name:
+            description: alias of account_name.
+            returned: always
+            type: string
+            sample: account
+        account_status:
+            description: The status of the account.
+            returned: always
+            type: string
+            sample: Available
+        account_type:
+            description: The type of the account.
+            returned: always
+            type: string
+            sample: Super
+        status:
+            description: alias of account_status.
+            returned: always
+            type: string
+            sample: Available
+        type:
+            description: alias of account_type.
+            returned: always
+            type: string
+            sample: Super
         }
     ]
-total:
-    description: The number of all rds accounts.
-    returned: when success
-    type: int
-    sample: 2
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -133,28 +129,11 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_info(obj):
-    """
-    get info from account obj
-    :type obj: account object
-    :param obj: the object of account
-    :return: dict of account info
-    """
-    if obj:
-        return dict(db_instance_id=obj.dbinstance_id,
-                    account_name=obj.account_name,
-                    account_status=obj.account_status,
-                    account_type=obj.account_type,
-                    account_description=obj.account_description,
-                    database_privileges=obj.database_privileges)
-    return {}
-
-
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        db_instance_id=dict(type='str', required=True),
-        account_names=dict(type='list', aliases=['names'])
+        db_instance_id=dict(type='str', aliases=['instance_id'], required=True),
+        name_prefix=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -164,30 +143,15 @@ def main():
 
     # Get values of variable
     db_instance_id = module.params['db_instance_id']
-    names = module.params['account_names']
+    name_prefix = module.params['name_prefix']
     result = []
-
     try:
         rds = rds_connect(module)
-
-        if names and (not isinstance(names, list) or len(names)) < 1:
-            module.fail_json(msg='account_name should be a list of account name, aborting')
-
-        # fetch rds accounts by name
-        if names:
-            for name in names:
-                rds_accounts = rds.list_account(db_instance_id=db_instance_id, account_name=name)
-                if rds_accounts and len(rds_accounts) == 1:
-                    result.append(get_info(rds_accounts[0]))
-
-        # fetch all rds accounts
-        else:
-            names = []
-            for account in rds.list_account(db_instance_id=db_instance_id):
-                names.append(account.account_name)
-                result.append(get_info(account))
-
-        module.exit_json(changed=False, account_names=names, rds_accounts=result, total=len(result))
+        for account in rds.describe_accounts(db_instance_id=db_instance_id):
+            if name_prefix and not account.name.startswith(name_prefix):
+                continue
+            result.append(account.read())
+        module.exit_json(changed=False, rds_accounts=result)
     except Exception as e:
         module.fail_json(msg="Unable to describe rds accounts, and got an error: {0}.".format(e))
 
