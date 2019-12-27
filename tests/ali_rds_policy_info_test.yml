@@ -1,0 +1,16 @@
+---
+- name: Validate module ali_rds_policy_info
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Get the existing instance backup policy.
+      ali_rds_policy_info:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        compress_type: 1
+        backup_policy_mode: DataBackupPolicy

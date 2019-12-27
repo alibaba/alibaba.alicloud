@@ -1,0 +1,21 @@
+---
+- name: Validate module ali_rds_backup_policy
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Changed. Modify backup policy.
+      ali_rds_backup_policy:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        backup_policy_mode: DataBackupPolicy
+        preferred_backup_time: 00:00Z-01:00Z
+        preferred_backup_period: [Wednesday, Saturday]
+        log_backup_retention_period: 7
+        compress_type: 1
+        archive_backup_keep_policy: ByMonth
+        high_space_usage_protection: Enable
