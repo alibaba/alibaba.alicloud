@@ -51,7 +51,7 @@ group_outboundRules:
 image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
 instance_type: ecs.sn1ne.xlarge
 instance_description: "Create a new ECS instance resource via Ansible example alicloud-ecs-vpc."
-host_name: "my-instance-from-ansible"
+host_name: "my-instance-[1,2]-from-ansible"
 password: "Test12345"
 
 allocate_public_ip: True

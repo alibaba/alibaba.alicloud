@@ -784,6 +784,31 @@ def main():
                 except Exception as e:
                     module.fail_json(msg="Create new instances got an error: {0}".format(e))
 
+        tags = module.params['tags']
+        if tags or module.params['purge_tags']:
+            for inst in instances:
+                removed = {}
+                if not tags:
+                    removed = inst.tags
+                else:
+                    for key, value in list(inst.tags.items()):
+                        if key not in list(tags.keys()):
+                            removed[key] = value
+                try:
+                    if inst.remove_tags(removed):
+                        changed = True
+                except Exception as e:
+                    module.fail_json(msg="{0}".format(e))
+
+                if tags:
+                    try:
+                        if inst.add_tags(tags):
+                            changed = True
+                    except Exception as e:
+                        module.fail_json(msg="{0}".format(e))
+
+        module.exit_json(changed=changed, ids=ids, instances=get_instances_info(ecs, ids))
+
         # Security Group join/leave begin
         security_groups = module.params['security_groups']
         if security_groups:
@@ -863,30 +888,6 @@ def main():
                     ids.extend(targets)
             except Exception as e:
                 module.fail_json(msg='Reboot instances got an error: {0}'.format(e))
-
-    tags = module.params['tags']
-    if tags or module.params['purge_tags']:
-        for inst in instances:
-            removed = {}
-            if not tags:
-                removed = inst.tags
-            else:
-                for key, value in list(inst.tags.items()):
-                    if key not in list(tags.keys()):
-                        removed[key] = value
-            try:
-                if inst.remove_tags(removed):
-                    changed = True
-            except Exception as e:
-                module.fail_json(msg="{0}".format(e))
-
-            if tags:
-                try:
-                    if inst.add_tags(tags):
-                        changed = True
-                except Exception as e:
-                    module.fail_json(msg="{0}".format(e))
-
     module.exit_json(changed=changed, ids=ids, instances=get_instances_info(ecs, ids))
 
 
