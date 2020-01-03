@@ -84,7 +84,12 @@ options:
       default: 0
     host_name:
       description:
-        - Instance host name.
+        - Instance host name. Ordered hostname is not supported.
+    unique_suffix:
+      description:
+        - Specifies whether to add sequential suffixes to the host_name. 
+          The sequential suffix ranges from 001 to 999. 
+      default: False
     password:
       description:
         - The password to login instance. After rebooting instances, modified password will take effect.
@@ -545,6 +550,7 @@ ids:
     sample: [i-12345er, i-3245fs]
 '''
 
+import re
 import time
 import traceback
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
@@ -601,6 +607,7 @@ def run_instance(module, ecs, exact_count):
     ram_role_name = module.params['ram_role_name']
     spot_price_limit = module.params['spot_price_limit']
     spot_strategy = module.params['spot_strategy']
+    unique_suffix = module.params['unique_suffix']
     # check whether the required parameter passed or not
     if not image_id:
         module.fail_json(msg='image_id is required for new instance')
@@ -625,7 +632,7 @@ def run_instance(module, ecs, exact_count):
                                          amount=exact_count, instance_charge_type=instance_charge_type, period=period, period_unit="Month",
                                          auto_renew=auto_renew, auto_renew_period=auto_renew_period, key_pair_name=key_name,
                                          user_data=user_data, client_token=client_token, ram_role_name=ram_role_name,
-                                         spot_price_limit=spot_price_limit, spot_strategy=spot_strategy)
+                                         spot_price_limit=spot_price_limit, spot_strategy=spot_strategy, unique_suffix=unique_suffix)
 
     except Exception as e:
         module.fail_json(msg='Unable to create instance, error: {0}'.format(e))
@@ -637,6 +644,7 @@ def modify_instance(module, instance):
     # According to state to modify instance's some special attribute
     state = module.params["state"]
     name = module.params['instance_name']
+    unique_suffix = module.params['unique_suffix']
     if not name:
         name = instance.name
 
@@ -645,6 +653,10 @@ def modify_instance(module, instance):
         description = instance.description
 
     host_name = module.params['host_name']
+    if unique_suffix and host_name:
+        suffix = instance.host_name[-3:]
+        host_name = host_name + suffix
+
     if not host_name:
         host_name = instance.host_name
 
@@ -700,7 +712,8 @@ def main():
         user_data=dict(type='str'),
         ram_role_name=dict(type='str'),
         spot_price_limit=dict(type='float'),
-        spot_strategy=dict(type='str', default='NoSpot', choices=['NoSpot', 'SpotWithPriceLimit', 'SpotAsPriceGo'])
+        spot_strategy=dict(type='str', default='NoSpot', choices=['NoSpot', 'SpotWithPriceLimit', 'SpotAsPriceGo']),
+        unique_suffix=dict(type='bool', default=False)
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -709,6 +722,7 @@ def main():
         module.fail_json(msg=missing_required_lib('footmark'), exception=FOOTMARK_IMP_ERR)
 
     ecs = ecs_connect(module)
+    host_name = module.params['host_name']
     state = module.params['state']
     instance_ids = module.params['instance_ids']
     count_tag = module.params['count_tag']
@@ -777,6 +791,8 @@ def main():
                     instances.pop(len(instances) - 1)
             else:
                 try:
+                    if re.search("-\[\d+,\d+\]-", host_name).group():
+                        module.fail_json(msg='Ordered hostname is not supported, If you want to add an ordered suffix to the hostname, you can set unique_suffix to True')
                     new_instances = run_instance(module, ecs, count - len(instances))
                     if new_instances:
                         changed = True

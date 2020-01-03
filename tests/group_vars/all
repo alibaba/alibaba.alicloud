@@ -67,6 +67,7 @@ ram_role_name: ansible-test-vpc
 
 spot_price_limit: 0.97
 spot_strategy: "SpotWithPriceLimit"
+unique_suffix: True
 
 # create ECS disk parameters
 disk_name: "Disk_From_Ansible"

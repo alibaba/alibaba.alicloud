@@ -36,6 +36,7 @@
 
     spot_price_limit: '{{ spot_price_limit }}'
     spot_strategy: "{{ spot_strategy }}"
+    unique_suffix: '{{ unique_suffix }}'
   when: not instances.instances
 
 - name: Get the existing ECS instances
