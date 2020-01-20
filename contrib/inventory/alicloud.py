@@ -190,7 +190,7 @@ class EcsInventory(object):
         # Regions
         config_regions = self.get_option(config, 'ecs', 'regions')
         if not config_regions or config_regions == 'all':
-            all_regions = self.connect_to_ecs(footmark.ecs, "cn-beijing").get_all_regions()
+            all_regions = self.connect_to_ecs(footmark.ecs, "cn-beijing").describe_regions()
 
             exclude_regions = []
             if self.get_option(config, 'ecs', 'regions_exclude'):
