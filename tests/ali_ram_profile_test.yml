@@ -1,0 +1,21 @@
+---
+- name: Validate module ali_ram_login_profile
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Changed. Create login profile
+      ali_ram_login_profile:
+        user_name: ansible
+        password: YourPassword
+        password_reset_required: True
+
+    - name: Changed. update login profile
+      ali_ram_login_profile:
+        user_name: ansible
+        password: YourNewPassword
+
+    - name: Changed. Delete login profile
+      ali_ram_login_profile:
+        state: absent
+        user_name: ansible

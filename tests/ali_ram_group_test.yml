@@ -1,0 +1,48 @@
+---
+- name: Validate module ali_ram_group
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Changed. Create a new group
+      ali_ram_group:
+        group_name: ansible
+        comments: create for ansible
+
+    - name: Get the existing group with name_prefix
+      ali_ram_group_info:
+        name_prefix: ansible
+
+    - name: Changed. Update group comments
+      ali_ram_group:
+        group_name: ansible
+        comments: just create for ansible
+
+    - name: Get the existing group with name_prefix
+      ali_ram_group_info:
+        name_prefix: ansible
+
+    - name: Changed. Update group name
+      ali_ram_group:
+        group_name: ansible
+        new_group_name: ansible1
+
+    - name: Get the existing group with name_prefix
+      ali_ram_group_info:
+        name_prefix: ansible1
+
+    - name: Changed. Add user to group
+      ali_ram_group:
+        group_name: ansible1
+        user_name: ansible
+
+    - name: Changed. Remove user from group
+      ali_ram_group:
+        group_name: ansible1
+        user_name: ansible
+        state: absent
+
+    - name: Changed. Delete group
+      ali_ram_group:
+        group_name: ansible1
+        state: absent

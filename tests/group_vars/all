@@ -4,6 +4,7 @@ availability_zone: cn-beijing-c
 name: ansible-testAcc
 description: "Test ansible module "
 tags: {For: testAcc, Created: Ansible, From: provider/tests}
+policy: '{"Statement": [{"Action": ["*"],"Effect": "Allow","Resource": ["*"]}],"Version":"1"}'
 
 # create vpc parameters
 vpc_cidr: "172.16.0.0/12"
