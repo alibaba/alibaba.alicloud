@@ -1,0 +1,15 @@
+---
+- name: Validate module ali_sts
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Changed. Create assume role
+      ali_sts:
+        role_arn: acs:ram::1182725234319447:role/ansible-test-vpc
+        role_session_name: ansible_test
+        policy: '{{ policy }}'
+        duration_seconds: 2000
+
+    - name: Get caller identity
+      ali_sts:

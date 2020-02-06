@@ -1,0 +1,13 @@
+---
+- name: Validate module ali_ram_user_info
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Get the existing user with name_prefix
+      ali_ram_user_info:
+        name_prefix: ansible
+      register: users
+
+    - name: Get the existing users
+      ali_ram_user_info:

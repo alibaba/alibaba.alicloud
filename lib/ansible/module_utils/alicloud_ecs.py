@@ -39,6 +39,7 @@ try:
     import footmark.ess
     import footmark.sts
     import footmark.dns
+    import footmark.ram
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -248,3 +249,31 @@ def ess_connect(module):
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return ess
+
+
+def sts_connect(module):
+    """ Return an sts connection"""
+    sts_params = get_profile(module.params)
+    # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
+    if region:
+        try:
+            sts = connect_to_acs(footmark.sts, region, **sts_params)
+        except AnsibleACSError as e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return sts
+
+
+def ram_connect(module):
+    """ Return an ram connection"""
+    ram_params = get_profile(module.params)
+    # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
+    if region:
+        try:
+            ram = connect_to_acs(footmark.ram, region, **ram_params)
+        except AnsibleACSError as e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return ram

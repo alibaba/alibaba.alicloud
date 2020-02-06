@@ -1,0 +1,9 @@
+---
+- name: Validate module ali_ram_access_key_info
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: No Changed. Get ram user all access key
+      ali_ram_access_key_info:
+        user_name: ansible
