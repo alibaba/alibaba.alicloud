@@ -251,7 +251,8 @@ class EcsInventory(object):
             'group_by_vswitch_id',
             'group_by_security_group',
             'group_by_tag_keys',
-            'group_by_tag_none'
+            'group_by_tag_none',
+            'group_by_private_ip_address'
         ]
         for option in group_by_options:
             setattr(self, option, self.get_option(config, 'ecs', option))
@@ -372,6 +373,17 @@ class EcsInventory(object):
 
         # # Add to index
         self.index[hostname] = [region, instance.id, instance.name]
+
+        # Inventory: Group by instance private_ip_address
+        if self.group_by_private_ip_address:
+            if not instance.inner_ip_address:
+                private_ip_address = instance.vpc_attributes['private_ip_address']['ip_address'][0]
+                self.push(self.inventory, private_ip_address, hostname)
+            else:
+                private_ip_address = instance.inner_ip_address
+                self.push(self.inventory, private_ip_address, hostname)
+            if self.nested_groups:
+                self.push_group(self.inventory, 'private_ip_addresses', private_ip_address)
 
         # Inventory: Group by instance ID (always a group of 1)
         if self.group_by_instance_id:
