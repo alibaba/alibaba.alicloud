@@ -80,7 +80,6 @@
         tags:
           Test1: "add1"
           Test2: "add2"
-          Test3: "add3"
 
     - name: No Changed. No tags need to be removed
       ali_instance:
@@ -89,7 +88,6 @@
         tags:
           Test1: "add1"
           Test2: "add2"
-          Test3: "add3"
 
     # Delete all of resource
     - name: Changed. Deleting instances
