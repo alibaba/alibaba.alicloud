@@ -1,26 +1,26 @@
 ---
 - name: Create first new disk and attach it to an instance 0
   ali_disk:
-    alicloud_region: '{{ alicloud_region }}'
-    alicloud_zone: '{{ alicloud_zone }}'
+#    alicloud_region: '{{ alicloud_region }}'
+#    alicloud_zone: '{{ alicloud_zone }}'
     disk_name: '{{ disk_name }}-0'
     disk_category: '{{ disk_category }}'
     description: '{{ disk_description }}'
     size: '{{ data_disk_size }}'
     disk_tags: '{{ disk_tags }}'
-    instance_id: '{{ instance.instances.0.id }}'
+    instance_id: '{{ instances.instances.0.id }}'
     delete_with_instance: '{{ delete_with_instance }}'
   register: disk_details
 
 - name: Create a new disk and attach it to an instance
   ali_disk:
-    alicloud_region: '{{ alicloud_region }}'
-    alicloud_zone: '{{ alicloud_zone }}'
+#    alicloud_region: '{{ alicloud_region }}'
+#    alicloud_zone: '{{ alicloud_zone }}'
     disk_name: '{{ disk_name }}-1'
     disk_category: '{{ disk_category }}'
     description: '{{ disk_description }}'
     size: '{{ data_disk_size }}'
     disk_tags: '{{ disk_tags }}'
-    instance_id: '{{ instance.instances.1.id }}'
+    instance_id: '{{ instances.instances.1.id }}'
     delete_with_instance: '{{ delete_with_instance }}'
   register: disk_details

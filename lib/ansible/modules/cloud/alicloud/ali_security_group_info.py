@@ -243,7 +243,7 @@ def main():
                 continue
             if name_prefix and not str(sg.security_group_name).startswith(name_prefix):
                 continue
-            groups.append(sg.read())
+            groups.append(sg.get().read())
             ids.append(sg.id)
     except ECSResponseError as e:
         module.fail_json(msg='Error in describe_security_groups: {0}'.format(e))

@@ -791,7 +791,7 @@ def main():
                     instances.pop(len(instances) - 1)
             else:
                 try:
-                    if re.search("-\[\d+,\d+\]-", host_name).group():
+                    if re.search("-\[\d+,\d+\]-", host_name):
                         module.fail_json(msg='Ordered hostname is not supported, If you want to add an ordered suffix to the hostname, you can set unique_suffix to True')
                     new_instances = run_instance(module, ecs, count - len(instances))
                     if new_instances:
@@ -881,29 +881,25 @@ def main():
                 module.fail_json(msg='Reboot instances got an error: {0}'.format(e))
 
     tags = module.params['tags']
-    if tags or module.params['purge_tags']:
+    if module.params['purge_tags']:
         for inst in instances:
-            removed = {}
             if not tags:
-                removed = inst.tags
-            else:
-                for key, value in list(inst.tags.items()):
-                    if key not in list(tags.keys()):
-                        removed[key] = value
+                tags = inst.tags
             try:
-                if inst.remove_tags(removed):
+                if inst.remove_tags(tags):
                     changed = True
             except Exception as e:
                 module.fail_json(msg="{0}".format(e))
+        module.exit_json(changed=changed, instances=get_instances_info(ecs, ids))
 
-            if tags:
-                try:
-                    if inst.add_tags(tags):
-                        changed = True
-                except Exception as e:
-                    module.fail_json(msg="{0}".format(e))
-
-    module.exit_json(changed=changed, ids=ids, instances=get_instances_info(ecs, ids))
+    if tags:
+        for inst in instances:
+            try:
+                if inst.add_tags(tags):
+                    changed = True
+            except Exception as e:
+                module.fail_json(msg="{0}".format(e))
+    module.exit_json(changed=changed, instances=get_instances_info(ecs, ids))
 
 
 if __name__ == '__main__':

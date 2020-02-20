@@ -312,7 +312,7 @@ def group_exists(conn, module, vpc_id, name, multi, recent):
     try:
         for g in conn.describe_security_groups(**filters):
             if g.security_group_name == name:
-                matching_groups.append(g)
+                matching_groups.append(g.get())
     except Exception as e:
         module.fail_json(msg="Failed to describe Security Groups: {0}".format(e))
 
