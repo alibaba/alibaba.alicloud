@@ -1,0 +1,34 @@
+---
+- name: Create a new alicloud VPC resource
+  ali_vpc:
+    cidr_block: '{{ vpc_cidr }}'
+    vpc_name: '{{ vpc_name }}'
+    description: '{{ vpc_description }}'
+  register: vpc
+
+- name: Create a new alicloud VSwitch resource
+  ali_vswitch:
+    alicloud_zone: '{{ availability_zone }}'
+    cidr_block: '{{ vswitch_cidr }}'
+    vswitch_name: '{{ vswitch_name }}'
+    description: '{{ vswitch_description }}'
+    vpc_id: '{{vpc.vpc.id}}'
+  register: vswitch
+
+- name: Get the existing vswitch
+  ali_vswitch_info:
+    name_prefix: '{{ vswitch_name }}'
+    filters:
+      vpc_id: '{{vpc.vpc.id}}'
+  register: vswitches
+
+- name: Filter vpc using name_regex
+  ali_vpc_info:
+    name_prefix: '{{ vpc_name }}'
+  register: vpcs
+
+- name: Changed. Add vpc tags.
+  ali_vpc_tag:
+    resource_type: 'vpc'
+    resource_ids: '{{ vpcs.ids }}'
+    tags: '{{ vpc_tags }}'

@@ -1,0 +1,82 @@
+---
+- name: Remove tags for resource
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Filter disk using name
+      ali_disk_info:
+        disk_names: ['{{ disk_name }}']
+      register: disks
+
+    - name: Changed. Remove disk Tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'disk'
+        resource_ids: '{{ disks.disk_ids }}'
+        tags: '{{ disk_tags }}'
+
+
+    - name: Filter the existing eip
+      ali_eip_info:
+        name_prefix: '{{ eip_name }}'
+      register: eips
+
+    - name: Changed. Remove eip Tags.
+      ali_vpc_tag:
+        state: absent
+        resource_type: 'eip'
+        resource_ids: '{{ eips.ids }}'
+        tags: '{{ eip_tags }}'
+
+
+    - name: Filter slb using name_regex
+      ali_slb_lb_info:
+        name_prefix: '{{ slb_name }}'
+      register: slbs
+
+    - name: Changed. Remove slb tags.
+      ali_slb_tag:
+        state: absent
+        resource_type: 'instance'
+        resource_ids: '{{ slbs.ids }}'
+        tags: '{{ slb_tags }}'
+
+
+    - name: Filter instance using name_regex
+      ali_instance_info:
+        name_prefix: '{{ instance_name }}'
+      register: instances
+
+    - name: Changed. Remove instance tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'instance'
+        resource_ids: '{{ instances.ids }}'
+        tags: '{{ instance_tags }}'
+
+
+    - name: Filter security group using name_regex
+      ali_security_group_info:
+        name_prefix: '{{ security_group_name }}'
+      register: sgs
+
+    - name: Changed. Remove security group Tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'securitygroup'
+        resource_ids: '{{ sgs.ids }}'
+        tags: '{{ security_group_tags }}'
+
+
+    - name: Filter vpc using name_regex
+      ali_vpc_info:
+        name_prefix: '{{ vpc_name }}'
+      register: vpcs
+
+    - name: Changed. Remove vpc tags.
+      ali_vpc_tag:
+        state: absent
+        resource_type: 'vpc'
+        resource_ids: '{{ vpcs.ids }}'
+        tags: '{{ vpc_tags }}'
