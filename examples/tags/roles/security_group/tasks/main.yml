@@ -1,0 +1,18 @@
+---
+- name: Create a VPC security group
+  ali_security_group:
+    name: '{{ security_group_name }}'
+    description: '{{ group_description }}'
+    vpc_id: '{{vpc.vpc.id}}'
+  register: group
+
+- name: Filter security group using name_regex
+  ali_security_group_info:
+    name_prefix: '{{ security_group_name }}'
+  register: sgs
+
+- name: Changed. Add security group Tags.
+  ali_ecs_tag:
+    resource_type: 'securitygroup'
+    resource_ids: '{{ sgs.ids }}'
+    tags: '{{ security_group_tags }}'

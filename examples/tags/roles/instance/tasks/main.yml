@@ -1,0 +1,40 @@
+---
+- name: Get the existing ECS instances
+  ali_instance_info:
+    name_prefix: '{{ instance_name }}'
+    filters:
+      vpc_id: '{{ vpcs.vpcs.0.id }}'
+  register: instances
+
+- name: Creating an ECS instance
+  ali_instance:
+    image: '{{ image_id }}'
+    type: '{{ instance_type }}'
+    instance_name: '{{ instance_name }}'
+    description: '{{ instance_description }}'
+    host_name: '{{ host_name }}'
+    password: '{{ password }}'
+
+    allocate_public_ip: '{{ allocate_public_ip }}'
+    internet_charge_type: '{{ internet_charge_type }}'
+    max_bandwidth_in: '{{ max_bandwidth_in }}'
+    max_bandwidth_out: '{{ max_bandwidth_out }}'
+
+    security_groups: ['{{ sgs.groups.0.id }}']
+    vswitch_id: '{{ vswitches.vswitches.0.id }}'
+
+    system_disk_category: '{{ system_disk_category }}'
+    system_disk_size: '{{ system_disk_size }}'
+    count: 10
+  when: not instances.instances
+
+- name: Filter instance using name_regex
+  ali_instance_info:
+    name_prefix: '{{ instance_name }}'
+  register: instances
+
+- name: Changed. Add instance tags.
+  ali_ecs_tag:
+    resource_type: 'instance'
+    resource_ids: '{{ instances.ids }}'
+    tags: '{{ instance_tags }}'

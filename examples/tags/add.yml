@@ -1,0 +1,12 @@
+---
+- name: Add tags for below resource
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - slb
+    - security_group
+    - instance
+    - disk
+    - eip
