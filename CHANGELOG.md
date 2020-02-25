@@ -1,5 +1,9 @@
 # Ansible-Alicloud Change Log
-## 1.16.0 (Unreleased)
+## 1.17.0 (Unreleased)
+
+## 1.16.0 (27 February, 2020)
+- improve(ram): Add ram module ([#227](https://github.com/alibaba/ansible-provider/pull/227))
+- Add new modules ali_ecs_tag ali_slb_tag ali_vpc_tag ([#235](https://github.com/alibaba/ansible-provider/pull/235))
 
 ## 1.15.0 (31 January, 2020)
 - fix inventory bug use ecs role name ([#230](https://github.com/alibaba/ansible-provider/pull/230))
