@@ -1,0 +1,10 @@
+---
+- name: Create ECS
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
