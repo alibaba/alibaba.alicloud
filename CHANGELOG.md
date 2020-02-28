@@ -1,6 +1,9 @@
 # Ansible-Alicloud Change Log
 ## 1.17.0 (Unreleased)
 
+## 1.16.1 (28 February, 2020)
+- modify footmark version ([#239](https://github.com/alibaba/ansible-provider/pull/239))
+
 ## 1.16.0 (27 February, 2020)
 - improve(ram): Add ram module ([#227](https://github.com/alibaba/ansible-provider/pull/227))
 - Add new modules ali_ecs_tag ali_slb_tag ali_vpc_tag ([#235](https://github.com/alibaba/ansible-provider/pull/235))
