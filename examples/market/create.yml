@@ -1,0 +1,52 @@
+---
+- name: Validate module ali_market_product_info
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+
+  tasks:
+    - name: Search products
+      ali_market_product_info:
+        search_term: 'Wordpress'
+        product_type: MIRROR
+        category_id: '53616009'
+        suggested_price: 0
+      register: products
+
+    - name: Get the existing ECS instances
+      ali_instance_info:
+        name_prefix: 'Instance_From_Ansible_Market'
+        filters:
+          page_size: 100
+      register: instances
+
+    - name: Creating an ECS instance
+      ali_instance:
+        image: '{{ products.products.0.image_ids.2.value }}'
+        type: '{{ instance_type }}'
+        instance_name: '{{ instance_name }}'
+        description: '{{ instance_description }}'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+
+        allocate_public_ip: '{{ allocate_public_ip }}'
+        internet_charge_type: '{{ internet_charge_type }}'
+        max_bandwidth_in: '{{ max_bandwidth_in }}'
+        max_bandwidth_out: '{{ max_bandwidth_out }}'
+
+        security_groups: ['{{ sgs.groups.0.id }}']
+        vswitch_id: '{{ vswitches.vswitches.0.id }}'
+
+        system_disk_category: '{{ system_disk_category }}'
+        system_disk_size: '{{ system_disk_size }}'
+        count: '{{ number_of_instances }}'
+        tags: '{{ instance_tags }}'
+      register: instance
+      when: not instances.instances
+
+    - debug:
+        msg: http://{{instance.instances.0.public_ip_address}}
