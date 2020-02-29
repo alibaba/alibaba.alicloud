@@ -10,11 +10,15 @@ These playbooks filter resources and add tags for them.
 These playbooks' hosts default to `localhost`. To use, make the file and edit the `hosts` inventory file to include the names or IPs of the servers
 you want to deploy.
 
-Then run the playbook, like this:
+Then run the playbook, you can add tags like:
 
-	ansible-playbook Add_tags.yml
-	or
-	ansible-playbook -i hosts Add_tags.yml
+```shell
+ansible-playbook tags.yml --extra-vars "alicloud_region=cn-hangzhou state=present"
+```
+Or remove tags like:
+```shell
+ansible-playbook tags.yml --extra-vars "alicloud_region=cn-hangzhou state=absent"
+```
 
 When the run is complete, you can login in the Alicloud console to check them.
 

@@ -5,16 +5,16 @@ alicloud_zone: "cn-hangzhou-i"
 
 # create vpc parameters
 vpc_cidr: "172.16.0.0/12"
-vpc_name: "VPC_From_Ansible"
+vpc_name: "Ansible_VPC"
 vpc_description: "Create a new VPC resource via Ansible example alicloud-ecs-vpc."
 
 # create vswitch parameters
 vswitch_cidr: "172.16.1.0/24"
-vswitch_name: "VSwitch_From_Ansible"
+vswitch_name: "Ansible_VSwitch"
 vswitch_description: "Create a new VSwitch resource via Ansible example alicloud-ecs-vpc."
 
 # create security parameters
-group_name: "Security_Group_From_Ansible"
+group_name: "Ansible_Security_Group"
 group_description: "Create a new security group resource via Ansible example alicloud-ecs-vpc."
 group_inboundRules:
   - ip_protocol: tcp
@@ -51,7 +51,7 @@ group_outboundRules:
 # create ECS instance parameters
 image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
 instance_type: "ecs.t5-lc1m2.small"
-instance_name: "Instance_From_Ansible"
+instance_name: "Ansible_Instance"
 instance_description: "Create a new ECS instance resource via Ansible example alicloud-ecs-vpc."
 host_name: "my-instance-from-ansible"
 password: "Test12345"
@@ -68,7 +68,7 @@ system_disk_size: 50
 number_of_instances: 2
 
 # create ECS disk parameters
-disk_name: "Disk_From_Ansible"
+disk_name: "Ansible_Disk"
 disk_category: "cloud_ssd"
 disk_description: "Create a new ECS disk resource via Ansible example alicloud-ecs-vpc."
 data_disk_size: 80
