@@ -10,11 +10,16 @@ These playbooks Create ECS and Deploy product on them.
 These playbooks' hosts default to `localhost`. To use, make the file and edit the `hosts` inventory file to include the names or IPs of the servers
 you want to deploy.
 
+### Configuration
+
+export ALICLOUD_INI_PATH=./alicloud.ini
+
+### Usage
 Then run the playbook, like this:
+    
+	ansible-playbook -i hosts deploy.yml -k
 
-	ansible-playbook -i hosts deploy.yml
-
-When the run is complete, you can login in the Alicloud console to check them.
+When the run is complete, you can see the url.
 
 
 ### Ideas for Improvement

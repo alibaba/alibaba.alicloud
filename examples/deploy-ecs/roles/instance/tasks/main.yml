@@ -56,6 +56,7 @@
     system_disk_category: '{{ system_disk_category }}'
     system_disk_size: '{{ system_disk_size }}'
     count: '{{ number_of_instances }}'
+    tags: '{{ instance_tags }}'
   when: not instances_a.instances
 
 - name: Get the existing ECS instances
