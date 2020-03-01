@@ -6,27 +6,16 @@
   tasks:
     - name: Filter instance using name_regex
       ali_instance_info:
-        name_prefix: '{{ instance_name }}'
+        name_prefix: '{{ item }}'
+      with_items: '{{ instance_name }}'
       register: instances
 
     - name: Changed. Deleting instances
       ali_instance:
-        instance_ids: '{{instances.ids}}'
+        instance_ids: '{{item.ids}}'
         force: True
         state: absent
-
-
-    - name: Filter instance using name_regex
-      ali_instance_info:
-        name_prefix: '{{ instance_name_a }}'
-      register: instances
-
-    - name: Changed. Deleting instances with another vswitch
-      ali_instance:
-        instance_ids: '{{instances.ids}}'
-        force: True
-        state: absent
-
+      with_items: '{{ instances.results }}'
 
     - name: Filter security group using name_regex
       ali_security_group_info:
@@ -51,19 +40,7 @@
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
-      with_items: '{{vswitches.vswitches}}'
-
-    - name: Get another vswitch
-      ali_vswitch_info:
-        name_prefix: '{{ vswitch_name_a }}'
-      register: vswitches
-
-    - name: Changed. Deleting vswitches
-      ali_vswitch:
-        vpc_id: '{{ item.vpc_id}}'
-        cidr_block: '{{ item.cidr_block}}'
-        state: absent
-      with_items: '{{vswitches.vswitches}}'
+      with_items: '{{ vswitches.vswitches }}'
 
     - name: Filter vpc using name_regex
       ali_vpc_info:
