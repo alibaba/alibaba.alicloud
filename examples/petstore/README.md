@@ -17,7 +17,7 @@ export ALICLOUD_INI_PATH=./alicloud.ini
 ### Usage
 Then run the playbook, like this:
     
-	ansible-playbook -i hosts deploy.yml -k
+	ansible-playbook -i alicloud.py deploy.yml -k
 
 When the run is complete, you can see the url.
 
