@@ -1,7 +1,7 @@
 ## Search market product and use image to create ecs
 - Requires Ansible 2.9 or newer
-- Requires Ansible-Alicloud 1.17.0 or newer
-- Requires footmark 1.18.0 or newer
+- Requires Ansible-Alicloud 1.16.1 or newer
+- Requires footmark 1.17.1 or newer
 
 
 These playbooks' hosts default to `localhost`. To use, make the file and edit the `hosts` inventory file to include the names or IPs of the servers
