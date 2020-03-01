@@ -6,22 +6,26 @@
   tasks:
     - name: Filter instance using name_regex
       ali_instance_info:
+        alicloud_region: '{{ alicloud_region }}'
         name_prefix: '{{ instance_name }}'
       register: instances
 
     - name: Changed. Deleting instances
       ali_instance:
+        alicloud_region: '{{ alicloud_region }}'
         instance_ids: '{{instances.ids}}'
         force: True
         state: absent
 
     - name: Filter security group using name_regex
       ali_security_group_info:
+        alicloud_region: '{{ alicloud_region }}'
         name_prefix: '{{ security_group_name }}'
       register: sgs
 
     - name: Changed. Deleting the security groups
       ali_security_group:
+        alicloud_region: '{{ alicloud_region }}'
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
@@ -30,11 +34,13 @@
 
     - name: Get the existing vswitch
       ali_vswitch_info:
+        alicloud_region: '{{ alicloud_region }}'
         name_prefix: '{{ vswitch_name }}'
       register: vswitches
 
     - name: Changed. Deleting vswitches
       ali_vswitch:
+        alicloud_region: '{{ alicloud_region }}'
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
@@ -42,11 +48,13 @@
 
     - name: Filter vpc using name_regex
       ali_vpc_info:
+        alicloud_region: '{{ alicloud_region }}'
         name_prefix: '{{ vpc_name }}'
       register: vpcs
 
     - name: Changed. Deleting vpcs
       ali_vpc:
+        alicloud_region: '{{ alicloud_region }}'
         cidr_block: '{{ item.cidr_block }}'
         name: '{{ item.vpc_name }}'
         state: absent
