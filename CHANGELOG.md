@@ -1,5 +1,15 @@
 # Ansible-Alicloud Change Log
-## 1.17.0 (Unreleased)
+## 1.18.0 (Unreleased)
+
+## 1.17.0 (1 March, 2020)
+- Add new module ali_market_product_info ([#240](https://github.com/alibaba/ansible-provider/pull/240))
+- Add example tags ([#236](https://github.com/alibaba/ansible-provider/pull/236))
+- improve(example/tags): remove create resource  ([#241](https://github.com/alibaba/ansible-provider/pull/241))
+- deploy petstore on ECS ([#238](https://github.com/alibaba/ansible-provider/pull/238))
+- Add market example ([#242](https://github.com/alibaba/ansible-provider/pull/242))
+- improve market example ([#244](https://github.com/alibaba/ansible-provider/pull/244))
+- improve(example/petstore): Add ini file ([#244](https://github.com/alibaba/ansible-provider/pull/244))
+- improve(example/petstore): Add alicloud.py file ([#245](https://github.com/alibaba/ansible-provider/pull/245))
 
 ## 1.16.1 (28 February, 2020)
 - modify footmark version ([#239](https://github.com/alibaba/ansible-provider/pull/239))
