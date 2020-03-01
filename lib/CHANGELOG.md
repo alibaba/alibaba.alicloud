@@ -1,5 +1,12 @@
 # Ansible-Alicloud-Module_Utils Change Log
-## 1.4.0 (unreleased)
+## 1.5.0 (unreleased)
+
+## 1.4.0 (1 March, 2020)
+
+IMPROVEMENTS:
+
+   * alicloud_ecs.py: support market ([#240](https://github.com/alibaba/ansible-provider/pull/240))
+
 
 ## 1.3.0 (11 December, 2019)
 
