@@ -76,7 +76,7 @@ disk_category: "cloud_ssd"
 disk_description: "Create a new ECS disk resource via Ansible example alicloud-ecs-vpc."
 data_disk_size: 80
 disk_tags: [{tag_key: "created_by", tag_value: "Ansible-Alicloud"}, {tag_key: "created_from", tag_value: "example-alicloud-ecs-vpc"}]
-delete_with_instance: False
+delete_with_instance: True
 
 delete: False
 
