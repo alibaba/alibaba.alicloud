@@ -33,42 +33,33 @@ description:
      - This module fetches data from the Open API in Alicloud.
        The module must be called from within the ECS disk itself.
 options:
-    zone_id:
-      description:
-        - Aliyun availability zone ID in which to launch the disk
-      aliases: ['alicloud_zone', 'zone' ]
-    disk_names:
-      description:
-        - A list of ECS disk names.
-      aliases: ["names"]
-    disk_ids:
-      description:
-        - A list of ECS disk ids.
-      aliases: ["ids"]
-    name_prefix:
-      description:
-        - Use a disk name prefix to filter disks.
-    instance_id:
-      description:
-        - Filter the results by the specified ECS instance ID.
-    encrypted:
-      description:
-        - Indicate whether the disk is encrypted or not.
-      default: False
-      type: bool
-    resource_group_id:
-      description:
-        - The Id of resource group which the disk belongs.
-      aliases: ["group_id"]
-    category:
-      description:
-        - The category of disk.
-      choices: ['cloud', 'cloud_efficiency', 'cloud_ssd', 'cloud_essd', 'local_ssd_pro', 'local_hdd_pro', 'ephemeral', 'ephemeral_ssd']
-    disk_type:
-      description:
-        - The type of disk.
-      choices: ["system", "data"]
-      aliases: ["type"]
+  alicloud_zone:
+    description:
+      - Aliyun availability zone ID in which to launch the disk
+      - This parameter is deprecated in version 1.18.0, You can pass it C({"zone_id":"value"}) via I(filters).
+    aliases: ['zone_id', 'zone' ]
+  disk_names:
+    description:
+      - A list of ECS disk names.
+      - This parameter is deprecated in version 1.18.0, You can use I(name_prefix) to filter disks.
+    aliases: ["names"]
+  disk_ids:
+    description:
+      - A list of ECS disk ids.
+      - This parameter is deprecated in version 1.18.0, You can pass it C({"disk_ids":"value"}) via I(filters).
+    aliases: ["ids"]
+  name_prefix:
+    description:
+      - Use a disk name prefix to filter disks.
+  filters:
+    description:
+      - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
+        all of request parameters. See U(https://www.alibabacloud.com/help/zh/doc-detail/25514.htm) for parameter details.
+        Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
+        connect different words in one parameter.
+  tags:
+    description:
+      - A hash/dictionaries of disk tags. C({"key":"value"})
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -80,24 +71,19 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Fetch disk details according to setting different filters
-- name: Filter disk using disk_ids
+- name: Filter disk using filters
   ali_disk_info:
-    disk_ids: ['d-2ze3carakr2qxxxxxx', 'd-2zej6cuwzmummxxxxxx']
+    filters:
+      disk_ids: ['d-2ze3carakr2qxxxxxx', 'd-2zej6cuwzmummxxxxxx'],
+      zone_id: 'cn-beijing-c'
+      instance_id: 'i-2zeii6c3xxxxxxx'
 
 - name: Filter disk using name_prefix
   ali_disk_info:
-    name_prefix: 'YourDiskName'
-
-- name: Filter disk using zone id
-  ali_disk_info:
-    zone_id: 'cn-beijing-c'
+    name_prefix: 'YourDiskNamePrefix'
 
 - name: Filter all disks
   ali_disk_info:
-
-- name: Filter disk using insatnce id
-  ali_disk_info:
-    instance_id: 'i-2zeii6c3xxxxxxx'
 '''
 
 RETURN = '''
@@ -182,7 +168,6 @@ HAS_FOOTMARK = False
 
 try:
     from footmark.exception import ECSResponseError
-
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -191,15 +176,9 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        zone_id=dict(aliases=['zone', 'alicloud_zone']),
-        disk_ids=dict(type='list', aliases=['ids']),
-        disk_names=dict(type='list', aliases=['names']),
+        filters=dict(type='dict'),
         name_prefix=dict(type='str'),
-        instance_id=dict(type='str'),
-        encrypted=dict(type='bool', default=False),
-        resource_group_id=dict(type='str', aliases=['group_id']),
-        category=dict(type='str', choices=['cloud', 'cloud_efficiency', 'cloud_ssd', 'cloud_essd', 'local_ssd_pro', 'local_hdd_pro', 'ephemeral', 'ephemeral_ssd']),
-        disk_type=dict(type='str', choices=["system", "data"], aliases=['type'])
+        tags=dict(type='dict')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -210,29 +189,26 @@ def main():
 
     disks = []
     disk_ids = []
-    ids = module.params['disk_ids']
-    names = module.params['disk_names']
-    if ids and (not isinstance(ids, list) or len(ids)) < 1:
-        module.fail_json(msg='disk_ids should be a list of disk id, aborting')
 
-    if names and (not isinstance(names, list) or len(names)) < 1:
-        module.fail_json(msg='disk_names should be a list of disk name, aborting')
+    filters = module.params['filters']
+    if not filters:
+        filters = {}
 
     name_prefix = module.params['name_prefix']
-    if names:
-        for name in names:
-            module.params['disk_name'] = name
-            for disk in ecs.describe_disks(**module.params):
-                if name_prefix and not str(disk.name).startswith(name_prefix):
-                    continue
-                disks.append(disk.read())
-                disk_ids.append(disk.id)
-    else:
-        for disk in ecs.describe_disks(**module.params):
-            if name_prefix and not str(disk.name).startswith(name_prefix):
+    tags = module.params['tags']
+
+    for disk in ecs.describe_disks(**filters):
+        if name_prefix and not str(disk.name).startswith(name_prefix):
+            continue
+        if tags:
+            flag = False
+            for key, value in list(tags.items()):
+                if key in list(disk.tags.keys()) and value == disk.tags[key]:
+                    flag = True
+            if not flag:
                 continue
-            disks.append(disk.read())
-            disk_ids.append(disk.id)
+        disks.append(disk.read())
+        disk_ids.append(disk.id)
 
     module.exit_json(changed=False, disk_ids=disk_ids, disks=disks, total=len(disks))
 

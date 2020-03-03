@@ -13,22 +13,17 @@
   tasks:
     - name: Filter disk using disk_ids
       ali_disk_info:
-        disk_ids: ['{{ disk_details.disk.id }}', '{{ disk1_details.disk.id }}']
+        filters:
+          disk_ids: ['{{ disk_details.disk.id }}','{{ disk1_details.disk.id }}']
+          zone_id: '{{ availability_zone }}'
+          instance_id: '{{ disk_details.disk.instance_id }}'
 
     - name: Filter disk using name_prefix
       ali_disk_info:
         name_prefix: '{{ disk_name }}'
 
-    - name: Filter disk using zone id
-      ali_disk_info:
-        zone_id: '{{ availability_zone }}'
-
     - name: Filter all disks
       ali_disk_info:
-
-    - name: Filter disk using insatnce id
-      ali_disk_info:
-        instance_id: '{{ disk_details.disk.instance_id }}'
 
     # Delete all of resource
     - name: Changed. Deleting instances
