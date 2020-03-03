@@ -29,12 +29,8 @@
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
-          - server_id: '{{instances.ids.1}}'
+          - server_ids: ['{{instances.ids.1}}', '{{instances.ids.2}}']
             port: 21
-            weight: 100
-            type: ecs
-          - server_id: '{{instances.ids.2}}'
-            port: 22
             weight: 100
             type: ecs
 
@@ -47,12 +43,8 @@
             port: 20
             weight: 100
             type: ecs
-          - server_id: '{{instances.ids.1}}'
+          - server_ids: ['{{instances.ids.1}}', '{{instances.ids.2}}']
             port: 21
-            weight: 100
-            type: ecs
-          - server_id: '{{instances.ids.2}}'
-            port: 22
             weight: 100
             type: ecs
 

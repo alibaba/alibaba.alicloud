@@ -56,7 +56,8 @@ options:
         - List of hash/dictionaries backend servers or network interfaces to add in this group (see example).
           If none are supplied, no backend servers will be enabled. Each server has several keys and refer to
           https://www.alibabacloud.com/help/doc-detail/35215.htm. Each key should be format as under_score.
-          Currently the valid keys including "server_id", "port", "weight" and "type".
+          Currently the valid keys including "server_ids", "server_id", "port", "weight" and "type".
+        - If you have multiple servers to add and they have the same port, weight, type, you can use the server_ids parameter, which is a list of ids.
     purge_backend_servers:
       description:
         - Purge existing backend servers or ENIs on VServer group that are not found in backend_servers.
@@ -76,8 +77,8 @@ options:
       default: False
       type: bool
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.9.0"
+    - "python >= 3.6"
+    - "footmark >= 1.19.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -205,7 +206,7 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-VALID_SERVER_PARAMS = ["server_id", "port", "weight", "type"]
+VALID_SERVER_PARAMS = ["server_id", "port", "weight", "type", "server_ids"]
 
 
 def check_backend_servers(module, servers):
@@ -215,10 +216,26 @@ def check_backend_servers(module, servers):
                 module.fail_json(msg='Invalid backend server key {0}. Valid keys: {1}.'.format(key, VALID_SERVER_PARAMS))
 
 
+def parse_server_ids(servers):
+    parse_server = []
+    if servers:
+        for s in servers:
+            if "server_ids" in s:
+                ids = s.pop("server_ids")
+                for id in ids:
+                    server = {"server_id": id}
+                    server.update(s)
+                    parse_server.append(server)
+            else:
+                parse_server.append(s)
+    return parse_server
+
+
 def format_backend_servers(servers):
     backend_servers = []
     if servers:
-        for s in servers:
+        parse_server = parse_server_ids(servers)
+        for s in parse_server:
             server = {}
             for key, value in list(s.items()):
                 split = []
@@ -236,6 +253,8 @@ def filter_backend_servers(existing, inputting):
     existingList = []
     inputtingList = []
     oldList = []
+    inputting = parse_server_ids(inputting)
+
     for s in existing:
         existingList.append(s['server_id'])
 
