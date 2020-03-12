@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_slb_vsg
-version_added: "2.8"
+version_added: "2.9"
 short_description: Create, Delete VServerGroup and Modify its name or backend servers.
 description:
   - Create and delete a VServer group
@@ -38,18 +40,21 @@ options:
         - Create and delete a VServer group.
       default: 'present'
       choices: ['present', 'absent']
+      type: str
     load_balancer_id:
       description:
         - The Server Load Balancer instance ID.
           This is used in combination with C(name) to determine if a VServer group already exists.
       required: True
       aliases: ['lb_id']
+      type: str
     vserver_group_name:
       description:
         - Virtual server group name.
           This is used in conjunction with the C(load_balancer_id) to ensure idempotence.
       required: True
-      aliases: [ 'group_name', 'name' ]
+      aliases: ['group_name', 'name']
+      type: str
     backend_servers:
       description:
         - List of  that need to be added or.
@@ -58,6 +63,7 @@ options:
           https://www.alibabacloud.com/help/doc-detail/35215.htm. Each key should be format as under_score.
           Currently the valid keys including "server_ids", "server_id", "port", "weight" and "type".
         - If you have multiple servers to add and they have the same port, weight, type, you can use the server_ids parameter, which is a list of ids.
+      type: list
     purge_backend_servers:
       description:
         - Purge existing backend servers or ENIs on VServer group that are not found in backend_servers.
@@ -69,7 +75,8 @@ options:
     vserver_group_id:
       description:
         - (Deprecated) Virtual server group id.
-      aliases: [ 'group_id' ]
+      aliases: ['group_id']
+      type: str
     multi_ok:
       description:
         - By default the module will not create another Load Balancer if there is another Load Balancer

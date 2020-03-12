@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -31,46 +33,56 @@ short_description: Create and optionally attach an Elastic Network Interface (EN
 description:
     - Create and optionally attach an Elastic Network Interface (ENI) to an instance. If an ENI ID or private ip with
       vswitch id is provided, the existing ENI (if any) will be modified.
-version_added: "2.8.0"
+version_added: "2.9"
 options:
   state:
     description:
       - Create or delete ENI.
     default: 'present'
-    choices: [ 'present', 'absent' ]
+    choices: ['present', 'absent']
+    type: str
   eni_id:
     description:
       - The ID of the ENI (to modify); if null and state is present, a new eni will be created.
     aliases: ['id']
+    type: str
   instance_id:
     description:
       - Instance ID that you wish to attach ENI to.
+    type: str
   private_ip_address:
     description:
       - Private IP address. If null and state is present, a vacant IP address will be allocated.
-    aliases: [ 'private_ip' ]
+    aliases: ['private_ip']
+    type: str
   vswitch_id:
     description:
       - ID of subnet in which to create the ENI.
-    aliases: [ 'subnet_id' ]
+    aliases: ['subnet_id']
+    type: str
   name:
     description:
       - Optional name of the ENI. It is a string of [2, 128] Chinese or English characters. It must begin with a letter
         and can contain numbers, underscores ("_"), colons (":"), or hyphens ("-"). It cannot begin with http:// or https://.
+    type: str
   description:
     description:
       - Optional description of the ENI.
+    type: str
   security_groups:
     description:
       - List of security group ids associated with the interface.
+    type: list
   attached:
     description:
       - Specifies if network interface should be attached or detached from instance. If ommited, attachment status
         won't change
     type: bool
+    default: False
   tags:
     description:
       - A hash/dictionaries of network interface tags. C({"key":"value"})
+    type: dict
   purge_tags:
     description:
       - Delete existing tags on the network interface that are not specified in the task.
@@ -80,8 +92,8 @@ options:
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.8.0"
+    - "python >= 3.6"
+    - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - alicloud
 notes:
@@ -92,16 +104,17 @@ notes:
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
-# Create an ENI.
-- ali_eni:
+
+- name: Create an ENI
+  ali_eni:
     private_ip_address: 172.31.0.20
     vswitch_id: vsw-xxxxxxxx
     security_groups:
       - sg-xxxxxx1
       - sg-xxxxxx2
-    state: present
-# Create an ENI and attach it to an instance
-- ali_eni:
+
+- name: Create an ENI and attach it to an instance
+  ali_eni:
     instance_id: i-xxxxxxx
     private_ip_address: 172.31.0.20
     vswitch_id: vsw-xxxxxxxx
@@ -109,37 +122,42 @@ EXAMPLES = '''
       - sg-xxxxxx1
       - sg-xxxxxx2
     attached: True
-# Update an ENI
-- ali_eni:
+ 
+- name: Update an ENI
+  ali_eni:
     eni_id: eni-xxxxxxx
     name: my-eni
     description: "My new description"
-# Update an ENI identifying it by private_ip_address and subnet_id
-- ali_eni:
+
+- name: Update an ENI identifying it by private_ip_address and subnet_id
+  ali_eni:
     vswitch_id: vsw-xxxxxxx
     private_ip_address: 172.16.1.1
     description: "My new description"
     security_groups:
       - sg-xxxxxx3
       - sg-xxxxxx4
-# Detach an ENI from an instance
-- ali_eni:
+
+- name: Detach an ENI from an instance
+  ali_eni:
     eni_id: eni-xxxxxxx
     instance_id: i-xxxxxx
     attached: False
     state: present
-# Delete an interface
-# First create the interface
-- ali_eni:
+
+- name: Delete an interface
+  ali_eni:
+    eni_id: "{{ eni.interface.id }}"
+    state: absent
+
+- name: First create the interface
+  ali_eni:
     vswitch_id: vsw-xxxxxxxx
     security_groups:
       - sg-xxxxxx1
       - sg-xxxxxx2
     state: present
   register: eni
-- ali_eni:
-    eni_id: "{{ eni.interface.id }}"
-    state: absent
 '''
 
 RETURN = '''
@@ -173,7 +191,7 @@ interface:
         security_groups:
             description: list of security group ids
             type: list
-            sample: [ "sg-f8a8a9da", "sg-xxxxxx" ]
+            sample: ["sg-f8a8a9da", "sg-xxxxxx"]
         network_interface_id:
             description: network interface id
             type: string
@@ -197,7 +215,7 @@ interface:
         private_ip_addresses:
             description: list of all private ip addresses associated to this interface
             type: list of dictionaries
-            sample: [{ "primary_address": true, "private_ip_address": "10.20.30.40" }]
+            sample: [{"primary_address": true, "private_ip_address": "10.20.30.40"}]
         state:
             description: network interface status
             type: string
@@ -254,7 +272,7 @@ def uniquely_find_eni(connection, module):
         return None
 
     except Exception as e:
-        module.fail_json(msg=e.message)
+        module.fail_json(msg="{0}".format(e))
 
 
 def main():
@@ -269,7 +287,7 @@ def main():
             name=dict(type='str'),
             security_groups=dict(type='list'),
             state=dict(default='present', choices=['present', 'absent']),
-            attached=dict(default=None, type='bool'),
+            attached=dict(default=False, type='bool'),
             tags=dict(type='dict'),
             purge_tags=dict(type='bool', default=False)
         )
@@ -332,6 +350,21 @@ def main():
     except Exception as e:
         module.fail_json(msg="{0}".format(e))
 
+    attached = module.params.get("attached")
+    instance_id = module.params.get("instance_id")
+    try:
+        if attached:
+            if not eni.instance_id:
+                if eni.attach(instance_id):
+                    changed = True
+            elif eni.instance_id != instance_id and eni.detach(eni.instance_id) and eni.attach(instance_id):
+                changed = True
+        else:
+            if eni.detach(eni.instance_id):
+                changed = True
+    except Exception as e:
+        module.fail_json(msg="{0}".format(e))
+
     tags = module.params['tags']
     if module.params['purge_tags']:
         removed = {}
@@ -344,6 +377,7 @@ def main():
         try:
             if eni.remove_tags(removed):
                 changed = True
+            module.exit_json(changed=changed, interface=eni.get().read())
         except Exception as e:
             module.fail_json(msg="{0}".format(e))
 
@@ -353,21 +387,6 @@ def main():
                 changed = True
         except Exception as e:
             module.fail_json(msg="{0}".format(e))
-
-    attached = module.params.get("attached")
-    instance_id = module.params.get("instance_id")
-    try:
-        if attached is True:
-            if not eni.instance_id:
-                if eni.attach(instance_id):
-                    changed = True
-            elif eni.instance_id != instance_id and eni.detach(eni.instance_id) and eni.attach(instance_id):
-                changed = True
-        elif attached is False:
-            if eni.detach(eni.instance_id):
-                changed = True
-    except Exception as e:
-        module.fail_json(msg="{0}".format(e))
 
     module.exit_json(changed=changed, interface=eni.get().read())
 

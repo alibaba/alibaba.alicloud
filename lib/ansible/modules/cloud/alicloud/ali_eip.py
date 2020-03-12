@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_eip
-version_added: "2.8"
+version_added: "2.9"
 short_description: Create eip address and bind it to a specified device.
 description:
     - Create and release an elastic IP address
@@ -39,33 +41,40 @@ options:
       -  state for operating elastic IP address
     choices: ['present', 'absent']
     default: present
+    type: str
   bandwidth:
     description:
       - Maximum outgoing bandwidth to the EIP, measured in Mbps (Mega bit per second)
     default: 5
+    type: int
   internet_charge_type:
     description:
       - Internet charge type of ECS instance
-    choices: [ 'PayByBandwidth', 'PayByTraffic']
+    choices: ['PayByBandwidth', 'PayByTraffic']
     default: 'PayByTraffic'
+    type: str
   name:
     description:
       - The name of the EIP. The name can contain from 2 to 128 characters including "a-z", "A-Z", "0-9", underlines,
         and hyphens. The name must start with an English letter, but cannot start with http:// or https://.
+    type: str
   description:
     description:
       - The description of the EIP. The description can contain from 2 to 256 characters.
         The description must start with English letters, but cannot start with http:// or https://.
+    type: str
   ip_address:
     description:
       - The IP address of a previously allocated EIP and it can used to associate/disassociate with a device or delete itself.
       - If present and instance_id is specified, the EIP is associated with the instance.
       - If absent and instance_id is specified, the EIP is disassociated from the instance.
     aliases: ['ip']
+    type: str
   instance_id:
     description:
       - The id of the device for the EIP. Can be an ECS instance id or SLB Instance id or Elastic Network Interface (ENI) id.
     aliases: ['device_id']
+    type: str
   release_on_disassociation:
     description:
       - whether or not to automatically release the EIP when it is disassociated
@@ -85,6 +94,7 @@ options:
   tags:
     description:
       - A hash/dictionaries of eip tags. C({"key":"value"})
+    type: dict
   purge_tags:
     description:
       - Delete existing tags on the eip that are not specified in the task.
@@ -94,8 +104,8 @@ options:
 notes:
   - A ip address or a instance id which has been associated with EIP can ensure idempotence.
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.9.0"
+    - "python >= 3.6"
+    - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -104,35 +114,35 @@ author:
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
-- name: associate an elastic IP with an instance
+- name: Associate an elastic IP with an instance
   ali_eip:
     instance_id: i-cqhc3hf4
-- name: associate an elastic IP with a device
+- name: Associate an elastic IP with a device
   ali_eip:
     instance_id: eni-snc3nh438t
-- name: associate an elastic IP with a instance and allow reassociation
+- name: Associate an elastic IP with a instance and allow reassociation
   ali_eip:
     instance_id: i-cqhc3hf4
     allow_reassociation: True
-- name: disassociate an elastic IP from an instance
+- name: Disassociate an elastic IP from an instance
   ali_eip:
     instance_id: i-cqhc3hf4
     ip: 93.184.216.119
     state: absent
-- name: disassociate an elastic IP with a device
+- name: Disassociate an elastic IP with a device
   ali_eip:
     instance_id: eni-snc3nh438t
     ip: 93.184.216.119
     state: absent
-- name: allocate a new elastic IP and associate it with an instance
+- name: Allocate a new elastic IP and associate it with an instance
   ali_eip:
     instance_id: i-1212f003
-- name: allocate a new elastic IP without associating it to anything and set name and description
+- name: Allocate a new elastic IP without associating it to anything and set name and description
   ali_eip:
     name: created-by-ansible
     description: "form ansible"
   register: eip
-- name: output the IP
+- name: Output the IP
   debug:
     msg: "Allocated IP is {{ eip.public_ip }}"
 '''
@@ -144,17 +154,17 @@ eip:
     type: complex
     contains:
         allocation_id:
-            description: The EIP id
+            description: The EIP id.
             returned: always
             type: string
             sample: "eip-2zee1nu68juox4"
         allocation_time:
-            description: The time the EIP was created
+            description: The time the EIP was created.
             returned: always
             type: string
             sample: "2018-12-31T12:12:52Z"
         bandwidth:
-            description: Maximum bandwidth from the internet network
+            description: Maximum bandwidth from the internet network.
             returned: always
             type: int
             sample: 5
@@ -164,27 +174,27 @@ eip:
             type: string
             sample: "PostPaid"
         description:
-            description: interface description
+            description: interface description.
             returned: always
             type: string
             sample: "My new EIP"
         id:
-            description: Allocated EIP id (alias for allocation_id)
+            description: Allocated EIP id (alias for allocation_id).
             returned: always
             type: string
             sample: "eip-2zee1nu68juox4"
         instance_id:
-            description: Associated instance id
+            description: Associated instance id.
             returned: always
             type: string
             sample: "i-123456"
         instance_region_id:
-            description: The region id in which the associated instance
+            description: The region id in which the associated instance.
             returned: always
             type: string
             sample: "cn-beijing"
         instance_type:
-            description: Associated instance type
+            description: Associated instance type.
             returned: always
             type: string
             sample: "EcsInstance"
@@ -194,17 +204,17 @@ eip:
             type: string
             sample: "PayByTraffic"
         ip_address:
-            description: The IP address of the EIP
+            description: The IP address of the EIP.
             returned: always
             type: string
             sample: "39.96.169.143"
         name:
-            description: The EIP name
+            description: The EIP name.
             returned: always
             type: string
             sample: "from-ansible"
         status:
-            description: The EIP status
+            description: The EIP status.
             returned: always
             type: string
             sample: "inuse"
@@ -343,6 +353,23 @@ def main():
     except VPCResponseError as e:
         module.fail_json(msg='Modify EIP attribute with an error {0}.'.format(e))
 
+    # Associate instance
+    if instance_id:
+        if eip.instance_id and eip.instance_id != instance_id:
+            if not module.params['allow_reassociation']:
+                module.fail_json(msg='Target EIP {0} has been associated. Please set allow_reassociation to ture to '
+                                     'associate the target instance {1}'. format(eip.ip_address, instance_id))
+            try:
+                if unassociate_eip(eip, module, instance_id):
+                    changed = True
+            except Exception as e:
+                module.fail_json(msg="Unassociate EIP from instance {0} failed. Error: {1}".format(instance_id, e))
+        try:
+            if eip.get().associate(instance_id=instance_id):
+                changed = True
+        except Exception as e:
+            module.fail_json(msg="Associate EIP with instance {0} failed. Error: {1}".format(instance_id, e))
+
     tags = module.params['tags']
     if module.params['purge_tags']:
         if not tags:
@@ -360,23 +387,6 @@ def main():
                 changed = True
         except Exception as e:
             module.fail_json(msg="{0}".format(e))
-
-    # Associate instance
-    if instance_id:
-        if eip.instance_id and eip.instance_id != instance_id:
-            if not module.params['allow_reassociation']:
-                module.fail_json(msg='Target EIP {0} has been associated. Please set allow_reassociation to ture to '
-                                     'associate the target instance {1}'. format(eip.ip_address, instance_id))
-            try:
-                if unassociate_eip(eip, module, instance_id):
-                    changed = True
-            except Exception as e:
-                module.fail_json(msg="Unassociate EIP from instance {0} failed. Error: {1}".format(instance_id, e))
-        try:
-            if eip.get().associate(instance_id=instance_id):
-                changed = True
-        except Exception as e:
-            module.fail_json(msg="Associate EIP with instance {0} failed. Error: {1}".format(instance_id, e))
     module.exit_json(changed=changed, eip=eip.get().read())
 
 

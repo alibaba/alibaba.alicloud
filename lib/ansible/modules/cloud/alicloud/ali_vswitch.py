@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_vswitch
-version_added: "2.8"
+version_added: "2.9"
 short_description: Manage subnet in Alibaba Cloud virtual private cloud(VPC)
 description:
     - Manage subnet in Alibaba Cloud virtual private cloud(VPC).
@@ -38,37 +40,45 @@ options:
       -  Create or delete vswitch.
     choices: ['present', 'absent']
     default: 'present'
+    type: str
   zone_id:
     description:
       - Aliyun availability zone ID which to launch the vswitch or list vswitches.
         It is required when creating a new vswitch.
-    aliases: [ 'availability_zone', 'alicloud_zone' ]
+    aliases: ['availability_zone', 'alicloud_zone']
+    type: str
   vpc_id:
     description:
       - The ID of a VPC to which that Vswitch belongs.
         This is used in combination with C(cidr_block) to determine if a VSwitch already exists.
     required: True
+    type: str
   cidr_block:
     description:
       - The CIDR block representing the Vswitch e.g. 10.0.0.0/8. The value must be sub cidr_block of Vpc.
         This is used in conjunction with the C(vpc_id) to ensure idempotence.
     required: True
+    type: str
   name:
     description:
       - The name of vswitch, which is a string of 2 to 128 Chinese or English characters. It must begin with an
         uppercase/lowercase letter or a Chinese character and can contain numerals, "_" or "-".
         It cannot begin with http:// or https://.
-    aliases: [ 'vswitch_name', 'subnet_name' ]
+    aliases: ['vswitch_name', 'subnet_name']
+    type: str
   description:
     description:
       - The description of vswitch, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
+    type: str
   vswitch_id:
     description:
       - (Deprecated) VSwitch ID.
     aliases: ['subnet_id', 'id']
+    type: str
   tags:
     description:
       - A hash/dictionaries of vswitch tags. C({"key":"value"})
+    type: dict
   purge_tags:
     description:
       - Delete existing tags on the vswitch that are not specified in the task.
@@ -76,30 +86,29 @@ options:
     default: False
     type: bool
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.7.0"
+    - "python >= 3.6"
+    - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - alicloud
 author:
   - "He Guimin (@xiaozhu36)"
-
 """
 
 EXAMPLES = """
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
-- name: create a new vswitch
+- name: Create a new vswitch
   ali_vswitch:
     cidr_block: '{{ cidr_blok }}'
     name: 'my-vsw'
     vpc_id: 'vpc-abc12345'
 
-- name: modify the existing vswitch
+- name: Modify the existing vswitch
   ali_vswitch:
     cidr_block: '{{ cidr_blok }}'
     vpc_id: 'vpc-abc12345'
     name: 'my-vsw-from-ansible'
 
-- name: delete the existing vswitch
+- name: Delete the existing vswitch
   ali_vswitch:
     cidr_block: '{{ cidr_blok }}'
     vpc_id: 'vpc-abc12345'
@@ -202,12 +211,12 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(required=True),
-        description=dict(),
-        zone_id=dict(aliases=['availability_zone', 'alicloud_zone']),
-        vpc_id=dict(required=True),
-        name=dict(aliases=['vswitch_name', 'subnet_name']),
-        vswitch_id=dict(aliases=['subnet_id', 'id']),
+        cidr_block=dict(type='str', required=True),
+        description=dict(type='str'),
+        zone_id=dict(type='str', aliases=['availability_zone', 'alicloud_zone']),
+        vpc_id=dict(type='str', required=True),
+        name=dict(type='str', aliases=['vswitch_name', 'subnet_name']),
+        vswitch_id=dict(type='str', aliases=['subnet_id', 'id']),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=False)
     ))

@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,35 +29,42 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_slb_lb_info
-version_added: "2.8"
+version_added: "2.9"
 short_description: Gather facts on server load balancer of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
        The module must be called from within the SLB itself.
-
 options:
   load_balancer_name:
     description:
       - (Deprecated) A list of server laod balancer names. New option `name_prefix` instead.
     aliases: ["name"]
+    type: list
   load_balancer_ids:
     description:
       - A list of load balancer IDs to gather facts for.
     aliases: ['ids']
+    type: list
   name_prefix:
     description:
       - Use a load balancer name prefix to filter load balancers.
+    type: str
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/27582.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
         connect different words in one parameter. 'LoadBalancerId' will be appended to I(load_balancer_ids) automatically.
+    type: dict
+  tags:
+    description:
+      - A hash/dictionaries of eip tags. C({"key":"value"})
+    type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.9.0"
+    - "python >= 3.6"
+    - "footmark >= 1.16.0"
 extends_documentation_fragment:
     - alicloud
 '''

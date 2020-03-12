@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_eip_info
-version_added: "2.8"
+version_added: "2.9"
 short_description: Gather facts about Elastic IP addresses in Alibaba Cloud
 description:
     - Gather facts about Elastic IP addresses in Alibaba Cloud
@@ -36,27 +38,32 @@ options:
     description:
       - A list of EIP IDs that exist in your account.
     aliases: ['ids']
+    type: list
   name_prefix:
     description:
       - Use a name prefix to filter EIPs.
+    type: str
   ip_address_prefix:
     description:
       - Use a ip address prefix to filter EIPs.
     aliases: ['ip_prefix']
+    type: str
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/36018.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dashes ("-") to
         connect different words in one parameter. 'AllocationId' will be appended to I(eip_ids) automatically.
+    type: dict
   tags:
     description:
       - A hash/dictionaries of eip tags. C({"key":"value"})
+    type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.9.0"
+    - "python >= 3.6"
+    - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -64,24 +71,24 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 
-# Gather facts about all EIPs
-- ali_eip_info:
+- name: Gather facts about all EIPs
+  ali_eip_info:
 
-# Gather facts about a particular EIP
-- ali_eip_info:
+- name: Gather facts about a particular EIP
+  ali_eip_info:
     eip_ids:
       - eip-xxxxxxx
       - eip-yyyyyyy
     filters:
       status: Available
 
-# Gather facts about a particular EIP
-- ali_eip_info:
+- name: Gather facts about using filters associated_instance_type
+  ali_eip_info:
     filters:
       associated_instance_type: EcsInstance
 
-# Gather facts based on ip_address_prefix
-- ali_eip_info:
+- name: Gather facts based on ip_address_prefix
+  ali_eip_info:
     ip_address_prefix: 72.16
 '''
 
@@ -185,7 +192,7 @@ def main():
     argument_spec.update(
         dict(
             eip_ids=dict(type='list', aliases=['ids']),
-            name_prefix=dict(),
+            name_prefix=dict(type='str'),
             ip_address_prefix=dict(type='str', aliases=['ip_prefix']),
             filters=dict(type='dict'),
             tags=dict(type='dict')
@@ -207,9 +214,9 @@ def main():
         filters = {}
     new_filters = {}
     for key, value in list(filters.items()):
-        if str(key).lower().replace("-").replace("_") == "allocationid" and value not in eip_ids:
-                eip_ids.append(value)
-                continue
+        if str(key).lower().replace("-", "").replace("_", "") == "allocationid" and value not in eip_ids:
+            eip_ids.append(value)
+            continue
         new_filters[key] = value
 
     name_prefix = module.params["name_prefix"]
