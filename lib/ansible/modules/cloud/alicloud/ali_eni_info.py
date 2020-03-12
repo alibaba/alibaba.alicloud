@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -30,18 +32,21 @@ module: ali_eni_info
 short_description: Gather facts about ENI interfaces in Alibaba Cloud
 description:
     - Gather facts about ENI interfaces in Alibaba Cloud
-version_added: "2.8.0"
+version_added: "2.9"
 options:
   eni_ids:
     description:
       - A list of ENI IDs that exist in your account.
     aliases: ['ids']
+    type: list
   name_prefix:
     description:
       - Use a name prefix to filter network interfaces.
+    type: str
   tags:
     description:
       - A hash/dictionaries of network interface tags. C({"key":"value"})
+    type: dict
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
@@ -49,11 +54,12 @@ options:
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dashes ("-") to
         connect different words in one parameter. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using 'tags' instead.
         'NetworkInterfaceId.N' will be appended to I(eni_ids) automatically.
+    type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.8.0"
+    - "python >= 3.6"
+    - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -61,25 +67,25 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 
-# Gather facts about all ENIs
-- ali_eni_info:
+- name: Gather facts about all ENIs
+  ali_eni_info:
 
-# Gather facts about a particular ENI
-- ali_eni_info:
+- name: Gather facts about a particular ENI
+  ali_eni_info:
     eni_ids:
       - eni-xxxxxxx
       - eni-yyyyyyy
     filters:
       type: Secondary
 
-# Gather facts about a particular ENI
-- ali_eni_info:
+- name: Gather facts about a particular ENI
+  ali_eni_info:
     filters:
       network_interface_name: my-test-eni
       type: Secondary
 
-# Gather facts based on vpc and name_prefix
-- ali_eni_info:
+- name: Gather facts based on vpc and name_prefix
+  ali_eni_info:
     name_prefix: foo
     filters:
       vswitch_id: vpc-dsfh2ef2
@@ -185,7 +191,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         eni_ids=dict(type='list', aliases=['ids']),
-        name_prefix=dict(),
+        name_prefix=dict(type='str'),
         tags=dict(type='dict'),
         filters=dict(type='dict'),
     )
@@ -222,7 +228,6 @@ def main():
                 continue
             interfaces.append(eni.read())
             ids.append(eni.id)
-
         module.exit_json(changed=False, ids=ids, interfaces=interfaces)
     except Exception as e:
         module.fail_json(msg=str("Unable to get network interfaces, error:{0}".format(e)))

@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_vpc_info
-version_added: "2.8"
+version_added: "2.9"
 short_description: Gather facts on vpcs of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -38,30 +40,36 @@ options:
     description:
       - (Deprecated) Name of one or more VPC that exist in your account. New option `name_prefix` instead.
     aliases: ["name"]
+    type: str
   vpc_ids:
     description:
       - A list of VPC IDs that exist in your account.
     aliases: ["ids"]
+    type: list
   name_prefix:
     description:
       - Use a VPC name prefix to filter VPCs.
+    type: str
   cidr_prefix:
     description:
       - Use a VPC cidr block prefix to filter VPCs.
+    type: str
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35739.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
         connect different words in one parameter. 'VpcId' will be appended to I(vpc_ids) automatically.
+    type: dict
   tags:
     description:
       - A hash/dictionaries of vpc tags. C({"key":"value"})
+    type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.7.0"
+    - "python >= 3.6"
+    - "footmark >= 1.14.1"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -69,23 +77,23 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 
-# Gather facts about all VPCs
-- ali_vpc_info:
+- name: Gather facts about all VPCs
+  ali_vpc_info:
 
-# Gather facts about a particular VPC using VPC ID
-- ali_vpc_info:
+- name: Gather facts about a particular VPC using VPC ID
+  ali_vpc_info:
     vpc_ids:
       - vpc-aaabbb
       - vpc-123fwec
 
-# Gather facts about any VPC with 'is_default' and name_prefix
-- ali_vpc_info:
+- name: Gather facts about a particular VPC using VPC ID
+  ali_vpc_info:
     name_prefix: "my-vpc"
     filters:
       is_default: False
 
-# Gather facts about any VPC with cidr_prefix
-- ali_vpc_info:
+- name: Gather facts about any VPC with cidr_prefix
+  ali_vpc_info:
     cidr_prefix: "172.16"
 '''
 
@@ -101,7 +109,7 @@ vpcs:
     type: complex
     contains:
         cidr_block:
-            description: The CIDR of the VPC
+            description: The CIDR of the VPC.
             returned: always
             type: string
             sample: 10.0.0.0/8
@@ -121,42 +129,42 @@ vpcs:
             type: string
             sample: vpc-c2e00da5
         is_default:
-            description: indicates whether this is the default VPC
+            description: indicates whether this is the default VPC.
             returned: always
             type: bool
             sample: false
         state:
-            description: state of the VPC
+            description: state of the VPC.
             returned: always
             type: string
             sample: available
         tags:
-            description: tags attached to the VPC, includes name
+            description: tags attached to the VPC, includes name.
             returned: always
             type: complex
             sample:
         user_cidrs:
-            description: The custom CIDR of the VPC
+            description: The custom CIDR of the VPC.
             returned: always
             type: list
             sample: []
         vpc_id:
-            description: VPC resource id
+            description: VPC resource id.
             returned: always
             type: string
             sample: vpc-c2e00da5
         vpc_name:
-            description: Name of the VPC
+            description: Name of the VPC.
             returned: always
             type: string
             sample: my-vpc
         vrouter_id:
-            description: The ID of virtual router which in the VPC
+            description: The ID of virtual router which in the VPC.
             returned: always
             type: string
             sample: available
         vswitch_ids:
-            description: List IDs of virtual switch which in the VPC
+            description: List IDs of virtual switch which in the VPC.
             returned: always
             type: list
             sample: [vsw-123cce3, vsw-34cet4v]
@@ -178,9 +186,9 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         vpc_ids=dict(type='list', aliases=['ids']),
-        vpc_name=dict(aliases=['name']),
-        name_prefix=dict(),
-        cidr_prefix=dict(),
+        vpc_name=dict(type='str', aliases=['name']),
+        name_prefix=dict(type='str'),
+        cidr_prefix=dict(type='str'),
         filters=dict(type='dict'),
         tags=dict(type='dict')
     )

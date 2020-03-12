@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -39,22 +41,27 @@ options:
       description:
         - (Deprecated) Aliyun availability zone ID in which to launch the instance. Please use filter item 'zone_id' instead.
       aliases: ['alicloud_zone']
+      type: str
     instance_names:
       description:
         - (Deprecated) A list of ECS instance names. Please use filter item 'instance_name' instead.
-      aliases: [ "names"]
+      aliases: ["names"]
+      type: list
     instance_ids:
       description:
         - A list of ECS instance ids.
       aliases: ["ids"]
+      type: list
     name_prefix:
       description:
         - Use a instance name prefix to filter ecs instances.
       version_added: '2.9'
+      type: str
     tags:
       description:
         - A hash/dictionaries of instance tags. C({"key":"value"})
       aliases: ["instance_tags"]
+      type: dict
     filters:
       description:
         - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
@@ -63,40 +70,39 @@ options:
           connect different words in one parameter. 'InstanceIds' should be a list and it will be appended to
           I(instance_ids) automatically. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using I(tags) instead.
       version_added: '2.9'
+      type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.12.0"
+    - "python >= 3.6"
+    - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - alicloud
 '''
 
 EXAMPLES = '''
 # Fetch instances details according to setting different filters
-- name: fetch instances details example
-  hosts: localhost
-  vars:
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    alicloud_region: cn-beijing
-    availability_zone: cn-beijing-a
 
-  tasks:
-    - name: Find all instances in the specified region
-      ali_instance_facts:
-      register: all_instances
-    - name: Find all instances based on the specified ids
-      ali_instance_facts:
-        instance_ids:
-          - "i-35b333d9"
-          - "i-ddav43kd"
-      register: instances_by_ids
-    - name: Find all instances based on the specified name_prefix
-      ali_instance_facts:
-        name_prefix: "ecs_instance_"
-      register: instances_by_name_prefix
+- name: Find all instances in the specified region
+  ali_instance_info:
+  register: all_instances
+  
+- name: Find all instances based on the specified ids
+  ali_instance_info:
+    instance_ids:
+      - "i-35b333d9"
+      - "i-ddav43kd"
+  register: instances_by_ids
 
+- name: Find all instances based on the specified name_prefix
+  ali_instance_info:
+    name_prefix: "ecs_instance_"
+  register: instances_by_name_prefix
+  
+- name: Find instances based on tags
+  ali_instance_info:
+    tags:
+      Test: "add"
 '''
 
 RETURN = '''
@@ -347,11 +353,9 @@ ids:
     sample: [i-12345er, i-3245fs]
 '''
 
-# import time
-# import sys
 import traceback
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
 HAS_FOOTMARK = False
 FOOTMARK_IMP_ERR = None

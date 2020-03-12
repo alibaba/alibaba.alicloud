@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_slb_lb
-version_added: "2.8"
+version_added: "2.9"
 short_description: Create, Delete, Enable or Disable Server Load Balancer.
 description:
   - Create, Delete, Start or Stop Server Load Balancer.
@@ -37,24 +39,21 @@ options:
     description:
       - The state of the instance after operating.
     default: 'present'
-    choices: [ 'present', 'absent', 'running', 'stopped']
+    choices: ['present', 'absent', 'running', 'stopped']
+    type: str
   load_balancer_name:
     description:
       - The name of the server load balancer, which is a string of 1 to 80 characters.
         It can contain numerals, "_", "/", "." or "-".
       - This is used to ensure idempotence.
-    aliases: [ 'name', 'lb_name' ]
+    aliases: ['name', 'lb_name']
     required: True
+    type: str
   load_balancer_id:
     description:
-        - (deprecated) This parameter is required when user wants to perform edit operation in Load Balancer
+      - (deprecated) This parameter is required when user wants to perform edit operation in Load Balancer
     aliases: ['id']
-  load_balancer_status:
-    description:
-        - (deprecated) The field has been deprecated from ansible-alicloud v1.1.3.
-  address_type:
-    description:
-        - (deprecated) The field has been deprecated from ansible-alicloud v1.1.3 and 'is_internet' will replace.
+    type: str
   is_internet:
     description:
       - Load balancer network type whether is internet.
@@ -64,49 +63,65 @@ options:
     description:
       - The ID of the VSwitch to which the SLB instance belongs.
     aliases: ['subnet_id']
+    type: str
   internet_charge_type:
     description:
       - The charge type of internet. It will be ignored when C(is_internet=False)
     default: 'PayByTraffic'
     choices: ['PayByBandwidth', 'PayByTraffic']
+    type: str
   master_zone_id:
     description:
       - The ID of the primary zone. By default, the SLB cluster in the primary zone is used to distribute traffic.
+    type: str
   slave_zone_id:
     description:
-        - The ID of the backup zone. The backup zone takes over the traffic distribution only when the SLB cluster in the primary zone fails.
+      - The ID of the backup zone. The backup zone takes over the traffic distribution only when the SLB cluster in the primary zone fails.
+    type: str
   bandwidth:
     description:
       - Bandwidth peak of the public network instance charged per fixed bandwidth. It allow 1~5000 in Mbps.
       - It will be ignored when C(internet_charge_type=PayByTraffic)
     default: 1
+    type: int
   load_balancer_spec:
     description:
       - The specification of the Server Load Balancer instance. If no value is specified, a shared-performance instance is created.
       - There are some region limitations for load_balancer_spec. See U(https://www.alibabacloud.com/help/doc-detail/27577.htm) for details
     choices: ['slb.s1.small', 'slb.s2.small', 'slb.s2.medium', 'slb.s3.small', 'slb.s3.medium', 'slb.s3.large']
-    aliases: [ 'spec', 'lb_spec' ]
+    aliases: ['spec', 'lb_spec']
+    type: str
   multi_ok:
     description:
       - By default the module will not create another Load Balancer if there is another Load Balancer
         with the same I(name). Specify this as true if you want duplicate Load Balancers created.
     default: False
     type: bool
+  tags:
+    description:
+      - A hash/dictionaries of slb tags. C({"key":"value"})
+    type: dict
+  purge_tags:
+    description:
+      - Delete existing tags on the slb that are not specified in the task.
+        If True, it means you have to specify all the desired tags on each task affecting a slb.
+    default: False
+    type: bool
 notes:
   - The change in internet charge type will take effect from the early morning of the next day.
     It can not be changed twice in one day, otherwise, a error "Operation.NotAllowed" will appear.
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.9.0"
+    - "python >= 3.6"
+    - "footmark >= 1.16.0"
 extends_documentation_fragment:
     - alicloud
 author:
-  - "He Guimin (@xiaozhu36)"
+    - "He Guimin (@xiaozhu36)"
 '''
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
-- name: create a server load balancer
+- name: Create a server load balancer
   ali_slb_lb:
     name: 'from-ansible'
     is_internet: True
@@ -114,17 +129,17 @@ EXAMPLES = '''
     spec: 'slb.s1.small'
     state: present
 
-- name: stop a server load balancer
+- name: Stop a server load balancer
   ali_slb_lb:
     name: 'from-ansible'
     state: stopped
 
-- name: start a server load balancer
+- name: Start a server load balancer
   ali_slb_lb:
     name: 'from-ansible'
     state: running
 
-- name: modify server load balancer internet charge type and bandwidth
+- name: Modify server load balancer internet charge type and bandwidth
   ali_slb_lb:
     name: 'from-ansible'
     internet_charge_type: 'PayByBandwidth'
@@ -315,8 +330,8 @@ def main():
         is_internet=dict(type='bool', default=False),
         bandwidth=dict(type='int', default=1),
         vswitch_id=dict(type='str', aliases=['subnet_id']),
-        master_zone_id=dict(),
-        slave_zone_id=dict(),
+        master_zone_id=dict(type='str'),
+        slave_zone_id=dict(type='str'),
         load_balancer_spec=dict(type='str', aliases=['spec', 'lb_spec'],
                                 choices=['slb.s1.small', 'slb.s2.small', 'slb.s2.medium', 'slb.s3.small', 'slb.s3.medium', 'slb.s3.large']),
         multi_ok=dict(type='bool', default=False),
@@ -406,6 +421,7 @@ def main():
         try:
             if matching.remove_tags(tags):
                 changed = True
+            module.exit_json(changed=changed, load_balancer=matching.get().read())
         except Exception as e:
             module.fail_json(msg="{0}".format(e))
 

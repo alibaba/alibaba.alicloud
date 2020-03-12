@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_security_group
-version_added: "2.8"
+version_added: "2.9"
 short_description: Manage Alibaba Cloud Security Group and its rules.
 description:
   - Create and Delete Security Group, Modify its description and add/remove rules.
@@ -37,6 +39,7 @@ options:
       - Create, delete a security group
     default: 'present'
     choices: ['present', 'absent']
+    type: str
   name:
     description:
       - Name of the security group, which is a string of 2 to 128 Chinese or English characters. It must begin with an
@@ -45,13 +48,16 @@ options:
         This is used in combination with C(vpc_id) to determine if a Securty Group already exists.
     required: True
     aliases: ['group_name']
+    type: str
   description:
     description:
       - Description of the security group, which is a string of 2 to 256 characters.
       - It cannot begin with http:// or https://.
+    type: str
   vpc_id:
     description:
       - ID of the VPC to create the group in. This is used in conjunction with the C(name) to ensure idempotence.
+    type: str
   rules:
     description:
       - List of hash/dictionaries firewall inbound rules to enforce in this group (see example). If none are supplied,
@@ -60,6 +66,7 @@ options:
         At present, the valid keys including "ip_protocol", "port_range", "source_port_range", "nic_type", "policy",
         "dest_cidr_ip", "source_cidr_ip", "source_group_id", "source_group_owner_account", "source_group_owner_id",
         "priority" and "description".
+    type: list
   rules_egress:
     description:
       - List of hash/dictionaries firewall outbound rules to enforce in this group (see example). If none are supplied,
@@ -68,6 +75,7 @@ options:
         At present, the valid keys including "ip_protocol", "port_range", "source_port_range", "nic_type", "policy",
         "dest_cidr_ip", "source_cidr_ip", "dest_group_id", "dest_group_owner_account", "dest_group_owner_id",
         "priority" and "description".
+    type: list
   purge_rules:
     description:
       - Purge existing rules on security group that are not found in rules
@@ -82,10 +90,12 @@ options:
     description:
       - (Deprecated) Security group ID.
     aliases: ['id']
+    type: str
   tags:
     description:
       - A hash/dictionaries of security group tags. C({"key":"value"})
     aliases: ["group_tags"]
+    type: dict
   multi_ok:
     description:
       - By default the module will not create another Security Group if there is another Security Group
@@ -101,8 +111,8 @@ options:
     default: False
     type: bool
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.7.0"
+    - "python >= 3.6"
+    - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -111,12 +121,12 @@ author:
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
-- name: create a new security group
+- name: Create a new security group
   ali_security_group:
     name: 'AliyunSG'
     vpc_id: 'vpc-123csecd'
 
-- name: authorize security group
+- name: Authorize security group
   ali_security_group:
     name: 'AliyunSG'
     vpc_id: 'vpc-123csecd'
@@ -131,12 +141,11 @@ EXAMPLES = '''
         dest_group_id: 'sg-ce33rdsfe'
         priority: 1
 
-- name: delete security grp
+- name: Delete security grp
   ali_security_group:
     name: 'AliyunSG'
     vpc_id: 'vpc-123csecd'
     state: absent
-
 '''
 
 RETURN = '''

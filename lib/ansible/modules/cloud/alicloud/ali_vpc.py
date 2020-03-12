@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_vpc
-version_added: "2.8"
+version_added: "2.9"
 short_description: Configure Alibaba Cloud virtual private cloud(VPC)
 description:
     - Create, Delete Alicloud virtual private cloud(VPC).
@@ -37,6 +39,7 @@ options:
     description:
       -  Whether or not to create, delete VPC.
     choices: ['present', 'absent']
+    type: str
     default: 'present'
   name:
     description:
@@ -44,22 +47,23 @@ options:
         uppercase/lowercase letter or a Chinese character and can contain numerals, "_" or "-".
         It cannot begin with http:// or https://.
         This is used in combination with C(cidr_block) to determine if a VPC already exists.
-    aliases: [ 'vpc_name' ]
+    aliases: ['vpc_name']
     required: True
+    type: str
   description:
     description:
       - The description of VPC, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
+    type: str
   cidr_block:
     description:
       - The primary CIDR of the VPC. This is used in conjunction with the C(name) to ensure idempotence.
-    aliases: [ 'cidr' ]
+    aliases: ['cidr']
     required: True
+    type: str
   user_cidrs:
     description:
       - List of user custom cidr in the VPC. It no more than three.
-  vpc_id:
-    description:
-      - (Deprecated) The ID of a VPC.
+    type: list
   multi_ok:
     description:
       - By default the module will not create another VPC if there is another VPC with the same name and CIDR block.
@@ -76,6 +80,7 @@ options:
   tags:
     description:
       - A hash/dictionaries of vpc tags. C({"key":"value"})
+    type: dict
   purge_tags:
     description:
       - Delete existing tags on the vpc that are not specified in the task.
@@ -86,8 +91,8 @@ notes:
   - There will be launch a virtual router along with creating a vpc successfully.
   - There is only one virtual router in one vpc and one route table in one virtual router.
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.7.0"
+    - "python >= 3.6"
+    - "footmark >= 1.14.1"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -96,19 +101,19 @@ author:
 
 EXAMPLES = """
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
-- name: create a new vpc
+- name: Create a new vpc
   ali_vpc:
     cidr_block: '192.168.0.0/16'
     name: 'Demo_VPC'
     description: 'Demo VPC'
 
-- name: choose the latest VPC as target when there are several vpcs with same name and cidr block
+- name: Choose the latest VPC as target when there are several vpcs with same name and cidr block
   ali_vpc:
     cidr_block: '192.168.0.0/16'
     name: 'Demo_VPC'
     recent: True
 
-- name: delete a vpc
+- name: Delete a vpc
   ali_vpc:
     state: absent
     cidr_block: '192.168.0.0/16'
@@ -227,11 +232,11 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(required=True, aliases=['cidr']),
+        cidr_block=dict(type='str', required=True, aliases=['cidr']),
         user_cidrs=dict(type='list'),
-        name=dict(required=True, aliases=['vpc_name']),
+        name=dict(type='str', required=True, aliases=['vpc_name']),
         multi_ok=dict(type='bool', default=False),
-        description=dict(),
+        description=dict(type='str'),
         recent=dict(type='bool', default=False),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=False)

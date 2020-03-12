@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_vswitch_info
-version_added: "2.8"
+version_added: "2.9"
 short_description: Gather facts on vswitchs of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -38,33 +40,40 @@ options:
     description:
       - (Deprecated) Name of one or more vswitch that exist in your account. New option `name_prefix` instead.
     aliases: ["name", 'subnet_name']
+    type: str
   vswitch_ids:
     description:
       - A list of vswitch IDs to gather facts for.
     aliases: ['subnet_ids', 'ids']
+    type: list
   cidr_block:
     description:
       - (Deprecated) The CIDR block representing the Vswitch e.g. 10.0.0.0/8. New option `cidr_prefix` instead.
+    type: str
   name_prefix:
     description:
       - Use a VSwitch name prefix to filter vswitches.
+    type: str
   cidr_prefix:
     description:
       - Use a VSwitch cidr block prefix to filter vswitches.
+    type: str
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
         all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/35748.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
         connect different words in one parameter. 'VSwitchId' will be appended to I(vswitch_ids) automatically.
+    type: dict
   tags:
     description:
       - A hash/dictionaries of vswitch tags. C({"key":"value"})
+    type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.7.0"
+    - "python >= 3.6"
+    - "footmark >= 1.14.1"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -72,21 +81,20 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 
-# Gather facts about all VPC vswitches
-- ali_vswitch_info:
+- name: Gather facts about all VPC vswitches
+  ali_vswitch_info:
+      
+- name: Gather facts about a particular VPC subnet using ID
+  ali_vswitch_info:
+    vswitch_ids: [vsw-00112233]
 
-# Gather facts about a particular VPC subnet using ID
-- ali_vswitch_info:
-    vswitch_ids:
-      - vsw-00112233
-
-# Gather facts about any VPC subnet within VPC with ID vpc-abcdef00
-- ali_vswitch_info:
+- name: Gather Gather facts about any VPC subnet within VPC with ID vpc-abcdef00
+  ali_vswitch_info:
     filters:
       vpc-id: vpc-abcdef00
 
-# Gather facts about a set of VPC subnets, cidrA, cidrB and cidrC within a VPC
-- ali_vswitch_info:
+- name: Gather facts about a set of VPC subnets, cidrA, cidrB and cidrC within a VPC
+  ali_vswitch_info:
     cidr_prefix: "10.0."
     filters:
       vpc-id: vpc-abcdef00
@@ -97,7 +105,7 @@ ids:
     description: List ids of being fetched vswtich.
     returned: when success
     type: list
-    sample: [ "vsw-2zegusms7jwd94lq7ix8o", "vsw-2ze5hrb3y5ksx5oa3a0xa" ]
+    sample: ["vsw-2zegusms7jwd94lq7ix8o", "vsw-2ze5hrb3y5ksx5oa3a0xa"]
 vswitches:
     description: Returns an array of complex objects as described below.
     returned: success
@@ -180,10 +188,10 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        vswitch_name=dict(aliases=['name', 'subnet_name']),
-        cidr_block=dict(),
-        name_prefix=dict(),
-        cidr_prefix=dict(),
+        vswitch_name=dict(type='str', aliases=['name', 'subnet_name']),
+        cidr_block=dict(type='str'),
+        name_prefix=dict(type='str'),
+        cidr_prefix=dict(type='str'),
         vswitch_ids=dict(type='list', aliases=['ids', 'subnet_ids']),
         filters=dict(type='dict'),
         tags=dict(type='dict')

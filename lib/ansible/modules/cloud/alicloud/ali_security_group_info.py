@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_security_group_info
-version_added: "2.8"
+version_added: "2.9"
 short_description: Gather facts on security group of Alibaba Cloud ECS.
 description:
   - This module fetches data from the Open API in Alicloud.
@@ -38,16 +40,20 @@ options:
     description:
       - A list of ECS security group IDs.
     aliases: ["ids"]
+    type: list
   group_name:
     description:
       - (Deprecated) Name of the security group. New option `name_prefix` instead.
     aliases: ["name"]
+    type: str
   name_prefix:
     description:
       - Use a Security Group name prefix to filter security group.
+    type: str
   tags:
     description:
       - A hash/dictionaries of security group tags. C({"key":"value"})
+    type: dict
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
@@ -55,11 +61,12 @@ options:
         Filter keys can be same as request parameter name or be lower case and use underscores ("_") or dashes ("-") to
         connect different words in one parameter. "Tag.n.Key" and "Tag.n.Value" use new filter I(tags) instead and
         it should be a dict. "SecurityGroupIds" should be a list and it will be appended to I(group_ids) automatically.
+    type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.7.0"
+    - "python >= 3.6"
+    - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -67,26 +74,26 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 
-# Gather facts about all security groups
-- ali_security_group_info:
+- name: Gather facts about all security groups
+  ali_security_group_info:
 
-# Gather facts about all security groups in a specific VPC
-- ali_security_group_info:
+- name: Gather facts about all security groups in a specific VPC
+  ali_security_group_info:
     filters:
       vpc-id: vpc-12345678
-
-# Gather facts about a security group using a name_prefix
-- ali_security_group_info:
+      
+- name: Gather facts about a security group using a name_prefix
+  ali_security_group_info:
     name_prefix: example
 
-# Gather facts about a security group by id
-- ali_security_group_info:
+- name: Gather facts about a security group by id
+  ali_security_group_info:
     group_ids:
       - sg-12345678
       - sg-cnqwu234
 
-# Gather facts about any security group with a tag key Name and value Example.
-- ali_security_group_info:
+- name: Gather facts about any security group with a tag key Name and value Example
+  ali_security_group_info:
     tags:
       name: Example
       env: dev
@@ -109,12 +116,12 @@ groups:
             type: string
             sample: "my ansible group"
         group_name:
-            description: Security group name
+            description: Security group name.
             sample: "my-ansible-group"
             type: string
             returned: always
         group_id:
-            description: Security group id
+            description: Security group id.
             sample: sg-abcd1234
             type: string
             returned: always
@@ -129,14 +136,14 @@ groups:
             type: bool
             returned: always
         tags:
-            description: Tags associated with the security group
+            description: Tags associated with the security group.
             sample:
             Name: My Security Group
             From: Ansible
             type: dict
             returned: always
         vpc_id:
-            description: ID of VPC to which the security group belongs
+            description: ID of VPC to which the security group belongs.
             sample: vpc-abcd1234
             type: string
             returned: always
@@ -200,8 +207,8 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        group_name=dict(aliases=['name']),
-        name_prefix=dict(),
+        group_name=dict(type='str', aliases=['name']),
+        name_prefix=dict(type='str'),
         tags=dict(type='dict'),
         group_ids=dict(type='list', aliases=['ids']),
         filters=dict(type='dict')
