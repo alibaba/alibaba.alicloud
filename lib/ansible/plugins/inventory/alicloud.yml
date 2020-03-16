@@ -1,0 +1,47 @@
+plugin: alicloud_ecs
+
+# A list of regions in which to describe ECS instances.
+# If empty (the default) default this will include all regions, except possibly restricted ones like cn-beijing
+regions:
+  - cn-beijing
+
+# A list in order of precedence for hostname variables. allows you to override with an ecs server attribute
+# If not set, ['instance_id'] will be used.
+hostnames:
+  - public_ip_address
+
+# Add hosts to group based on the values of a variable
+keyed_groups:
+  # add hosts to instance_type groups
+  - prefix: instance_type
+    key: instance_type
+  # add hosts to instance_name groups
+  - key: instance_name
+    prefix: name
+
+# A dictionary of filter value pairs.
+# Available filters are listed here U(https://www.alibabacloud.com/help/doc-detail/25506.htm).
+filters:
+  instance_type: ecs.g6.4xlarge
+
+# In order to avoiding calling Alicloud API frequently, we cache the results of an API call.
+cache: true
+cache_plugin: jsonfile
+cache_timeout: 7200
+cache_connection: /tmp/alicloud_inventory
+cache_prefix: alicloud_ecs
+
+# Add hosts to group based on Jinja2 conditionals
+groups:
+  # add hosts to the group Spinnaker if instance_name starts with 'k8sSpinnaker'
+  Spinnaker: instance_name.startswith('k8sSpinnaker')
+
+# Create vars from jinja2 expressions
+compose:
+  # set the ansible_host variable to connect with the public ip address without changing the hostnames
+  ansible_host: public_ip_address
+
+#If true make invalid entries a fatal error, otherwise skip and continue
+#Since it is possible to use facts in the expressions they might not always be available and we ignore those errors by default.
+strict: true
+
