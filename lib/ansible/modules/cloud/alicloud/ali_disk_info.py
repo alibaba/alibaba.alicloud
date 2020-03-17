@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -33,33 +35,21 @@ description:
      - This module fetches data from the Open API in Alicloud.
        The module must be called from within the ECS disk itself.
 options:
-  alicloud_zone:
-    description:
-      - Aliyun availability zone ID in which to launch the disk
-      - This parameter is deprecated in version 1.18.0, You can pass it C({"zone_id":"value"}) via I(filters).
-    aliases: ['zone_id', 'zone' ]
-  disk_names:
-    description:
-      - A list of ECS disk names.
-      - This parameter is deprecated in version 1.18.0, You can use I(name_prefix) to filter disks.
-    aliases: ["names"]
-  disk_ids:
-    description:
-      - A list of ECS disk ids.
-      - This parameter is deprecated in version 1.18.0, You can pass it C({"disk_ids":"value"}) via I(filters).
-    aliases: ["ids"]
   name_prefix:
     description:
       - Use a disk name prefix to filter disks.
+    type: str
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
         all of request parameters. See U(https://www.alibabacloud.com/help/zh/doc-detail/25514.htm) for parameter details.
         Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
         connect different words in one parameter.
+    type: dict
   tags:
     description:
       - A hash/dictionaries of disk tags. C({"key":"value"})
+    type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -74,7 +64,7 @@ EXAMPLES = '''
 - name: Filter disk using filters
   ali_disk_info:
     filters:
-      disk_ids: ['d-2ze3carakr2qxxxxxx', 'd-2zej6cuwzmummxxxxxx'],
+      disk_ids: ['d-2ze3carakr2qxxxxxx', 'd-2zej6cuwzmummxxxxxx']
       zone_id: 'cn-beijing-c'
       instance_id: 'i-2zeii6c3xxxxxxx'
 

@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -24,7 +26,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_route_entry
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Manage route entry for Alicloud virtual private cloud,
 description:
     - Manage route entry for Alicloud virtual private cloud.
@@ -35,37 +37,43 @@ options:
       -  Whether or not to create, delete route entry.
     choices: ['present', 'absent']
     default: 'present'
+    type: str
   router_id:
     description:
       - The ID of virtual router to which route entry belongs.
     required: true
+    type: str
   destination_cidrblock:
     description:
       - The destination CIDR or Ip address of route entry. Such as:192.168.0.0/24 or 192.168.0.1.
         There is not the same destination cidr_block in the same route table. It is required when creating route entry.
     aliases: ['dest_cidrblock', 'cidr_block']
+    type: str
   nexthop_id:
     description:
       - The next hop ID of route entry. It is required when creating a route entry.
     aliases: ['hop_id']
+    type: str
   nexthop_type:
     description:
       - The next hop type of route entry.
     default: 'Instance'
     choices: ['Instance', 'Tunnel', 'HaVip', 'RouterInterface', 'VpnGateway']
     aliases: ['hop_type']
+    type: str
   name:
     description:
       - The route entry's name. It is required when modify RouteEntryName.
     aliases: ['route_entry_name']
+    type: str
 notes:
   - The max items of route entry no more than 48 in the same route table.
   - The destination_cidrblock can't have the same cidr block as vswitch and can't belong to its in the same vpc.
   - The destination_cidrblock can't be 100.64.0.0/10 and can't belong to it.
   - When state is 'list', the parameters 'route_table_id', 'destination_cidrblock' and 'nexthop_id' are optional.
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "python >= 3.6"
+    - "footmark >= 1.15.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -76,63 +84,19 @@ EXAMPLES = """
 
 # basic provisioning example to create custom route
 - name: create route entry
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_region: cn-hongkong
-    state: present
-    cidr_block: '192.168.4.0/24'
-    nexthop_id: 'xxxxxxxxxx'
+  ali_route_entry:
+    destination_cidrblock: '{{ cidr_block }}'
+    nexthop_id: '{{ nexthop_id }}'
     router_id: 'XXXXXXXX'
-  tasks:
-    - name: create route entry
-      ali_route_entry:
-        alicloud_region: '{{ alicloud_region }}'
-        state: '{{ state }}'
-        destination_cidrblock: '{{ cidr_block }}'
-        nexthop_id: '{{ nexthop_id }}'
-        router_id: 'XXXXXXXX'
-      register: result
-    - debug: var=result
+
 
 # basic provisioning example to delete custom route
-- name: delete route entry
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_region: cn-hongkong
-    destination_cidrblock: "192.168.4.0/24"
-    next_hop_id: "xxxxxxxxxx"
+- name: delete route
+  ali_route_entry:
+    destination_cidrblock: '{{ cidr_block }}'
+    nexthop_id: '{{ nexthop_id }}'
     router_id: 'XXXXXXXX'
-    state: present
-  tasks:
-    - name: delete route
-      ali_route_entry:
-        alicloud_region: '{{ alicloud_region }}'
-        destination_cidrblock: '{{ cidr_block }}'
-        nexthop_id: '{{ nexthop_id }}'
-        router_id: 'XXXXXXXX'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
-
-# basic provisioning example to querying route entries
-- name: get route entry list
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_region: cn-hongkong
-    router_id: xxxxxxxxxx
-    state: list
-  tasks:
-    - name: get vrouter list
-      ali_route_entry:
-        alicloud_region: '{{ alicloud_region }}'
-        router_id: '{{ router_id }}'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
-
+    state: absent
 """
 
 RETURN = '''
@@ -140,7 +104,7 @@ RETURN = '''
 destination_cidrblock:
     description: the destination CIDR block of route entry
     returned: on present and absent
-    type: string
+    type: str
     sample: "10.0.14.0/24"
 
 route_entry:
@@ -187,7 +151,7 @@ destination_cidrblocks:
 route_table_id:
     description: the ID of route table to which route entry belongs
     returned: on present and absent
-    type: string
+    type: str
     sample: "vtb-2zemlj5nscgoicjnxes7h"
 total:
     description: The number of all route entries after retrieving route entry.
@@ -241,7 +205,7 @@ def main():
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
         destination_cidrblock=dict(type='str', aliases=['dest_cidrblock', 'cidr_block']),
-        nexthop_type=dict(default='Instance', aliases=['hop_type'], choices=['Instance', 'Tunnel', 'HaVip', 'RouterInterface']),
+        nexthop_type=dict(default='Instance', aliases=['hop_type'], choices=['Instance', 'Tunnel', 'HaVip', 'RouterInterface', 'VpnGateway']),
         nexthop_id=dict(aliases=['hop_id']),
         router_id=dict(type='str', required=True),
         name=dict(aliases=['route_entry_name']),

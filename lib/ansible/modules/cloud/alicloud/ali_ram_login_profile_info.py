@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -32,9 +34,12 @@ short_description: Gather info on ram login profile in Alibaba Cloud.
 description:
      - Gather info on ram login profile in Alibaba Cloud.
 options:
-  user_name	:
+  user_name:
     description:
       - The username.
+    type: str
+    required: True
+    aliases: ['name']
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:

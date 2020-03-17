@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -35,6 +37,7 @@ options:
   name_prefix:
     description:
       - Use a group name prefix to filter groups.
+    type: str
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -59,9 +62,8 @@ RETURN = '''
 users:
     description: Returns an array of complex objects as described below.
     returned: always
-    type: list
-    sample:[
-        {
+    type: complex
+    contains:
         comments:
             description: The comment.
             returned: always
@@ -87,8 +89,6 @@ users:
             returned: always
             type: string
             sample: 2015-01-23T12:33:18Z
-            }
-        ]
 '''
 
 from ansible.module_utils.basic import AnsibleModule

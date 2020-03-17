@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_slb_server
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Add or remove a list of backend servers to/from a specified SLB
 description:
   - Returns information about the backend servers. Will be marked changed when called only if state is changed.
@@ -37,17 +39,20 @@ options:
       - Add or remove backend server to/from a specified slb
     default: 'present'
     choices: ['present', 'absent']
+    type: str
   load_balancer_id:
     description:
       - The unique ID of a Server Load Balancer instance
     required: true
-    aliases: [ 'lb_id']
+    aliases: ['lb_id']
+    type: str
   backend_servers:
     description:
       - List of hash/dictionary of backend servers to add or set in when C(state=present)
       - List IDs of backend servers which in the load balancer when C(state=absent)
     required: true
-    aliases: [ 'servers']
+    aliases: ['servers']
+    type: list
     suboptions:
       server_id:
         description:
@@ -130,7 +135,7 @@ RETURN = '''
 load_balancer_id:
     description: ID of the load balancer.
     returned: when success
-    type: string
+    type: str
     sample: "lb-2zeyfm5a14c9ffxvxmvco"
 "backend_servers":
     description: Details about the backened-servers that were added.
@@ -364,9 +369,9 @@ def get_verify_listener_ports(module, listener_ports=None):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        state=dict(choices=['present', 'absent'], default='present'),
+        state=dict(choices=['present', 'absent'], default='present', type='str'),
         backend_servers=dict(required=True, type='list', aliases=['servers']),
-        load_balancer_id=dict(required=True, aliases=['lb_id']),
+        load_balancer_id=dict(required=True, aliases=['lb_id'], type='str'),
     ))
 
     # handling region parameter which is not required by this module

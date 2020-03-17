@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_rds_account_info
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Gather info on RDS accounts of Alibaba Cloud.
 description:
      - Gather info on RDS accounts of Alibaba Cloud and Support to use name_prefix to filter accounts.
@@ -37,9 +39,11 @@ options:
         - The ID of the instance.
       aliases: ['instance_id']
       required: True
+      type: str
     name_prefix:
       description:
         - Use name prefix to filter accounts.
+      type: str
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -65,9 +69,8 @@ RETURN = '''
 rds_accounts:
     description: Details about the rds accounts.
     returned: when success
-    type: list
-    contains: [
-        {
+    type: complex
+    contains:
         account_description:
             description: Account remarks
             returned: always
@@ -113,8 +116,6 @@ rds_accounts:
             returned: always
             type: string
             sample: Super
-        }
-    ]
 '''
 
 from ansible.module_utils.basic import AnsibleModule

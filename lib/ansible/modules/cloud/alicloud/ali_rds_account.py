@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_rds_account
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Create, Delete, Modyfy, Reset rds account, Grant or Revoke privilege in Alibaba Cloud.
 description:
   - This module allows the user to manage rds account. Includes support for creating, deleting,
@@ -44,47 +46,56 @@ options:
       - If I(state=absent), account will be removed.      
     default: present
     choices: ['present', 'absent']
+    type: str
   db_instance_id:
     description:
       - The ID of the instance.
       - This is used in combination with C(account_name) to determine if the account already exists.
     aliases: ['instance_id']
     required: true
+    type: str
   account_name:
     description:
       - It may consist of lower case letters, numbers and underlines, and must start with a letter and have no more than 16 characters.
       - This is used in combination with C(db_instance_id) to determine if the account already exists.
     required: true
     aliases: ['name']
+    type: str
   account_password:
     description:
       - The password of the database account. It contains 8 to 32 characters. at least three of the following four character.
         types (uppercase letters, lowercase letters, digits, and special characters).
         The allowed special characters are ( ! @ # $ & % ^ * ( ) _ + - = )
     aliases: ['password']
+    type: str
   account_description:
     description:
       - Account remarks, which cannot exceed 256 characters. It cannot begin with http:// , https:// .
         It must start with a Chinese character or English letter. It can include Chinese and
         English characters/letters, underlines (_), hyphens (-), and numbers. The length may be 2-256 characters,
     aliases: ['description']
+    type: str
   account_type:
     description:
       - Privilege type of account. Normal for Common privilege; Super for High privilege; Default value is Normal.
     default: Normal
     aliases: ['type']
     choices: ['Normal', 'Super']
+    type: str
   db_names:
     description:
       - The names of the database that the account needs to access.
+    type: list
   account_privilege:
     description:
       - The account privilege. For MySQL and MariaDB, the values are ReadWrite, ReadOnly, DDLOnly, and DMLOnly.
         For SＱL Server, the values are ReadWrite, ReadOnly, and DBOwner. For PostgreSQL, the value is DBOwner.
     aliases: ['privilege']
     choices: ['ReadOnly', 'ReadWrite', 'DDLOnly', 'DMLOnly', 'DBOwner']
+    type: str
 author:
-  - "Li Xue"
+    - "He Guimin (@xiaozhu36)"
+    - "Li Xue (@lixue323)"
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.16.0"
@@ -210,7 +221,7 @@ def main():
         account_password=dict(type='str', aliases=['password']),
         account_privilege=dict(aliases=['privilege'], choices=['ReadOnly', 'ReadWrite', 'DDLOnly', 'DMLOnly', 'DBOwner']),
         account_description=dict(type='str', aliases=['description']),
-        account_type=dict(default='Normal', type='str', choices=['Normal', 'Super'])
+        account_type=dict(default='Normal', type='str', choices=['Normal', 'Super'], aliases=['type'])
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

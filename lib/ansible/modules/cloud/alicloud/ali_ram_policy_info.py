@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -35,6 +37,7 @@ options:
   name_prefix:
     description:
       - Use a policy name prefix to filter policies.
+    type: str
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -58,9 +61,8 @@ RETURN = '''
 policies:
     description: Returns an array of complex objects as described below.
     returned: always
-    type: list
-    sample:[
-        {
+    type: complex
+    contains:
         attachment_count:
             description: The number of times that the policy is referenced.
             returned: always
@@ -100,9 +102,7 @@ policies:
             description: The date and time when the policy was modified.
             returned: always
             type: string
-            sample: 2015-01-23T12:33:18Z        
-            }
-        ]
+            sample: 2015-01-23T12:33:18Z
 '''
 
 from ansible.module_utils.basic import AnsibleModule

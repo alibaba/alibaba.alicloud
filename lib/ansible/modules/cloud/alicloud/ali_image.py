@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -24,7 +26,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_image
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Create or delete user-defined image
 description:
     - Create user-defined image from ECS instance, snapshot or disk_mapping; delete user-defined image 
@@ -33,37 +35,37 @@ options:
     description:
       - create or delete user-defined image
     default: 'present'
-    choices: [ 'present', 'absent' ]
-   
+    choices: ['present', 'absent']
+    type: str
   instance_id:
     description:
       - The ECS instance ID. A custom image is created from the specified instance.
-    aliases: [ 'instance' ]
-     
+    aliases: ['instance']
+    type: str
   snapshot_id:
     description:
       - The system disk snapshot ID. A custom image is created from the specified snapshot.
     required: true   
-    aliases: [ 'snapshot' ]
-     
+    aliases: ['snapshot']
+    type: str
   image_name:
     description:
       - The name of the image, [2, 128] English or Chinese characters.
         It must begin with an uppercase/lowercase letter or a Chinese character, and may contain numbers, "_" or "-".
         It cannot begin with http:// or https://.
-    aliases: [ 'name' ]
-     
+    aliases: ['name']
+    type: str
   description:
     description:
       - The description of the image, with a length limit of [0, 256] characters.
         Leaving it blank means null, which is the default value.
         It cannot begin with http:// or https://.
-     
+    type: str
   image_version:
     description:
       - The version number of the image, with a length limit of [1, 40] English characters.   
-    aliases: [ 'version' ]
-    
+    aliases: ['version']
+    type: str
   disk_mapping:
     description:
       - An optional list of device hashes/dictionaries with multiple snapshots configurations.
@@ -74,30 +76,25 @@ options:
           - The snapshot ID. Only one system disk's snapshot can be specified
       disk_size:
         description:
-          - Size of the disk, in the range [5-2000GB]   
-  client_token:
-    description:
-      - Used to ensure the idempotence of the request.
-
+          - Size of the disk, in the range [5-2000GB]
+    type: list 
   wait:
     description:
       - wait for the Image to be available.     
     type: bool
-    default: False
-     
+    default: False 
   wait_timeout:
     description:
       - how long before wait gives up, in seconds     
     default: 300
-               
+    type: int        
   image_id:
     description:
       - Image ID to be deregistered.
-    required: false  
-       
+    type: str
 requirements:
-    - "python >= 2.7"
-    - "footmark"
+    - "python >= 3.6"
+    - "footmark >= 1.15.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -105,84 +102,34 @@ author:
 '''
 
 EXAMPLES = '''
-#
-# provisioning to create new user-defined image
-#
-
 # basic provisioning example to create image using ecs instance
-- name: basic provisioning example
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: cn-hongkong
-    instance_id: xxxxxxxxxx
-    snapshot_id: xxxxxxxxxx
-    disk_mapping:
-      - disk_size: 5
-        snapshot_id: xxxxxxxxxx    
-    image_name: image_test
-    image_version: 4
-    description: description
-    image_id: xxxxxxxxxx   
-    wait: false
-    wait_timeout: 10
-    
-  tasks:
-    - name: create image form ecs instance
-      ali_image:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        instance_id: '{{ instance_id }}'
-      register: result
-    - debug: var=result
 
-    - name: create image using snapshot
-      ali_image:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        snapshot_id: '{{ snapshot_id }}'
-        state: 'present'
-      register: result
-    - debug: var=result
-    
-    - name: create image using disk mapping
-      ali_image:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        disk_mapping: '{{ disk_mapping }}'
-        state: 'present'
-      register: result
-    - debug: var=result
+- name: Create image form ecs instance
+  ali_image:
+    instance_id: '{{ instance_id }}'
+  register: result
 
-    - name: create image with disk mapping and version
-      ali_image:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        image_name: '{{ image_name }}'
-        image_version: '{{ image_version }}'
-        description: '{{ description }}'       
-        disk_mapping: '{{ disk_mapping }}'
-        wait: '{{ wait }}'
-        wait_timeout: '{{ wait_timeout }}'
-        state: 'present'      
-      register: result
-    - debug: var=result
+- name: Create image using snapshot
+  ali_image:
+    snapshot_id: '{{ snapshot_id }}'
 
-    - name: delete image
-      ali_image:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        image_id: '{{ image_id }}'
-        state: 'absent'
-      register: result
-    - debug: var=result
+- name: Create image using disk mapping
+  ali_image:
+    disk_mapping: '{{ disk_mapping }}'
+
+- name: Create image with disk mapping and version
+  ali_image:
+    image_name: '{{ image_name }}'
+    image_version: '{{ image_version }}'
+    description: '{{ description }}'       
+    disk_mapping: '{{ disk_mapping }}'
+    wait: '{{ wait }}'
+    wait_timeout: '{{ wait_timeout }}'
+
+- name: delete image
+  ali_image:
+    image_id: '{{ image_id }}'
+    state: 'absent'
 '''
 
 RETURN = '''
@@ -215,7 +162,7 @@ image:
 image_id:
     description: return the created image id
     returned: except on absent
-    type: string
+    type: str
     sample: "m-2ze43t8c5urc4mvkx3fp"
 '''
 import time
@@ -328,18 +275,16 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        image_id=dict(),
-        snapshot_id=dict(aliases=['snapshot']),
-        description=dict(),
-        image_name=dict(aliases=['name']),
-        image_version=dict(aliases=['version']),
+        image_id=dict(type='str'),
+        snapshot_id=dict(type='str', aliases=['snapshot']),
+        description=dict(type='str'),
+        image_name=dict(type='str', aliases=['name']),
+        image_version=dict(type='str', aliases=['version']),
         disk_mapping=dict(type='list'),
         instance_id=dict(aliases=['instance']),
-        state=dict(default='present', choices=[
-            'present', 'absent'
-        ]),
-        wait=dict(default=False, type=bool),
-        wait_timeout=dict(type='int', default='300')
+        state=dict(default='present', choices=['present', 'absent'], type='str'),
+        wait=dict(default=False, type='bool'),
+        wait_timeout=dict(type='int', default=300)
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 

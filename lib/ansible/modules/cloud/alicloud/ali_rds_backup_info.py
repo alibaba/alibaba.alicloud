@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -36,15 +38,19 @@ options:
       description:
         - Id of rds instance.
       aliases: ["instance_id"]
+      type: str
     backup_id:
       description:
         - The ID of the backup set.
+      type: str
     backup_status:
       description:
         - The status of the backup.
+      type: str
     backup_mode:
       description:
-        - The backup mode.      
+        - The backup mode.
+      type: str  
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -83,7 +89,7 @@ backups:
             description: The ID of the instance.
             returned: always
             type: string
-            sample: rm-uf6wjk5xxxxxxx	
+            sample: rm-uf6wjk5xxxxxxx
         backup_status:
             description: The status of the backup set.
             returned: always
@@ -95,10 +101,10 @@ backups:
             type: string
             sample: FullBackup
         backup_mode:
-            description: The backup mode. 
+            description: The backup mode.
             returned: always
             type: string
-            sample: Automated	
+            sample: Automated
         backup_method:
             description: The ID of the instance.
             returned: always
@@ -128,7 +134,7 @@ backups:
             description: The end time of the current backup.
             returned: always
             type: string
-            sample: 2019-12-17T01:52:36Z	
+            sample: 2019-12-17T01:52:36Z
         backup_intranet_download_url:
             description: The download link for the private network access. If the download is unavailable, this parameter is a null string.
             returned: always

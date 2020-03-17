@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -41,12 +43,14 @@ options:
       - If I(state=absent), database will be removed.
     default: 'present'
     choices: ['present', 'absent']
+    type: str
   db_instance_id:
     description:
       - rds instance id. 
       - This is used in combination with C(db_name) to determine if the database already exists.
     aliases: ['instance_id']
     required: True
+    type: str
   db_name:
     description:
       - database name. It must be 2 to 64 characters in length.It must start with a lowercase letter and end with a 
@@ -56,6 +60,7 @@ options:
       - This is used in combination with C(db_instance_id) to determine if the database already exists.
     aliases: ['name']
     required: True
+    type: str
   character_set_name:
     description:
       - database character name. MySQL or MariaDB (utf8 | gbk | latin1 | utf8mb4).
@@ -63,29 +68,38 @@ options:
         see more U(https://www.alibabacloud.com/help/doc-detail/26258.htm).
         Required when C(state=present).
     aliases: ['character']
+    type: str
   db_description:
     description:
       - The description of the database. It must be 2 to 256 characters in length. 
         It can contain letters, digits, underscores (_), and hyphens (-), and must start with a letter.
     aliases: ['description']
+    type: str
   target_db_instance_id:
     description:
       - The ID of the destination instance, which must differ from the ID of the source instance.
     aliases: ['target_instance_id']
+    type: str
   target_db_name:
     description:
       - Target instance database name.
+    type: str
   backup_id:
     description:
       - The ID of the backup set on the source instance. When you copy databases based on the backup set.
+    type: str
   restore_time:
     description:
       - The time when the system copies the database. You can select any time within the backup retention period.
+    type: str
   sync_user_privilege:
     description:
       - Indicates whether to copy users and permissions.
+    type: bool
+    default: False
 author:
-    - "Li Xue"
+    - "He Guimin (@xiaozhu36)"
+    - "Li Xue (@lixue323)"
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.16.0"
@@ -268,4 +282,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

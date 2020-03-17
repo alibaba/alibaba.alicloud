@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_slb_listener
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Create, Delete, Start or Stop Server Load Balancer Listener in ECS
 description:
   - Create, Delete, Start or Stop Server Load Balancer Listener in ECS
@@ -37,82 +39,96 @@ options:
       - The state of the load balancer listener after operating.
     required: true
     choices: [ 'present', 'absent', 'running', 'stopped']
+    type: str
   load_balancer_id:
     description:
       - The unique ID of an Server Load Balancer instance
     required: true
-  listener_type:
-    description:
-      - (deprecated) This field has been deprecated from ansible-alicloud (v1.1.3), and 'protocol' will replace it.
+    aliases: ['id']
+    type: str
   protocol:
     description:
       - The protocol which listener used. It is requried when C(state=present).
     required: false
     choices: [ 'http', 'https', 'tcp', 'udp']
+    type: str
   listener_port:
     description:
       - Port used by the Server Load Balancer instance frontend
     required: true
     choices: [1~65535]
+    type: int
     aliases: ['frontend_port']
   bandwidth:
     description:
       - Bandwidth peak of Listener. It is required when C(present)
     choices: [-1/1-1000]
-    required: false
+    type: int
   backend_server_port:
     description:
       - Port used by the Server Load Balancer instance backend port
     choices: [1~65535]
     aliases: ['backend_port']
+    type: int
   scheduler:
     description:
       - Scheduling algorithm.
     default: 'wrr'
     choices: ['wlc', 'wrr']
+    type: str
   sticky_session:
     description:
       - Whether to enable session persistence.
     choices: ['on', 'off']
-    defalut: 'off'
+    default: 'off'
+    type: str
   sticky_session_type:
     description:
       - Mode for handling the cookie. Required when C(sticky_session='on').
     choices: ['server', 'insert']
+    type: str
   cookie_timeout:
     description:
       - Cookie timeout, Required when C(sticky_session='on', sticky_session_type='insert')
-    choices: [ 1~86400]
+    choices: [1~86400]
+    type: str
   cookie:
     description:
       - The cookie configured on the server. Required when C(sticky_session='on', sticky_session_type='server')
+    type: str
   persistence_timeout:
     description:
       - Timeout of connection persistence.
     default: 0
     choices: [0~3600]
+    type: int
   health_check:
     description:
       - Whether to enable health check. TCP and UDP listener's HealthCheck is always on, so it will be ignore when launching TCP or UDP listener.
     choices: ['on', 'off']
-    defalut: on
+    default: 'on'
+    type: str
   health_check_type:
     description:
       - Type of health check. TCP supports TCP and HTTP health check mode, you can select the particular mode depending on your application.
     default: 'tcp'
     choices: ['tcp', 'http']
+    type: str
   health_check_domain:
     description:
       - Domain name used for health check.
         When it is not set or empty, Server Load Balancer uses the private network IP address of each backend server as Domain used for health check.
+    type: str
   health_check_uri:
     description:
       - URI used for health check. Required when C(health_check='on').
     default: "/"
+    type: str
   health_check_connect_port:
     description:
       - Port used for health check. Required when C(health_check='on'). Default to C(backend_server_port).
     choices: [1~65535]
+    type: int
   healthy_threshold:
     description:
       - Threshold determining the result of the health check is success.
@@ -120,6 +136,7 @@ options:
         the health check result of the backend server is changed from fail to success. Required when C(health_check='on').
     choices: [1-10]
     default: 3
+    type: int
   unhealthy_threshold:
     description:
       - Threshold determining the result of the health check is fail.
@@ -127,31 +144,36 @@ options:
         the health check result of the backend server is changed from success to fail. Required when C(health_check='on').
     choices: [1-10]
     default: 3
+    type: int
   health_check_timeout:
     description:
       - Maximum timeout of each health check response. Required when C(health_check='on').
     choices: [1-300]
     default: 5
+    type: int
   health_check_interval:
     description:
       - Time interval of health checks. Required when C(health_check='on').
     choices: [1-50]
     default: 2
+    type: int
   health_check_http_code:
     description:
       - Regular health check HTTP status code. Multiple codes are segmented by ",". Required when C(health_check='on').
     default: http_2xx
     choices: ['http_2xx','http_3xx', 'http_4xx', 'http_5xx']
+    type: str
   vserver_group_id:
     description:
       - Virtual server group ID, when the VserverGroup is on, the incoming VServerGroupId value takes effect.
+    type: str
   server_certificate_id:
     description:
       - Server certificate ID
-
+    type: str
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.1.18"
+    - "python >= 3.6"
+    - "footmark >= 1.15.0"
 extends_documentation_fragment:
     - alicloud
 author:
@@ -160,132 +182,49 @@ author:
 
 EXAMPLES = """
 # Basic provisioning example to create Load Balancer Listener
-- name: create server load balancer http listener
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_region: cn-beijing
-    alicloud_access_key: <your-alicloud-access-key-id>
-    alicloud_secret_key: <your-alicloud-access-secret-key>
-    load_balancer_id: <your-specified-load-balancer>
-    listener_port: 80
-    backend_server_port: 80
-    state: present
-  tasks:
-    - name: create server load balancer listener
-      ali_slb_listener:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        listener_port: '{{ listener_port }}'
-        backend_server_port: '{{ backend_server_port }}'
-        bandwidth: 1
-        sticky_session: off
-        health_check: off
-        protocol: http
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
+- name: create server load balancer listener
+  ali_slb_listener:
+    load_balancer_id: '{{ load_balancer_id }}'
+    listener_port: '{{ listener_port }}'
+    backend_server_port: '{{ backend_server_port }}'
+    bandwidth: 1
+    sticky_session: off
+    health_check: off
+    protocol: http
 
 # Basic provisioning example to stop Load Balancer Listener
 - name: stop server load balancer listener
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_region: cn-beijing
-    alicloud_access_key: <your-alicloud-access-key-id>
-    alicloud_secret_key: <your-alicloud-access-secret-key>
-    load_balancer_id: <your-specified-load-balancer>
-    listener_port: 80
-    state: stopped
-  tasks:
-    - name: stop server load balancer listener
-      ali_slb_listener:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        protocol: http
-        listener_port: '{{ listener_port }}'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
+  ali_slb_listener:
+    load_balancer_id: '{{ load_balancer_id }}'
+    protocol: http
+    listener_port: '{{ listener_port }}'
+    state: absent
 
 # Basic provisioning example to start Load Balancer Listener
 - name: start server load balancer listener
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_region: cn-beijing
-    alicloud_access_key: <your-alicloud-access-key-id>
-    alicloud_secret_key: <your-alicloud-access-secret-key>
-    load_balancer_id: <your-specified-load-balancer>
-    listener_port: 80
-    state: running
-  tasks:
-    - name: start server load balancer listener
-      ali_slb_listener:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        protocol: http
-        listener_port: '{{ listener_port }}'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
+  ali_slb_listener:
+    load_balancer_id: '{{ load_balancer_id }}'
+    protocol: http
+    listener_port: '{{ listener_port }}'
+
 
 # Basic provisioning example to set listener attribute
 - name: set listener attribute
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_region: cn-beijing
-    alicloud_access_key: <your-alicloud-access-key-id>
-    alicloud_secret_key: <your-alicloud-access-secret-key>
-    load_balancer_id: <your-specified-load-balancer>
-    listener_port: 80
-    state: present
-  tasks:
-    - name: set listener attribute
-      ali_slb_listener:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        protocol: http
-        load_balancer_id: '{{ load_balancer_id }}'
-        listener_port: '{{ listener_port }}'
-        bandwidth: 4
-        scheduler: wlc
-        sticky_session: off
-        health_check: off
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
+  ali_slb_listener:
+    protocol: http
+    load_balancer_id: '{{ load_balancer_id }}'
+    listener_port: '{{ listener_port }}'
+    bandwidth: 4
+    scheduler: wlc
+    sticky_session: off
+    health_check: off
 
 # Basic provisioning example to delete listener
 - name: delete listener
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_region: cn-beijing
-    alicloud_access_key: <your-alicloud-access-key-id>
-    alicloud_secret_key: <your-alicloud-access-secret-key>
-    load_balancer_id: <your-specified-load-balancer>
-    listener_port: 80
+  ali_slb_listener:
+    load_balancer_id: '{{ load_balancer_id }}'
+    listener_port: '{{ listener_port }}'
     state: absent
-  tasks:
-    - name: delete listener
-      ali_slb_listener:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        listener_port: '{{ listener_port }}'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
 """
 RETURN = '''
 listener:
@@ -350,7 +289,7 @@ def main():
         load_balancer_id=dict(type='str', required=True, aliases=['id']),
         backend_server_port=dict(type='int', choices=[i for i in range(1, 65536)], aliases=['backend_port']),
         bandwidth=dict(type='int', choices=([i for i in range(1, 1001)]).append(-1)),
-        sticky_session=dict(type='str', choices=['on', 'off']),
+        sticky_session=dict(type='str', choices=['on', 'off'], default='off'),
         protocol=dict(type='str', choices=['http', 'https', 'tcp', 'udp']),
         health_check=dict(type='str', default= 'on', choices=['on', 'off']),
         scheduler=dict(type='str', default='wrr', choices=['wrr', 'wlc']),
@@ -364,11 +303,11 @@ def main():
         unhealthy_threshold=dict(type='int', default=3, choices=[i for i in range(1, 11)]),
         health_check_timeout=dict(type='int', default=5, choices=[i for i in range(1, 51)]),
         health_check_interval=dict(type='int', default=2, choices=[i for i in range(1, 6)]),
-        health_check_http_code=dict(type='str', default='http_2xx'),
+        health_check_http_code=dict(type='str', default='http_2xx', choices=['http_2xx','http_3xx', 'http_4xx', 'http_5xx']),
         vserver_group_id=dict(type='str'),
         persistence_timeout=dict(type='int', default=0, choices=[i for i in range(0, 3601)]),
         server_certificate_id=dict(type='str'),
-        health_check_type=dict(type='str', default='tcp', choice=['tcp', 'http']),
+        health_check_type=dict(type='str', default='tcp', choices=['tcp', 'http']),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

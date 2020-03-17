@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_dns_domain_info
-version_added: "2.8"
+version_added: "2.9"
 short_description: Gather info on dns of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -38,10 +40,12 @@ options:
       -  The name to give your DNS.
     required: True
     aliases: ['name']
-  filter:
+    type: str
+  filters:
     description:
       -  A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
          all of request parameters. 
+    type: dict
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.15.0"
@@ -75,13 +79,11 @@ dns:
         dns_servers:
             description: The DNS list of the domain name in the resolution system.
             returned: always
-            type: dict
-            sample: dns_servers:{
-                "dns_server": [
-                    "xx1.alidns.com",
-                    "xx2.alidns.com"
-                ]
-            }
+            sample: 
+                dns_servers:
+                    dns_server: 
+                     - xx1.alidns.com
+                     - xx2.alidns.com
         domain_name:
             description: The name of domain.
             returned: always

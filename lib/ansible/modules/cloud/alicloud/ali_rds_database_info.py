@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -38,13 +40,16 @@ options:
       - The ID of the instance.
     aliases: ["instance_id"]
     required: True
+    type: str
   db_status:
     description:
       - The status of the database.
     aliases: ["status"]
+    type: str
   name_prefix:
     description:
       - Use a database name prefix to filter rds database.
+    type: str
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -74,9 +79,8 @@ RETURN = '''
 databases:
     description: Describe the info after operating database.
     returned: always
-    type: list
-    sample:[
-        {
+    type: complex
+    contains:
         character_set_name:
             description: The character of database.
             returned: always
@@ -122,8 +126,6 @@ databases:
             returned: always
             type: string
             sample: Creating
-            }
-        ]
 '''
 
 from ansible.module_utils.basic import AnsibleModule

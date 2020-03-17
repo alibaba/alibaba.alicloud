@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -45,32 +47,41 @@ options:
       - If I(state=absent), and role_name exists, will detach policy from role.
     choices: ['present', 'absent']
     default: 'present'
+    type: str
   policy_document:
     description:
       - The policy text. It can be up to 2048 bytes.
     aliases: ['policy']
+    type: str
   policy_name:
     description:
       - The policy name. It must be 1 to 128 characters in length.
       - This is used to determine if the policy already exists.
     aliases: ['name']
     required: True
+    type: str
   description:
     description:
       - The policy description. It must be 1 to 1,024 characters in length.
+    type: str
   user_name:
     description:
       - The username of the RAM user to which the policy is attached or detached.
+    type: str
   group_name:
     description:
       - The groupname of the RAM group to which the policy is attached or detached.
+    type: str
   role_name:
     description:
       - The rolename of the RAM role to which the policy is attached or detached.
+    type: str
   policy_type:
     description:
       - The policy type. If this parameter is left unspecified, all polices are listed.
     choices: ['System', 'Custom']
+    type: str
+    aliases: ['type']
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.17.0"

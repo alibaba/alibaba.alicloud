@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -36,6 +38,8 @@ options:
     description:
       - The username of the RAM user. If this parameter is not set when the user logs on to the console, 
         the AccessKeys of this user are displayed.
+    type: str
+    aliases: ['name']
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -60,9 +64,8 @@ RETURN = '''
 users:
     description: Returns an array of complex objects as described below.
     returned: always
-    type: list
-    sample:[
-        {
+    type: complex
+    contains:
         access_key_id:
             description: The AccessKeyId.
             returned: always
@@ -78,8 +81,6 @@ users:
             returned: always
             type: string
             sample: Active
-            }
-        ]
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -97,8 +98,8 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        user_name=dict(type='str'), aliases=['name'])
-    )
+        user_name=dict(type='str', aliases=['name'])
+    ))
     module = AnsibleModule(argument_spec=argument_spec)
 
     if HAS_FOOTMARK is False:

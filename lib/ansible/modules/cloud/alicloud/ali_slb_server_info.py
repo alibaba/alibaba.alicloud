@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_slb_server_info
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Gather facts on backend server of Alibaba Cloud SLB.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -37,59 +39,40 @@ options:
       description:
         - ID of server load balancer.
       required: true
-      aliases: [ "lb_id" ]
+      aliases: ["lb_id" ]
+      type: str
     listener_ports:
       description:
         - A list of backend server listening ports.
-      aliases: [ "ports" ]
+      aliases: ["ports"]
+      type: list
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark"
+    - "python >= 3.6"
+    - "footmark >= 1.15.0"
 extends_documentation_fragment:
     - alicloud
 """
 
 EXAMPLES = '''
 # Fetch backend server health status details according to setting different filters
-- name: fetch backend server health status in the specified region
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: <your-alicloud-access-key-id>
-    alicloud_secret_key: <your-alicloud-access-secret-key>
-    alicloud_region: cn-beijing
-    load_balancer_id: lb-dj1e5kwh41n87vkn1pxn5
-    ports:
-      - 100
-      - 90
-  tasks:
-    - name: Find all backend server health status in specified region
-      ali_slb_server_info:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-      register: all_backend_server
-    - debug: var=all_backend_server
+- name: Find all backend server health status in specified region
+  ali_slb_server_info:
+    load_balancer_id: '{{ load_balancer_id }}'
 
-    - name: Find all backend server health status based on specified port no.
-      ali_slb_server_info:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        listener_ports: '{{ ports }}'
-      register: backend_servera_by_ports
-    - debug: var=backend_servera_by_ports
+
+- name: Find all backend server health status based on specified port no.
+  ali_slb_server_info:
+    load_balancer_id: '{{ load_balancer_id }}'
+    listener_ports: '{{ ports }}'
 '''
 
 RETURN = '''
 load_balancer_id:
     description: ID of the load balancer.
     returned: when success
-    type: string
+    type: str
     sample: "lb-dj1jywbux1zslfna6pvnv"
 "backend_servers":
     description: Details about the backened-servers that were added.

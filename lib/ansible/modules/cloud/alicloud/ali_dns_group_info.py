@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_dns_group_info
-version_added: "2.8"
+version_added: "2.9"
 short_description: Gather facts on domain group of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -36,9 +38,12 @@ options:
   group_id:
     description:
       - Id of group, specify it to filter group.
+    type: str
+    aliases: ['id']
   name_prefix:
     description:
       - Use a Group name prefix to filter groups.
+    type: str
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:

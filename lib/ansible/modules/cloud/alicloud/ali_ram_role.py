@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -40,20 +42,25 @@ options:
       - If I(state=absent), role will be removed.
     choices: ['present', 'absent']
     default: 'present'
+    type: str
   role_name:
     description:
       - The name of the RAM role. The specified name can be up to 64 characters in length. Format(^[a-zA-Z0-9\. @\-]+$)
       - This is used to determine if the Ram role already exists.
     aliases: ['name']
     required: True
+    type: str
   assume_role_policy_document:
     description:
       - The policy text that specifies one or more entities entrusted to assume the RAM role. 
         The trusted entity can be an Alibaba Cloud account, Alibaba Cloud service, or identity provider (IdP).
       - Required when C(state=present)
+    type: str
+    aliases: ['policy']
   description:
     description:
       - The description of the RAM role. The description can be up to 1,024 characters in length.
+    type: str
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.17.0"

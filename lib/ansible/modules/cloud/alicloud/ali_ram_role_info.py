@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -35,6 +37,7 @@ options:
   name_prefix:
     description:
       - Use a Role name prefix to filter Roles.
+    type: str
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -57,9 +60,8 @@ RETURN = '''
 roles:
     description: Returns an array of complex objects as described below.
     returned: always
-    type: list
-    sample:[
-        {
+    type: complex
+    contains:
         arn:
             description: The Alibaba Cloud Resource Name (ARN) of the RAM role.
             returned: always
@@ -89,9 +91,7 @@ roles:
             description: The name of the RAM role.
             returned: always
             type: string
-            sample: ECSAdmin            
-            }
-        ]
+            sample: ECSAdmin
 '''
 
 from ansible.module_utils.basic import AnsibleModule
