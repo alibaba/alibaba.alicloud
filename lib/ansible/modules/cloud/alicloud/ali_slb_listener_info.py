@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -38,12 +40,14 @@ options:
       description:
         - ID of server load balancer.
       required: true
-      aliases: [ "lb_id" ]      
+      aliases: ["lb_id"]
+      type: str      
     listener_type:
       description:
         - User expects the type of operation listener.
       required: true
-      choices: [ 'http', 'https', 'tcp', 'udp']
+      choices: ['http', 'https', 'tcp', 'udp']
+      type: str 
     listener_port:
       description:
         - Port used by the Server Load Balancer instance frontend
@@ -52,8 +56,8 @@ options:
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 2.6"
-    - "footmark"
+    - "python >= 3.6"
+    - "footmark >= 1.15.0"
 extends_documentation_fragment:
     - alicloud
 """
@@ -61,25 +65,10 @@ extends_documentation_fragment:
 EXAMPLES = """
 # Fetch SLB listener details according to setting different filters
 - name: Fetch SLB listener details example
-  hosts: localhost
-  vars:
-    alicloud_region: cn-beijing
-    alicloud_access_key: <your-alicloud-access-key>
-    alicloud_secret_key: <your-alicloud-secret-key>
-    load_balancer_id: lb-dj1jywbux1zslfna6pvnv
-    listener_type: http
-    listener_port: 8085
-  tasks:
-    - name: Fetch SLB listener details example
-      ali_slb_listener_info:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        load_balancer_id: '{{ load_balancer_id }}'
-        listener_type: '{{ listener_type }}'
-        listener_port: '{{ listener_port }}'
-      register: result
-    - debug: var=result
+  ali_slb_listener_info:
+    load_balancer_id: '{{ load_balancer_id }}'
+    listener_type: '{{ listener_type }}'
+    listener_port: '{{ listener_port }}'
 """
 
 RETURN = '''
@@ -139,8 +128,8 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         listener_port=dict(type='int', required=True, choices=[i for i in range(1, 65536)]),
-		load_balancer_id=dict(type='str', aliases=['lb_id']),
-        listener_type=dict(type='str', choices=['http', 'https', 'tcp', 'udp'])
+        load_balancer_id=dict(type='str', required=True, aliases=['lb_id']),
+        listener_type=dict(type='str', required=True, choices=['http', 'https', 'tcp', 'udp'])
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 

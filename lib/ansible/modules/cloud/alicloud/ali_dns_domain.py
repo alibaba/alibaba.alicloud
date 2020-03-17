@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_dns_domain
-version_added: "2.8"
+version_added: "2.9"
 short_description: Configure Alibaba Cloud DNS (DNS)
 description:
     - Create, Delete Alicloud cloud DNS(DNS).
@@ -38,26 +40,33 @@ options:
       -  The name to give your DNS.
     required: True
     aliases: ['name']
+    type: str
   group_name:
     description:
       - Specify name of group, when change domain group.
+    type: str
   lang:
     description:
       - The language which you choose
+    type: str
   resource_group_id:
     description:
       - When add domain, You can specify the resource group id
+    type: str
   remark:
     description:
       - Specify this parameter as a comment for dns
+    type: str
   state:
     description:
       -  Whether or not to create, delete DNS.
     choices: ['present', 'absent']
     default: 'present'
+    type: str
   user_client_ip:
     description:
       - User client IP
+    type: str
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.15.0"
@@ -106,12 +115,12 @@ dns:
             description: The DNS list of the domain name in the resolution system.
             returned: always
             type: dict
-            sample: dns_servers:{
-                "dns_server": [
-                    "xx1.alidns.com",
-                    "xx2.alidns.com"
-                ]
-            }
+            sample: 
+                dns_servers:
+                    dns_server: 
+                     - xx1.alidns.com
+                     - xx2.alidns.com
+
         domain_name:
             description: The name of domain.
             returned: always

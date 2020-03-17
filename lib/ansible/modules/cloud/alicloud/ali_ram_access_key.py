@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -40,17 +42,22 @@ options:
       - If I(state=absent), access key will be removed.
     choices: ['present', 'absent']
     default: 'present'
+    type: str
   user_name:
     description:
       - The username of the RAM user.
     required: True
+    type: str
+    aliases: ['name']
   user_access_key_id:
     description:
       - The ID of the AccessKey to be updated. Required when update access key.
+    type: str
   status:
     description:
       - The status of the AccessKey. Required when update access key.
     choices: ['Active', 'Inactive']
+    type: str
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.17.0"

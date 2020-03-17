@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -35,6 +37,7 @@ options:
   name_prefix:
     description:
       - Use a User name prefix to filter Users.
+    type: str
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -60,9 +63,8 @@ RETURN = '''
 users:
     description: Returns an array of complex objects as described below.
     returned: always
-    type: list
-    sample:[
-        {
+    type: complex
+    contains:
         user_name:
             description: The username.
             returned: always
@@ -102,7 +104,7 @@ users:
             description: The email address of the RAM user.
             returned: always
             type: string
-            sample: alice@example.com	
+            sample: alice@example.com
         display_name:
             description: The display name.
             returned: always
@@ -118,8 +120,6 @@ users:
             returned: always
             type: string
             sample: ansible test
-            }
-        ]
 '''
 
 from ansible.module_utils.basic import AnsibleModule

@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -24,7 +26,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_disk
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Create, Attach, Detach or Delete a disk in Alicloud ECS
 description:
   - Creates and delete a ECS disk.starts, stops, restarts or terminates ecs instances.
@@ -34,223 +36,140 @@ options:
     description:
       - The state of operating ecs disk.
     default: 'present'
-    choices:
-      - ['present', 'absent']
+    choices: ['present', 'absent']
+    type: str
   alicloud_zone:
     description:
       - Aliyun availability zone ID which to launch the disk
     required: true
-    aliases: [ 'zone_id', 'zone' ]
+    aliases: ['zone_id', 'zone']
+    type: str
   disk_name:
     description:
       - The name of ECS disk, which is a string of 2 to 128 Chinese or English characters. It must begin with an
         uppercase/lowercase letter or a Chinese character and can contain numerals, ".", "_", or "-".
         It cannot begin with http:// or https://.
-    aliases: [ 'name' ]
+    aliases: ['name']
+    type: str
   description:
     description:
       - The description of ECS disk, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
-    aliases: [ 'disk_description' ]
+    aliases: ['disk_description']
+    type: str
+  resource_group_id:
+    description:
+      - The Id  of group which disk belongs to.
+    aliases: ['group_id']
+    type: str
   disk_category:
     description:
       - The category to apply to the disk.
     default: 'cloud'
     aliases: ['volume_type', 'disk_type']
-    choices: ['cloud', 'cloud_efficiency', 'cloud_ssd']
+    choices: ['cloud', 'cloud_efficiency', 'cloud_ssd', 'cloud_essd']
+    type: str
   size:
     description:
       - Size of disk (in GB) to create.
-        'cloud' valid value is 5~2000; 'cloud_efficiency' or 'cloud_ssd' valid value is 20~32768.
+        'cloud' valid value is 5~2000; 'cloud_efficiency', 'cloud_essd' or 'cloud_ssd' valid value is 20~32768.
     aliases: ['volume_size', 'disk_size']
+    type: int
   snapshot_id:
     description:
       - Snapshot ID on which to base the data disk.
         If this parameter is specified, the value of 'size' will be ignored. The actual created disk size is the specified snapshot's size.
     aliases: ['snapshot']
+    type: str
   disk_tags:
     description:
       - A list of hash/dictionaries of instance tags, ['{"tag_key":"value", "tag_value":"value"}'],
-                tag_key must be not null when tag_value isn't null.
+        tag_key must be not null when tag_value isn't null.
     aliases: ['tags']
+    type: list
   instance_id:
     description:
       - Ecs instance ID is used to attach the disk. The specified instance and disk must be in the same zone.
         If it is null or not be specified, the attached disk will be detach from instance.
     aliases: ['instance']
+    type: str
   disk_id:
     description:
       - Disk ID is used to attach an existing disk (required instance_id), detach or remove an existing disk.
     required: true
     aliases: ['vol_id', 'id']
+    type: str
   delete_with_instance:
     description:
       - When set to true, the disk will be released along with terminating ECS instance.
         When mark instance's attribution 'OperationLocks' as "LockReason":"security",
         its value will be ignored and disk will be released along with terminating ECS instance.
     aliases: ['delete_on_termination']
+    default: False
     type: bool
 notes:
-  - At present, when attach disk, system allocates automatically disk device according to default order from /dev/xvdb to /dev/xvdz.
+    - At present, when attach disk, system allocates automatically disk device according to default order from /dev/xvdb to /dev/xvdz.
 requirements:
-    - "python >= 2.6"
-    - "footmark >= 1.1.16"
+    - "python >= 3.6"
+    - "footmark >= 1.18.0"
 extends_documentation_fragment:
     - alicloud
 author:
-  - "He Guimin (@xiaozhu36)"
-
+    - "He Guimin (@xiaozhu36)"
 '''
 
 EXAMPLES = '''
-#
-# Provisioning new disk
-#
-
-# Basic provisioning example create a disk
-- name: create disk
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: cn-beijing
-    alicloud_zone: cn-beijing-b
-    size: 20
-    state: present
-  tasks:
-    - name: create disk
-      ali_disk:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        alicloud_zone: '{{ alicloud_zone }}'
-        size: '{{ size }}'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
-
 # Advanced example with tagging and snapshot
-- name: create disk
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: cn-hongkong
-    alicloud_zone: cn-hongkong-b
-    disk_name: disk_1
-    description: data disk_1
+- name: Create disk
+  ali_disk:
+    alicloud_zone: cn-beijing-h
+    disk_name: Ansible-Disk
+    description: Create From Ansible
     size: 20
-    snapshot_id: xxxxxxxxxx
-    disk_category: cloud_ssd
-    state: present
-  tasks:
-    - name: create disk
-      ali_disk:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        alicloud_zone: '{{ alicloud_zone }}'
-        disk_name: '{{ disk_name }}'
-        description: '{{ description }}'
-        size: '{{ size }}'
-        snapshot_id: '{{ snapshot_id }}'
-        disk_category: '{{ disk_category }}'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
+    disk_category: 'cloud'
 
 
 # Example to attach disk to an instance
-- name: attach disk to instance
-  hosts: localhost
-  connection: local
-  vars:
-    state: present
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: us-west-1
+- name: Attach disk to instance
+  ali_disk:
     instance_id: xxxxxxxxxx
     disk_id: xxxxxxxxxx
-    delete_with_instance: no
-  tasks:
-    - name: Attach Disk to instance
-      ali_disk:
-        state: '{{ state }}'
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        instance_id: '{{ instance_id }}'
-        disk_id: '{{ disk_id }}'
-        delete_with_instance: '{{ delete_with_instance }}'
-      register: result
-    - debug: var=result
+    delete_with_instance: true
+
+# Example to delete disk
+- name: Delete disk
+  ali_disk:
+    id: xxxxxxxxxx
+    state: absent
 
 
 # Example to detach disk from instance
-- name: detach disk
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: us-west-1
-    disk_id: xxxxxxxxxx
-    state: present
-  tasks:
-    - name: detach disk
-      ali_disk:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        id: '{{ disk_id }}'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
-
-
-# Example to delete disk
-- name: detach disk
-  hosts: localhost
-  connection: local
-  vars:
-    alicloud_access_key: xxxxxxxxxx
-    alicloud_secret_key: xxxxxxxxxx
-    alicloud_region: us-west-1
+- name: Detach disk
+  ali_disk:
+    instance_id: xxxxxxxxxx
     disk_id: xxxxxxxxxx
     state: absent
-  tasks:
-    - name: detach disk
-      ali_disk:
-        alicloud_access_key: '{{ alicloud_access_key }}'
-        alicloud_secret_key: '{{ alicloud_secret_key }}'
-        alicloud_region: '{{ alicloud_region }}'
-        disk_id: '{{ disk_id }}'
-        state: '{{ state }}'
-      register: result
-    - debug: var=result
 '''
 
 RETURN = '''
 device:
     description: device name of attached disk
     returned: except on delete
-    type: string
+    type: str
     sample: "/def/xdva"
 disk_category:
     description: the category of disk
     returned: except on delete
-    type: string
+    type: str
     sample: "cloud"
 disk_id:
     description: the id of disk
     returned: when success
-    type: string
-    sample: "d-2zecn395ktww53aylfw6 "
+    type: str
+    sample: "d-2zecn395ktwxxxxx"
 disk_status:
     description: the current status of disk
     returned: except on delete
-    type: string
+    type: str
     sample: "available"
 disk:
     description: Details about the ecs disk that was created.
@@ -273,7 +192,7 @@ disk:
 instance_id:
     description: the instance id which attached disk
     returned: on attach
-    type: string
+    type: str
     sample: "i-i2rnfnenfnds"
 '''
 
@@ -318,18 +237,18 @@ def get_disk_detail(disk):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        group_id=dict(),
-        alicloud_zone=dict(aliases=['zone_id', 'zone']),
-        state=dict(default='present', choices=['present', 'absent']),
-        disk_id=dict(aliases=['vol_id', 'id']),
-        disk_name=dict(aliases=['name']),
-        disk_category=dict(aliases=['disk_type', 'volume_type']),
-        size=dict(aliases=['disk_size', 'volume_size']),
+        resource_group_id=dict(type='str', aliases=['group_id']),
+        alicloud_zone=dict(type='str', aliases=['zone_id', 'zone']),
+        state=dict(type='str', default='present', choices=['present', 'absent']),
+        disk_id=dict(type='str', aliases=['vol_id', 'id']),
+        disk_name=dict(type='str', aliases=['name']),
+        disk_category=dict(type='str', aliases=['disk_type', 'volume_type'], choices=['cloud', 'cloud_efficiency', 'cloud_ssd', 'cloud_essd'], default='cloud'),
+        size=dict(type='int', aliases=['disk_size', 'volume_size']),
         disk_tags=dict(type='list', aliases=['tags']),
-        snapshot_id=dict(aliases=['snapshot']),
-        description=dict(aliases=['disk_description']),
-        instance_id=dict(aliases=['instance']),
-        delete_with_instance=dict(aliases=['delete_on_termination'], default=None)
+        snapshot_id=dict(type='str', aliases=['snapshot']),
+        description=dict(type='str', aliases=['disk_description']),
+        instance_id=dict(type='str', aliases=['instance']),
+        delete_with_instance=dict(type='bool', aliases=['delete_on_termination'], default=False)
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

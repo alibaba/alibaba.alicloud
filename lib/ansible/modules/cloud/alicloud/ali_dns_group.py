@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_dns_group
-version_added: "2.8"
+version_added: "2.9"
 short_description: Configure Alibaba Cloud DNS (DNS)
 description:
     - Create, Delete Alicloud cloud DNS group(DNS group).
@@ -36,15 +38,18 @@ options:
   lang:
     description:
       - The language which you choose
+    type: str
   group_name:
     description:
       - Give the name of group when create DNS group and Use this parameter to guarantee idempotence.
     aliases: ['name']
+    type: str
   state:
     description:
       -  Whether or not to create, delete DNS group.
     choices: ['present', 'absent']
     default: 'present'
+    type: str
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.15.0"

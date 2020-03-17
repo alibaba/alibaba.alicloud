@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -27,7 +29,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_rds_instance_info
-version_added: "1.5.0"
+version_added: "2.9"
 short_description: Gather info on rds instance in Alibaba Cloud.
 description:
      - Gather info on rds instance in Alibaba Cloud and Support use tags, name_prefix to
@@ -35,10 +37,12 @@ description:
 options:
   name_prefix:
     description:
-      - Use instance name prefix to filter rds.  
+      - Use instance name prefix to filter rds.
+    type: str
   tags:
     description:
-      - A hash/dictionaries of rds tags. C({"key":"value"}).  
+      - A hash/dictionaries of rds tags. C({"key":"value"}).
+    type: dict
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -61,9 +65,8 @@ RETURN = '''
 instances:
     description: Describe the info after operating rds instance.
     returned: always
-    type: list
-    sample:[
-        {
+    type: complex
+    contains:
         db_instance_class:
             description: The type of the instance.
             returned: always
@@ -80,17 +83,17 @@ instances:
             type: string
             sample: rm-uf6wjk5xxxxxxxxxx
         db_instance_net_type:
-            description: The network type of the instance
+            description: The network type of the instance.
             returned: always
             type: string
             sample: Internet
         db_instance_status:
-            description: The status of the instance
+            description: The status of the instance.
             returned: always
             type: string
             sample: Running
         db_instance_type:
-            description: The type of the instance role
+            description: The type of the instance role.
             returned: always
             type: string
             sample: Primary
@@ -115,22 +118,22 @@ instances:
             type: string
             sample: Primary
         instance_network_type:
-            description: The network type of the instance
+            description: The network type of the instance.
             returned: always
             type: string
             sample: VPC
         name:
-            description: alias of 'db_instance_description'
+            description: alias of 'db_instance_description'.
             returned: always
             type: string
             sample: ansible_test_rds
         pay_type:
-            description: The billing method of the instance
+            description: The billing method of the instance.
             returned: always
             type: string
             sample: Postpaid
         resource_group_id:
-            description: The ID of the resource group
+            description: The ID of the resource group.
             returned: always
             type: string
             sample: rg-acfmyxxxxxxx
@@ -148,22 +151,22 @@ instances:
             description: The ID of the VPC.
             returned: always
             type: string
-            sample: vpc-uf6f7l4fg90xxxxxxx   
+            sample: vpc-uf6f7l4fg90xxxxxxx
         vswitch_id:
             description: The ID of the VSwitch.
             returned: always
             type: string
-            sample: vsw-uf6adz52c2pxxxxxxx   
+            sample: vsw-uf6adz52c2pxxxxxxx
         lock_mode:
-            description: The lock mode of the instance
+            description: The lock mode of the instance.
             returned: always
             type: string
-            sample: Unlock   
+            sample: Unlock
         connection_mode:
-            description: The access mode of the instance
+            description: The access mode of the instance.
             returned: always
             type: string
-            sample: Standard 
+            sample: Standard
         account_max_quantity:
             description: The maximum number of accounts that can be created in an instance.
             returned: always
@@ -175,17 +178,17 @@ instances:
             type: string
             sample: Mix
         auto_upgrade_minor_version:
-            description: The method of upgrading an instance to a minor version
+            description: The method of upgrading an instance to a minor version.
             returned: always
             type: string
             sample: Auto
         availability_value:
-            description: The availability of the instance
+            description: The availability of the instance.
             returned: always
             type: string
-            sample: 100.0%	
+            sample: 100.0%
         category:
-            description: The edition (series) of the instance
+            description: The edition (series) of the instance.
             returned: always
             type: string
             sample: Basic
@@ -198,7 +201,7 @@ instances:
             description: The time when the instance is created
             returned: always
             type: string
-            sample: 2011-05-30T12:11:04Z	
+            sample: 2011-05-30T12:11:04Z
         current_kernel_version:
             description: The current kernel version.
             returned: always
@@ -208,7 +211,7 @@ instances:
             description: The instance type (specifications).
             returned: always
             type: string
-            sample: rds.mys2.small	
+            sample: rds.mys2.small
         db_instance_cpu:
             description: The count of the instance cpu.
             returned: always
@@ -238,17 +241,17 @@ instances:
             description: The allocation mode.
             returned: always
             type: string
-            sample: ClassicDispenseMode	
+            sample: ClassicDispenseMode
         expire_time:
-            description: The expiration time. 
+            description: The expiration time.
             returned: always
             type: string
-            sample: 2019-03-27T16:00:00Z	
+            sample: 2019-03-27T16:00:00Z
         maintain_time:
             description: The maintenance period of the instance.
             returned: always
             type: string
-            sample: 00:00Z-02:00Z	
+            sample: 00:00Z-02:00Z
         max_connections:
             description: The maximum number of concurrent connections.
             returned: always
@@ -265,7 +268,7 @@ instances:
             type: string
             sample: rds.mysql.t1.small
         port:
-            description: The private port of the instance..
+            description: The private port of the instance.
             returned: always
             type: string
             sample: 3306
@@ -283,9 +286,8 @@ instances:
             description: The IP whitelist mode.
             returned: always
             type: complex
-            sample: normal 
-            }
-        ]
+            sample: normal
+
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -304,7 +306,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         name_prefix=dict(type='str'),
-        tags=dict(type='str')
+        tags=dict(type='dict')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
     rds = rds_connect(module)

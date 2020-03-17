@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -39,32 +41,40 @@ options:
       - If I(state=absent), backup will be removed.       
     default: present
     choices: ['present', 'absent']
+    type: str
   db_instance_id:
     description:
       - Id of rds instance.
     aliases: ['instance_id']
     required: true
+    type: str
   db_name:
     description:
       - The list of databases. Separate multiple databases with commas (,).
+    type: list
   backup_id:
     description:
       - The ID of the backup set. Separate multiple values with commas (,). Up to 100 values can be entered in a single request
         Required when C(state=absent)
+    type: list
   backup_method:
     description:
       - The backup type. Note Set Physical option when backing up a MariaDB snapshot.
         Logical backups can be performed only when the instance exists in a database.
     default: Physical
+    type: str
   backup_strategy:
     description:
       - The backup policy. Valid values(db, instance). Note This parameter can be entered when MySQL logical backups or full physical backups for SQL Server are performed.
+    type: str
   backup_type:
     description:
       - The backup method. Valid values(Auto, FullBackup)
     default: Auto
+    type: str
 author:
-  - "Li Xue"
+    - "He Guimin (@xiaozhu36)"
+    - "Li Xue (@lixue323)"
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.16.0"
@@ -92,7 +102,7 @@ RETURN = '''
 backup:
     description: backup info.
     returned: when success
-    type: dict
+    type: complex
     contains:
         backup_id:
             description: The ID of the backup set.
@@ -103,7 +113,7 @@ backup:
             description: The ID of the instance.
             returned: always
             type: string
-            sample: rm-uf6wjk5xxxxxxx	
+            sample: rm-uf6wjk5xxxxxxx
         backup_status:
             description: The status of the backup set.
             returned: always
@@ -115,10 +125,10 @@ backup:
             type: string
             sample: FullBackup
         backup_mode:
-            description: The backup mode. 
+            description: The backup mode.
             returned: always
             type: string
-            sample: Automated	
+            sample: Automated
         backup_method:
             description: The ID of the instance.
             returned: always
@@ -138,7 +148,7 @@ backup:
             description: alias of db_instance_id.
             returned: always
             type: string
-            sample: rm-uf6wjk5xxxxxxx	
+            sample: rm-uf6wjk5xxxxxxx
         backup_start_time:
             description: The start time of the current backup.
             returned: always
@@ -148,7 +158,7 @@ backup:
             description: The end time of the current backup.
             returned: always
             type: string
-            sample: 2019-12-17T01:52:36Z	
+            sample: 2019-12-17T01:52:36Z
         backup_intranet_download_url:
             description: The download link for the private network access. If the download is unavailable, this parameter is a null string.
             returned: always
@@ -183,9 +193,9 @@ def main():
         db_instance_id=dict(type='str', aliases=['instance_id'], required=True),
         db_name=dict(type='list'),
         backup_id=dict(type='list'),
-        backup_method=dict(type='str'),
+        backup_method=dict(type='str', default='Physical'),
         backup_strategy=dict(type='str'),
-        backup_type=dict(type='str')
+        backup_type=dict(type='str', default='Auto')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

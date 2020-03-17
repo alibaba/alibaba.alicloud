@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
@@ -39,39 +41,35 @@ options:
       - If I(state=absent), user will be removed.
     choices: ['present', 'absent']
     default: 'present'
+    type: str
   user_name:
     description:
       - The username. It must be 1 to 64 characters in length.
       - This is used to determine if the user already exists.
     aliases: ['name']
     required: True
+    type: str
   display_name:
     description:
       - The display name. It must be 1 to 128 characters in length.
+    type: str
   mobile_phone:
     description:
       - The mobile phone number of the RAM user. International area code-mobile phone number.
+    type: str
+    aliases: ['phone']
   email:
     description:
       - The email address of the RAM user.
+    type: str
   comments:
     description:
       - The comment. It must be 1 to 128 characters in length.
+    type: str
   new_user_name:
     description:
       - The new username of the new RAM user. It must be 1 to 64 characters in length.
-  new_mobile_phone:
-    description:
-      - The new mobile phone number of the RAM user. International area code-mobile phone number.
-  new_display_name:
-    description:
-      - The new display name. It must be 1 to 128 characters in length.
-  new_email:
-    description:
-      - The new email address of the RAM user.
-  new_comments:
-    description:
-      - The new comment. It must be 1 to 128 characters in length.
+    type: str
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.17.0"
@@ -143,7 +141,7 @@ user:
             description: The email address of the RAM user.
             returned: always
             type: string
-            sample: alice@example.com	
+            sample: alice@example.com
         display_name:
             description: The display name.
             returned: always
@@ -193,11 +191,7 @@ def main():
         mobile_phone=dict(type='str', aliases=['phone']),
         email=dict(type='str'),
         comments=dict(type='str'),
-        new_user_name=dict(type='str'),
-        # new_mobile_phone=dict(type='str'),
-        # new_display_name=dict(type='str'),
-        # new_email=dict(type='str'),
-        # new_comments=dict(type='str')
+        new_user_name=dict(type='str')
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
