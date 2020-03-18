@@ -1,5 +1,14 @@
 # Ansible-Alicloud Change Log
-## 1.18.0 (Unreleased)
+## 1.19.0 (Unreleased)
+
+## 1.18.0 (18 March, 2020)
+- improve(disk_info): Add some new params and Add test case ([#248](https://github.com/alibaba/ansible-provider/pull/248))
+- improve(disk): Add filters param ([#249](https://github.com/alibaba/ansible-provider/pull/249))
+- improve(slb): support server_ids ([#250](https://github.com/alibaba/ansible-provider/pull/250))
+- Add plugin alicloud_ecs and configuration file ([#252](https://github.com/alibaba/ansible-provider/pull/252))
+- Add module ali_ecs_tag  ([#254](https://github.com/alibaba/ansible-provider/pull/254))
+- improve(eip/eni/vpc/ecs/security/slb/vsw): format code and doc  ([#251](https://github.com/alibaba/ansible-provider/pull/251))
+- improve(disk/dns/ram/rds/slb): format code and doc  ([#253](https://github.com/alibaba/ansible-provider/pull/253))
 
 ## 1.17.0 (1 March, 2020)
 - Add new module ali_market_product_info ([#240](https://github.com/alibaba/ansible-provider/pull/240))
