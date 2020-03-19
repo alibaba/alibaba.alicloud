@@ -89,6 +89,26 @@
           Test1: "add1"
           Test2: "add2"
 
+#    - name: Changed. Modifying instance charge type
+#      ali_instance:
+#        instance_ids: '{{ instances.ids }}'
+#        instance_charge_type: 'PrePaid'
+#
+#    - name: No Changed. Modifying instance charge type
+#      ali_instance:
+#        instance_ids: '{{ instances.ids }}'
+#        instance_charge_type: 'PrePaid'
+#
+#    - name: Changed. Modifying instance charge type
+#      ali_instance:
+#        instance_ids: '{{ instances.ids }}'
+#        instance_charge_type: 'PostPaid'
+#
+#    - name: No Changed. Modifying instance charge type
+#      ali_instance:
+#        instance_ids: '{{ instances.ids }}'
+#        instance_charge_type: 'PostPaid'
+
     # Delete all of resource
     - name: Changed. Deleting instances
       ali_instance:
@@ -116,4 +136,3 @@
         cidr_block: '{{item.cidr_block}}'
         state: absent
       with_items: '{{vpcs.vpcs}}'
-
