@@ -1,0 +1,52 @@
+---
+- name: Search products
+  ali_market_product_info:
+    alicloud_region: '{{ alicloud_region }}'
+    search_term: '{{ product_keyword }}'
+    supplier_name_keyword: '{{ product_supplier_name_keyword }}'
+    product_type: MIRROR
+    category_id: '{{ product_category_id }}'
+    suggested_price: '{{ product_suggested_price }}'
+    name_prefix: '{{ product_name_prefix }}'
+    ids: '{{ product_ids }}'
+    supplier_id: '{{ product_supplier_id }}'
+  register: products
+
+- name: Get the existing ECS instances
+  ali_instance_info:
+    alicloud_region: '{{ alicloud_region }}'
+    name_prefix: '{{ instance_name }}'
+    filters:
+      page_size: 100
+  register: instances
+
+- name: Creating two ECS instances
+  ali_instance:
+    image: '{{ products.products.0.image_ids.0.value }}'
+    type: '{{ instance_type }}'
+    instance_name: '{{ item.1 }}'
+    description: '{{ instance_description }}'
+    host_name: '{{ host_name }}'
+    password: '{{ password }}'
+
+    allocate_public_ip: '{{ allocate_public_ip }}'
+    internet_charge_type: '{{ internet_charge_type }}'
+    max_bandwidth_in: '{{ max_bandwidth_in }}'
+    max_bandwidth_out: '{{ max_bandwidth_out }}'
+
+    security_groups: ['{{ sgs.groups.0.id }}']
+    vswitch_id: '{{ item.0.id }}'
+
+    system_disk_category: '{{ system_disk_category }}'
+    system_disk_size: '{{ system_disk_size }}'
+    count: '{{ number_of_instances }}'
+    tags: '{{ instance_tags }}'
+  with_together:
+    - '{{ vswitches.vswitches }}'
+    - '{{ instance_name }}'
+  register: all_instances
+  when: not instances.instances
+
+- debug:
+    msg: http://{{ item.instances.0.public_ip_address }}
+    with_items: '{{ all_instances }}'
