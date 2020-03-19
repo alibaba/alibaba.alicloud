@@ -1,0 +1,78 @@
+---
+- name: Create a new alicloud VPC resource
+  ali_vpc:
+    cidr_block: '{{ vpc_cidr }}'
+    vpc_name: '{{ vpc_name }}'
+    description: '{{ vpc_description }}'
+  register: vpc
+
+- name: Get the existing vpc
+  ali_vpc_info:
+    name_prefix: '{{vpc_name}}'
+  register: vpcs
+
+- name: Create a new alicloud VSwitch resource
+  ali_vswitch:
+    alicloud_zone: '{{ item.0 }}'
+    cidr_block: '{{ item.1 }}'
+    vswitch_name: '{{ vswitch_name }}'
+    description: '{{ vswitch_description }}'
+    vpc_id: '{{vpc.vpc.id}}'
+  with_together:
+    - '{{ availability_zones }}'
+    - '{{ vswitch_cidrs }}'
+
+- name: Get the existing vswitch
+  ali_vswitch_info:
+    name_prefix: '{{ vswitch_name }}'
+    filters:
+      vpc_id: '{{vpc.vpc.id}}'
+  register: vswitches
+
+
+- name: Create a VPC security group
+  ali_security_group:
+    name: '{{ security_group_name }}'
+    description: '{{ group_description }}'
+    vpc_id: '{{vpc.vpc.id}}'
+    rules: '{{ group_inboundRules }}'
+    rules_egress: '{{ group_outboundRules }}'
+  register: group
+
+- name: Get the existing groups
+  ali_security_group_info:
+    name_prefix: '{{ security_group_name }}'
+  register: sgs
+
+
+- name: Get the existing ECS instances
+  ali_instance_info:
+    name_prefix: '{{ instance_name }}'
+    filters:
+      vpc_id: '{{ vpcs.vpcs.0.id }}'
+  register: instances
+
+- name: Creating two ECS instances
+  ali_instance:
+    image: '{{ image_id }}'
+    type: '{{ instance_type }}'
+    instance_name: '{{ item.1 }}'
+    description: '{{ instance_description }}'
+    host_name: '{{ host_name }}'
+    password: '{{ password }}'
+
+    allocate_public_ip: '{{ allocate_public_ip }}'
+    internet_charge_type: '{{ internet_charge_type }}'
+    max_bandwidth_in: '{{ max_bandwidth_in }}'
+    max_bandwidth_out: '{{ max_bandwidth_out }}'
+
+    security_groups: ['{{ sgs.groups.0.id }}']
+    vswitch_id: '{{ item.0.id }}'
+
+    system_disk_category: '{{ system_disk_category }}'
+    system_disk_size: '{{ system_disk_size }}'
+    count: '{{ number_of_instances }}'
+    tags: '{{ instance_tags }}'
+  with_together:
+    - '{{ vswitches.vswitches }}'
+    - '{{ instance_name }}'
