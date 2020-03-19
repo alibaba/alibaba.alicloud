@@ -51,12 +51,12 @@ options:
       description:
         - Image ID used to launch instances. Required when C(state=present) and creating new ECS instances.
       aliases: ['image']
-      type: str 
+      type: str
     instance_type:
       description:
         - Instance type used to launch instances. Required when C(state=present) and creating new ECS instances.
       aliases: ['type']
-      type: str  
+      type: str
     security_groups:
       description:
         - A list of security group IDs.
@@ -83,7 +83,7 @@ options:
         - Internet charge type of ECS instance.
       default: 'PayByBandwidth'
       choices: ['PayByBandwidth', 'PayByTraffic']
-      type: str 
+      type: str
     max_bandwidth_in:
       description:
         - Maximum incoming bandwidth from the public network, measured in Mbps (Megabits per second).
@@ -101,8 +101,8 @@ options:
       type: str
     unique_suffix:
       description:
-        - Specifies whether to add sequential suffixes to the host_name. 
-          The sequential suffix ranges from 001 to 999. 
+        - Specifies whether to add sequential suffixes to the host_name.
+          The sequential suffix ranges from 001 to 999.
       default: False
       type: bool
       version_added: '2.9'
@@ -212,7 +212,7 @@ options:
       type: str
     spot_price_limit:
       description:
-        - The maximum hourly price for the preemptible instance. This parameter supports a maximum of three decimal 
+        - The maximum hourly price for the preemptible instance. This parameter supports a maximum of three decimal
           places and takes effect when the SpotStrategy parameter is set to SpotWithPriceLimit.
       version_added: '2.9'
       type: float
@@ -223,11 +223,34 @@ options:
       default: 'NoSpot'
       version_added: '2.9'
       type: str
+    period_unit:
+      description:
+         - The duration unit that you will buy the resource. It is valid when C(instance_charge_type=PrePaid)
+      choices: ['Month', 'Week']
+      default: 'Month'
+      type: str
+      version_added: '2.9'
+    dry_run:
+      description:
+         - Specifies whether to send a dry-run request.
+         - If I(dry_run=True), Only a dry-run request is sent and no instance is created. The system checks whether the
+           required parameters are set, and validates the request format, service permissions, and available ECS instances.
+           If the validation fails, the corresponding error code is returned. If the validation succeeds, the DryRunOperation error code is returned.
+         - If I(dry_run=False), A request is sent. If the validation succeeds, the instance is created.
+      default: False
+      type: bool
+      version_added: '2.9'
+    include_data_disks:
+      description:
+         - Whether to change instance disks charge type when changing instance charge type.
+      default: True
+      type: bool
+      version_added: '2.9'
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 3.6"
-    - "footmark >= 1.17.1"
+    - "footmark >= 1.19.0"
 extends_documentation_fragment:
     - alicloud
 '''
@@ -570,13 +593,13 @@ instances:
             sample: vpc-0011223344
         spot_price_limit:
           description:
-            - The maximum hourly price for the preemptible instance. 
+            - The maximum hourly price for the preemptible instance.
           returned: always
           type: float
           sample: 0.97
         spot_strategy:
           description:
-             - The bidding mode of the pay-as-you-go instance. 
+             - The bidding mode of the pay-as-you-go instance.
           returned: always
           type: string
           sample: NoSpot
@@ -714,6 +737,27 @@ def modify_instance(module, instance):
         module.fail_json(msg="Modify instance {0} attribute got an error: {1}".format(instance.id, e))
 
 
+def wait_for_instance_modify_charge(ecs, instance_ids, charge_type, delay=10, timeout=300):
+    """
+    To verify instance charge type has become expected after modify instance charge type
+    """
+    try:
+        while True:
+            instances = ecs.describe_instances(instance_ids=instance_ids)
+            flag = True
+            for inst in instances:
+                if inst and inst.instance_charge_type != charge_type:
+                    flag = False
+            if flag:
+                return
+            timeout -= delay
+            time.sleep(delay)
+            if timeout <= 0:
+                raise Exception("Timeout Error: Waiting for instance to {0}. ".format(charge_type))
+    except Exception as e:
+        raise e
+
+
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
@@ -750,7 +794,10 @@ def main():
         ram_role_name=dict(type='str'),
         spot_price_limit=dict(type='float'),
         spot_strategy=dict(type='str', default='NoSpot', choices=['NoSpot', 'SpotWithPriceLimit', 'SpotAsPriceGo']),
-        unique_suffix=dict(type='bool', default=False)
+        unique_suffix=dict(type='bool', default=False),
+        period_unit=dict(type='str', default='Month', choices=['Month', 'Week']),
+        dry_run=dict(type='bool', default=False),
+        include_data_disks=dict(type='bool', default=True)
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -872,6 +919,22 @@ def main():
                 changed = True
             if inst.id not in ids:
                 ids.append(inst.id)
+
+        # Modify instance charge type
+        ids = []
+        for inst in instances:
+            if inst.instance_charge_type != instance_charge_type:
+                ids.append(inst.id)
+        if ids:
+            params = {"instance_ids": ids, "instance_charge_type": instance_charge_type, "include_data_disks": module.params['include_data_disks'], "dry_run": module.params['dry_run'], "auto_pay": True}
+            if instance_charge_type == 'PrePaid':
+                params['period'] = module.params['period']
+                params['period_unit'] = module.params['period_unit']
+
+            if ecs.modify_instance_charge_type(**params):
+                changed = True
+                wait_for_instance_modify_charge(ecs, ids, instance_charge_type)
+
     else:
         if len(instances) < 1:
             module.fail_json(msg='Please specify ECS instances that you want to operate by using '
