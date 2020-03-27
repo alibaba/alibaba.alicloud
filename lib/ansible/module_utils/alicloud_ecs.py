@@ -41,6 +41,7 @@ try:
     import footmark.dns
     import footmark.ram
     import footmark.ros
+    import footmark.oos
     import footmark.market
     HAS_FOOTMARK = True
 except ImportError:
@@ -314,3 +315,17 @@ def market_connect(module):
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return market
+
+
+def oos_connect(module):
+    """ Return an oos connection"""
+    oos_params = get_profile(module.params)
+    # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
+    if region:
+        try:
+            oos = connect_to_acs(footmark.oos, region, **oos_params)
+        except AnsibleACSError as e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return oos
