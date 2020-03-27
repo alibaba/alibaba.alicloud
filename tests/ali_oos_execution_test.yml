@@ -1,0 +1,78 @@
+---
+- name: Validate module ali_oos_execution
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+
+  tasks:
+    - name: Changed. Start a timed execution that starts and closes instances
+      ali_oos_execution:
+        template_name: 'ACS-ECS-ScheduleToStartAndStopInstances'
+        safety_check: Skip
+        description: test execution from ansible
+        parameters:
+          dailyStartTime: 08:00:00Z
+          dailyStopTime: dailyStopTime
+          weekdays: '2'
+          targets:
+            Type: ResourceIds
+            ResourceIds: '{{instances.ids}}'
+        tags:
+          From: ansible
+
+    - name: Changed. cancel a timed execution
+      ali_oos_execution:
+        state: cancel
+        template_name: 'ACS-ECS-ScheduleToStartAndStopInstances'
+
+    - name: Changed. Delete a execution
+      ali_oos_execution:
+        state: absent
+        template_name: 'ACS-ECS-ScheduleToStartAndStopInstances'
+
+    - name: Changed. Start a risky execution that deletes instances
+      ali_oos_execution:
+        template_name: 'ACS-ECS-BulkyDeleteInstances'
+        description: test execution from ansible
+        parameters:
+          force: true
+          targets:
+            Type: ResourceIds
+            ResourceIds: '{{instances.ids}}'
+
+    - name: Changed. notify a execution
+      ali_oos_execution:
+        state: notify
+        notify_type: Approve
+        template_name: 'ACS-ECS-BulkyDeleteInstances'
+
+    - name: Changed. Delete a execution
+      ali_oos_execution:
+        state: absent
+        template_name: 'ACS-ECS-BulkyDeleteInstances'
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'
