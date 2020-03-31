@@ -15,5 +15,5 @@
 
 - name: Get the existing rds
   ali_rds_instance_info:
-    db_instance_id: '{{ rds.instances.id }}'
+    db_instance_ids: ['{{ rds.instances.id }}']
   register: rds

@@ -23,14 +23,14 @@
 
     - name: Changed. Modify Tags.
       ali_rds_instance:
-        db_instance_name: '{{ rds.instances.0.name }}'
+        db_instance_id: '{{ rds.instances.0.id }}'
         tags:
           Test1: "add1"
           Test2: "add3"
 
     - name: No Changed. No tags need to be added
       ali_rds_instance:
-        db_instance_name: '{{ rds.instances.0.name }}'
+        db_instance_id: '{{ rds.instances.0.id }}'
         tags:
           Test1: "add1"
           Test2: "add3"

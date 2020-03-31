@@ -94,17 +94,15 @@
       ali_vpc_info:
         name_prefix: '{{ name }}'
 
-    - name: Changed. Modify description.
+    - name: Changed. Modify description with vpc id.
       ali_vpc:
-        cidr_block: '{{ vpc_cidr }}'
-        name: '{{ item.vpc_name }}'
+        vpc_id: '{{ item.id }}'
         description: '{{ vpc_description }}-modified'
       with_items: '{{vpcs.vpcs}}'
 
     - name: Not Changed. No any attribute changed.
       ali_vpc:
-        cidr_block: '{{ vpc_cidr }}'
-        name: '{{ item.vpc_name }}'
+        vpc_id: '{{ item.id }}'
         description: '{{ vpc_description }}-modified'
       with_items: '{{vpcs.vpcs}}'
 

@@ -46,7 +46,6 @@ options:
         uppercase/lowercase letter or a Chinese character and can contain numerals, "_", "." or "-".
         It cannot begin with http:// or https://.
         This is used in combination with C(vpc_id) to determine if a Securty Group already exists.
-    required: True
     aliases: ['group_name']
     type: str
   description:
@@ -86,9 +85,9 @@ options:
       - Purge existing rules_egress on security group that are not found in rules_egress
     default: True
     type: bool
-  group_id:
+  security_group_id:
     description:
-      - (Deprecated) Security group ID.
+      - Security group ID.
     aliases: ['id']
     type: str
   tags:
@@ -307,7 +306,7 @@ def purge_rules(module, group, existing_rule, rules, direction):
     return False
 
 
-def group_exists(conn, module, vpc_id, name, multi, recent):
+def group_exists(conn, module, vpc_id, name, security_group_id, multi, recent):
     """Returns None or a security group object depending on the existence of a security group.
     When supplied with a vpc_id and Name, it will check them to determine if it is a match
     otherwise it will assume the Security Group does not exist and thus return None.
@@ -318,10 +317,13 @@ def group_exists(conn, module, vpc_id, name, multi, recent):
     filters = {}
     if vpc_id:
         filters['vpc_id'] = vpc_id
+    if security_group_id:
+        filters['security_group_id'] = security_group_id
     try:
         for g in conn.describe_security_groups(**filters):
-            if g.security_group_name == name:
-                matching_groups.append(g.get())
+            if name and g.security_group_name != name:
+                continue
+            matching_groups.append(g.get())
     except Exception as e:
         module.fail_json(msg="Failed to describe Security Groups: {0}".format(e))
 
@@ -341,15 +343,15 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', type='str', choices=['present', 'absent']),
-        name=dict(type='str', required=True, aliases=['group_name']),
+        name=dict(type='str', aliases=['group_name']),
         description=dict(type='str'),
         vpc_id=dict(type='str'),
+        security_group_id=dict(type='str', aliases=['id', 'group_id']),
         tags=dict(type='dict', aliases=['group_tags']),
         rules=dict(type='list'),
         rules_egress=dict(type='list'),
         purge_rules=dict(type='bool', default=True),
         purge_rules_egress=dict(type='bool', default=True),
-        group_id=dict(type='str', aliases=['id']),
         multi_ok=dict(type='bool', default=False),
         recent=dict(type='bool', default=False),
     ))
@@ -362,6 +364,7 @@ def main():
     ecs = ecs_connect(module)
 
     state = module.params['state']
+    security_group_id = module.params['security_group_id']
     group_name = module.params['name']
     if str(group_name).startswith('http://') or str(group_name).startswith('https://'):
         module.fail_json(msg='Name can not start with http:// or https://')
@@ -376,7 +379,7 @@ def main():
 
     changed = False
 
-    group = group_exists(ecs, module, module.params['vpc_id'], group_name, multi, recent)
+    group = group_exists(ecs, module, module.params['vpc_id'], group_name, security_group_id, multi, recent)
 
     if state == 'absent':
         if not group:

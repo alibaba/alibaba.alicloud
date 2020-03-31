@@ -50,6 +50,11 @@ options:
     aliases: ['vpc_name']
     required: True
     type: str
+  vpc_id:
+    description:
+      - The id of VPC, required when operate existing vpc.
+    type: str
+    aliases: ['id']
   description:
     description:
       - The description of VPC, which is a string of 2 to 256 characters. It cannot begin with http:// or https://.
@@ -58,7 +63,6 @@ options:
     description:
       - The primary CIDR of the VPC. This is used in conjunction with the C(name) to ensure idempotence.
     aliases: ['cidr']
-    required: True
     type: str
   user_cidrs:
     description:
@@ -201,7 +205,7 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def vpc_exists(module, vpc, name, cidr_block, multi, recent):
+def vpc_exists(module, vpc, vpc_id, name, cidr_block, multi, recent):
     """Returns None or a vpc object depending on the existence of a VPC. When supplied
     with a CIDR and Name, it will check them to determine if it is a match
     otherwise it will assume the VPC does not exist and thus return None.
@@ -211,8 +215,14 @@ def vpc_exists(module, vpc, name, cidr_block, multi, recent):
     matching_vpcs = []
     try:
         for v in vpc.describe_vpcs():
-            if v.cidr_block == cidr_block and v.vpc_name == name:
-                matching_vpcs.append(v)
+            if cidr_block and v.cidr_block != cidr_block:
+                continue
+            if name and v.vpc_name != name:
+                continue
+            if vpc_id and v.vpc_id != vpc_id:
+                continue
+            matching_vpcs.append(v)
+
     except Exception as e:
         module.fail_json(msg="Failed to describe VPCs: {0}".format(e))
 
@@ -232,9 +242,10 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(type='str', required=True, aliases=['cidr']),
+        cidr_block=dict(type='str', aliases=['cidr']),
         user_cidrs=dict(type='list'),
-        name=dict(type='str', required=True, aliases=['vpc_name']),
+        name=dict(type='str', aliases=['vpc_name']),
+        vpc_id=dict(type='str', aliases=['id']),
         multi_ok=dict(type='bool', default=False),
         description=dict(type='str'),
         recent=dict(type='bool', default=False),
@@ -253,6 +264,7 @@ def main():
     state = module.params['state']
     vpc_name = module.params['name']
     description = module.params['description']
+    vpc_id = module.params['vpc_id']
 
     if str(description).startswith('http://') or str(description).startswith('https://'):
         module.fail_json(msg='description can not start with http:// or https://')
@@ -262,7 +274,7 @@ def main():
     changed = False
 
     # Check if VPC exists
-    vpc = vpc_exists(module, vpc_conn, vpc_name, module.params['cidr_block'], module.params['multi_ok'], module.params['recent'])
+    vpc = vpc_exists(module, vpc_conn, vpc_id, vpc_name, module.params['cidr_block'], module.params['multi_ok'], module.params['recent'])
 
     if state == 'absent':
         if not vpc:

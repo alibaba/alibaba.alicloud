@@ -46,9 +46,14 @@ options:
   role_name:
     description:
       - The name of the RAM role. The specified name can be up to 64 characters in length. Format(^[a-zA-Z0-9\. @\-]+$)
-      - This is used to determine if the Ram role already exists.
+      - One of I(role_name) and I(role_id) must be specified when operate existing role.
     aliases: ['name']
-    required: True
+    type: str
+  role_id:
+    description:
+      - The id of the RAM role.
+      - One of I(role_name) and I(role_id) must be specified when operate existing role.
+    aliases: ['id']
     type: str
   assume_role_policy_document:
     description:
@@ -140,12 +145,16 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def role_exists(module, ram_conn, role_name):
+def role_exists(module, ram_conn, role_name, role_id):
     try:
+        role = None
         for r in ram_conn.list_roles():
-            if r.read()['name'] == role_name:
-                return r
-        return None
+            if role_name and r.read()['name'] != role_name:
+                continue
+            if role_id and r.read()['role_id'] != role_id:
+                continue
+            role = r
+        return role
     except Exception as e:
         module.fail_json(msg="Failed to describe Roles: {0}".format(e))
 
@@ -154,7 +163,8 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        role_name=dict(type='str', required=True, aliases=['name']),
+        role_name=dict(type='str', aliases=['name']),
+        role_id=dict(type='str', aliases=['id']),
         assume_role_policy_document=dict(type='str', aliases=['policy']),
         description=dict(type='str')
     ))
@@ -170,10 +180,11 @@ def main():
     state = module.params['state']
     role_name = module.params['role_name']
     assume_role_policy_document = module.params['assume_role_policy_document']
+    role_id = module.params['role_id']
     changed = False
 
     # Check if role exists
-    role = role_exists(module, ram_conn, role_name)
+    role = role_exists(module, ram_conn, role_name, role_id)
 
     if state == 'absent':
         if not role:

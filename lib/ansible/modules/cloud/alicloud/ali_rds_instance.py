@@ -86,12 +86,17 @@ options:
     type: str
   db_instance_name:
     description:
-      - The instance name. the unique identifier of the instance. It starts with a letter and contains 2 to 255 characters, including letters, digits, underscores (_), and hyphens (-).
+      - The instance name. It starts with a letter and contains 2 to 255 characters, including letters, digits, underscores (_), and hyphens (-).
         It cannot start with http:// or https://.
-      - This is used to determine if the rds instance already exists.
+      - One of I(db_instance_id) and I(db_instance_name) must be specified when operate existing instance.
     aliases: ['description', 'name']
     type: str
-    required: True
+  db_instance_id:
+    description:
+      - The instance id.
+      - One of I(db_instance_id) and I(db_instance_name) must be specified when operate existing instance.
+    aliases: ['id']
+    type: str
   security_ip_list:
     description:
       - The IP address whitelist of the instance. Separate multiple IP addresses with commas (,). It can include up to 1,000 IP addresses. The IP addresses support two formats.
@@ -460,13 +465,16 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_instance(name, modules, rds):
+def get_instance(db_instance_id, name, modules, rds):
     try:
         instances = rds.describe_db_instances()
         res = None
         for ins in instances:
-            if ins.name == name:
-                res = ins
+            if name and ins.name != name:
+                continue
+            if db_instance_id and ins.id != db_instance_id:
+                continue
+            res = ins
         return res
     except Exception as e:
         modules.fail_json(msg="Failed to describe rds: {0}".format(e))
@@ -480,7 +488,8 @@ def main():
         engine=dict(type='str', choices=['MySQL', 'SQLServer', 'PostgreSQL', 'PPAS', 'MariaDB']),
         engine_version=dict(type='str'),
         db_instance_net_type=dict(type='str', choices=["Internet", "Intranet"], aliases=['instance_net_type']),
-        db_instance_name=dict(type='str', aliases=['description', 'name'], required=True),
+        db_instance_name=dict(type='str', aliases=['description', 'name']),
+        db_instance_id=dict(type='str', aliases=['id']),
         security_ip_list=dict(type='str', aliases=['security_ips']),
         pay_type=dict(type='str', choices=["PostPaid", "PrePaid"]),
         period=dict(type='int', choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 24, 36], default=1),
@@ -514,6 +523,7 @@ def main():
     modules.params['db_instance_description'] = db_instance_description
     db_instance_class = modules.params['db_instance_class']
     db_instance_storage = modules.params['db_instance_storage']
+    db_instance_id = modules.params['db_instance_id']
     pay_type = modules.params['pay_type']
     used_time = modules.params['period']
     modules.params['period'] = 'Month'
@@ -543,7 +553,7 @@ def main():
             modules.fail_json(msg=str("Unable to get vswitch, error:{0}".format(e)))
 
     try:
-        current_instance = get_instance(db_instance_description, modules, rds)
+        current_instance = get_instance(db_instance_id, db_instance_description, modules, rds)
     except Exception as e:
         modules.fail_json(msg=str("Unable to describe instance, error:{0}".format(e)))
 
