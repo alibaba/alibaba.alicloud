@@ -134,14 +134,14 @@
 
     - name: Changed. Removing tags.
       ali_eip:
-        ip_address: "{{ eip.eip.ip_address }}"
+        allocation_id: "{{ eip.eip.allocation_id }}"
         purge_tags: True
         tags:
           Test1: "add1"
 
     - name: No Changed. No tags need to be removed.
       ali_eip:
-        ip_address: "{{ eip.eip.ip_address }}"
+        allocation_id: "{{ eip.eip.allocation_id }}"
         purge_tags: True
         tags:
           Test1: "add1"

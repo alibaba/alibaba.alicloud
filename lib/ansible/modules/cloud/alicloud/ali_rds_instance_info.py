@@ -39,6 +39,10 @@ options:
     description:
       - Use instance name prefix to filter rds.
     type: str
+  db_instance_ids:
+    description:
+      - Use instance ids to filter rds.
+    type: list
   tags:
     description:
       - A hash/dictionaries of rds tags. C({"key":"value"}).
@@ -306,11 +310,13 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         name_prefix=dict(type='str'),
+        db_instance_ids=dict(type='list'),
         tags=dict(type='dict')
     ))
     module = AnsibleModule(argument_spec=argument_spec)
     rds = rds_connect(module)
     name_prefix = module.params['name_prefix']
+    db_instance_ids = module.params['db_instance_ids']
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for this module.")
@@ -319,6 +325,8 @@ def main():
     try:
         for rds_instance in rds.describe_db_instances(**module.params):
             if name_prefix and not rds_instance.read()['name'].startswith(name_prefix):
+                continue
+            if db_instance_ids and rds_instance.read()['id'] not in db_instance_ids:
                 continue
             result.append(rds_instance.get().read())
         module.exit_json(changed=False, instances=result)

@@ -21,15 +21,13 @@
 
     - name: Changed. Modify description.
       ali_security_group:
-        name: '{{ item.group_name }}'
-        vpc_id: '{{item.vpc_id}}'
+        security_group_id: '{{ item.group_id }}'
         description: '{{ vpc_description }}-modified'
       with_items: '{{sgs.groups}}'
 
     - name: Not Changed. No any attribute changed.
       ali_security_group:
-        vpc_id: '{{item.vpc_id}}'
-        name: '{{ item.group_name }}'
+        security_group_id: '{{ item.group_id }}'
         description: '{{ vpc_description }}-modified'
       with_items: '{{sgs.groups}}'
 

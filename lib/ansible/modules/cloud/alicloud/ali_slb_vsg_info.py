@@ -43,7 +43,6 @@ options:
   vserver_group_ids:
     description:
       - A list of SLB vserver group ids.
-    required: false
     aliases: ["group_ids", "ids"]
     type: list
   name_prefix:

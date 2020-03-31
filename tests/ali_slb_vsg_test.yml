@@ -24,9 +24,9 @@
             type: ecs
       register: vsg
 
-    - name: Changed. Add backend servers
+    - name: Changed. Add backend servers with vserver_group_id
       ali_slb_vsg:
-        name: '{{ vsg.vserver_group.vserver_group_name }}'
+        vserver_group_id: '{{ vsg.vserver_group.vserver_group_id }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
           - server_ids: ['{{instances.ids.1}}', '{{instances.ids.2}}']

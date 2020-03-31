@@ -51,8 +51,7 @@ options:
     vserver_group_name:
       description:
         - Virtual server group name.
-          This is used in conjunction with the C(load_balancer_id) to ensure idempotence.
-      required: True
+        - One of I(vserver_group_name) and I(vserver_group_id) must be specified when operate existing slb group.
       aliases: ['group_name', 'name']
       type: str
     backend_servers:
@@ -74,7 +73,8 @@ options:
       type: bool
     vserver_group_id:
       description:
-        - (Deprecated) Virtual server group id.
+        - Virtual server group id.
+        - One of I(vserver_group_name) and I(vserver_group_id) must be specified when operate existing slb group.
       aliases: ['group_id']
       type: str
     multi_ok:
@@ -291,7 +291,7 @@ def main():
     argument_spec.update(dict(
         state=dict(type='str', default='present', choices=['present', 'absent']),
         load_balancer_id=dict(type='str', required=True, aliases=['lb_id']),
-        vserver_group_name=dict(type='str', required=True, aliases=['group_name', 'name']),
+        vserver_group_name=dict(type='str', aliases=['group_name', 'name']),
         backend_servers=dict(type='list'),
         vserver_group_id=dict(type='str', aliases=['group_id']),
         purge_backend_servers=dict(type='bool', default=False),
@@ -311,7 +311,7 @@ def main():
     state = module.params['state']
     lb_id = module.params['load_balancer_id']
     vsg_name = module.params['vserver_group_name']
-
+    vserver_group_id = module.params['vserver_group_id']
     changed = False
     matching = None
 
@@ -319,7 +319,9 @@ def main():
         try:
             matching_vsgs = []
             for group in slb.describe_vserver_groups(**{'load_balancer_id': lb_id}):
-                if group.name != vsg_name:
+                if vsg_name and group.name != vsg_name:
+                    continue
+                if vserver_group_id and group.id != vserver_group_id:
                     continue
                 matching_vsgs.append(group)
             if len(matching_vsgs) == 1:

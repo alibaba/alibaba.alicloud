@@ -12,20 +12,20 @@
     - slb
 
   tasks:
-    - name: Changed. Modifying internet charge type when C(present)
-      ali_slb_lb:
-        name: '{{ slbpub.load_balancer.name }}'
-        internet_charge_type: 'PayByBandwidth'
-        bandwidth: 5
+#    - name: Changed. Modifying internet charge type when C(present)
+#      ali_slb_lb:
+#        name: '{{ slbpub.load_balancer.name }}'
+#        internet_charge_type: 'PayByBandwidth'
+#        bandwidth: 5
 
     - name: Filter slb using name_regex
       ali_slb_lb_info:
         name_prefix: '{{name}}'
       register: slbs
 
-    - name: Changed. Add Tags.
+    - name: Changed. Add Tags with load_balancer_id.
       ali_slb_lb:
-        name: '{{ item.name }}'
+        load_balancer_id: '{{ item.load_balancer_id }}'
         tags:
           Test1: "add1"
           Test2: "add2"

@@ -44,6 +44,11 @@ options:
       - Give the name of group when create DNS group and Use this parameter to guarantee idempotence.
     aliases: ['name']
     type: str
+  group_id:
+    description:
+      - Give the id of group, It is required when need to operate existing dns group.
+    aliases: ['id']
+    type: str
   state:
     description:
       -  Whether or not to create, delete DNS group.
@@ -119,12 +124,16 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def dns_group_exists(module, dns_conn, group_name):
+def dns_group_exists(module, dns_conn, group_name, gid):
     try:
+        group = None
         for v in dns_conn.describe_domain_groups():
-            if v.name == group_name:
-                return v
-        return None
+            if group_name and v.name != group_name:
+                continue
+            if gid and v.group_id != gid:
+                continue
+            group = v
+        return group
     except Exception as e:
         module.fail_json(msg="Failed to describe DNS group: {0}".format(e))
 
@@ -135,6 +144,7 @@ def main():
         group_name=dict(type='str', aliases=['name']),
         lang=dict(type='str'),
         state=dict(default='present', choices=['present', 'absent']),
+        group_id=dict(type='str', aliases=['id'])
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -147,9 +157,10 @@ def main():
     # Get values of variable
     state = module.params['state']
     group_name = module.params['group_name']
+    gid = module.params['group_id']
     changed = False
 
-    dns_group = dns_group_exists(module, dns_conn,group_name)
+    dns_group = dns_group_exists(module, dns_conn, group_name, gid)
 
     if state == 'absent':
         if not dns_group:

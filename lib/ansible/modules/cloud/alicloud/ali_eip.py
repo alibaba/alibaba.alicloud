@@ -75,6 +75,11 @@ options:
       - The id of the device for the EIP. Can be an ECS instance id or SLB Instance id or Elastic Network Interface (ENI) id.
     aliases: ['device_id']
     type: str
+  allocation_id:
+    description:
+      - The id of the EIP. It is required when need to operate existing eip.
+    aliases: ['id']
+    type: str
   release_on_disassociation:
     description:
       - whether or not to automatically release the EIP when it is disassociated
@@ -238,15 +243,19 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def find_eip(conn, module, ip_address, instance_id):
+def find_eip(conn, module, ip_address, instance_id, allocation_id):
     try:
+        eip = None
         eips = conn.describe_eip_addresses()
         for e in eips:
-            if instance_id and e.instance_id == instance_id:
-                return e, eips
-            if ip_address and e.ip_address == ip_address:
-                return e, eips
-        return None, eips
+            if instance_id and e.instance_id != instance_id:
+                continue
+            if ip_address and e.ip_address != ip_address:
+                continue
+            if allocation_id and e.allocation_id != allocation_id:
+                continue
+            eip = e
+        return eip, eips
     except Exception as e:
         module.fail_json(msg="Failed to describe EIPs: {0}".format(e))
 
@@ -267,6 +276,7 @@ def main():
             state=dict(type='str', default='present', choices=['present', 'absent']),
             ip_address=dict(type='str', aliases=['ip']),
             instance_id=dict(type='str', aliases=['device_id']),
+            allocation_id=dict(type='str', aliases=['id']),
             internet_charge_type=dict(type='str', default='PayByTraffic', choices=['PayByTraffic', 'PayByBandwidth']),
             bandwidth=dict(type='int', default=5),
             reuse_existing_ip_allowed=dict(type='bool', default=False),
@@ -290,8 +300,9 @@ def main():
     state = module.params['state']
     instance_id = module.params['instance_id']
     ip_address = module.params['ip_address']
+    allocation_id = module.params['allocation_id']
 
-    eip, eips = find_eip(vpc, module, ip_address, instance_id)
+    eip, eips = find_eip(vpc, module, ip_address, instance_id, allocation_id)
     changed = False
 
     if state == 'absent':

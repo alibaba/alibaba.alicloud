@@ -202,7 +202,7 @@ def main():
     rds = rds_connect(module)
 
     if HAS_FOOTMARK is False:
-        module.fail_json("Footmark required for this module")
+        module.fail_json(msg="Footmark required for this module")
 
     # Get values of variable
     state = module.params['state']

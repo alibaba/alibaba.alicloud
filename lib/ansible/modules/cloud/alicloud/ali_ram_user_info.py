@@ -38,6 +38,10 @@ options:
     description:
       - Use a User name prefix to filter Users.
     type: str
+  user_ids:
+    description:
+      - Use a user_ids list to filter Users.
+    type: list
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -137,7 +141,8 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        name_prefix=dict(type='str'))
+        name_prefix=dict(type='str')),
+        user_ids=dict(type='list')
     )
     module = AnsibleModule(argument_spec=argument_spec)
 
@@ -145,11 +150,13 @@ def main():
         module.fail_json(msg="Package 'footmark' required for this module.")
 
     name_prefix = module.params['name_prefix']
-
+    user_ids = module.params['user_ids']
     try:
         users = []
         for user in ram_connect(module).list_users():
             if name_prefix and not user.name.startswith(name_prefix):
+                continue
+            if user_ids and user.user_id not in user_ids:
                 continue
             users.append(user.read())
         module.exit_json(changed=False, users=users)

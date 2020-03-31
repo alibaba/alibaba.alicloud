@@ -45,9 +45,14 @@ options:
   user_name:
     description:
       - The username. It must be 1 to 64 characters in length.
-      - This is used to determine if the user already exists.
+      - One of I(user_name) and I(user_id) must be specified when operate existing user.
     aliases: ['name']
-    required: True
+    type: str
+  user_id:
+    description:
+      - The ID of user.
+      - One of I(user_name) and I(user_id) must be specified when operate existing user.
+    aliases: ['id']
     type: str
   display_name:
     description:
@@ -172,12 +177,16 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def user_exists(module, ram_conn, user_name):
+def user_exists(module, ram_conn, user_name, user_id):
     try:
+        user = None
         for u in ram_conn.list_users():
-            if u.name == user_name:
-                return u
-        return None
+            if user_name and u.name != user_name:
+                continue
+            if user_id and u.user_id != user_id:
+                continue
+            user = u
+        return user
     except Exception as e:
         module.fail_json(msg="Failed to describe Users: {0}".format(e))
 
@@ -186,7 +195,8 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        user_name=dict(type='str', required=True, aliases=['name']),
+        user_name=dict(type='str', aliases=['name']),
+        user_id=dict(type='str', aliases=['id']),
         display_name=dict(type='str'),
         mobile_phone=dict(type='str', aliases=['phone']),
         email=dict(type='str'),
@@ -204,10 +214,11 @@ def main():
     # Get values of variable
     state = module.params['state']
     user_name = module.params['user_name']
+    user_id = module.params['user_id']
     changed = False
 
     # Check if user exists
-    user = user_exists(module, ram_conn, user_name)
+    user = user_exists(module, ram_conn, user_name, user_id)
 
     if state == 'absent':
         if not user:

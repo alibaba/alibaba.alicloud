@@ -47,11 +47,10 @@ options:
         It can contain numerals, "_", "/", "." or "-".
       - This is used to ensure idempotence.
     aliases: ['name', 'lb_name']
-    required: True
     type: str
   load_balancer_id:
     description:
-      - (deprecated) This parameter is required when user wants to perform edit operation in Load Balancer
+      - This parameter is required when user wants to perform edit operation in Load Balancer
     aliases: ['id']
     type: str
   is_internet:
@@ -325,7 +324,7 @@ def main():
     argument_spec.update(dict(
         internet_charge_type=dict(type='str', choices=['PayByBandwidth', 'PayByTraffic'], default='PayByTraffic'),
         state=dict(type='str', choices=['present', 'absent', 'running', 'stopped'], default='present'),
-        load_balancer_name=dict(type='str', required=True, aliases=['name', 'lb_name']),
+        load_balancer_name=dict(type='str', aliases=['name', 'lb_name']),
         load_balancer_id=dict(type='str', aliases=['id']),
         is_internet=dict(type='bool', default=False),
         bandwidth=dict(type='int', default=1),
@@ -347,15 +346,21 @@ def main():
     slb = slb_connect(module)
     state = module.params['state']
     name = module.params['load_balancer_name']
+    load_balancer_id = module.params['load_balancer_id']
     is_internet = module.params['is_internet']
     internet_charge_type = str(module.params['internet_charge_type']).lower()
 
     changed = False
     matching = None
 
+    filters = {}
+    if name:
+        filters['load_balancer_name'] = name
+    if load_balancer_id:
+        filters['load_balancer_id'] = load_balancer_id
     if not module.params['multi_ok']:
         try:
-            matching_slbs = slb.describe_load_balancers(load_balancer_name=name)
+            matching_slbs = slb.describe_load_balancers(**filters)
             if len(matching_slbs) == 1:
                 matching = matching_slbs[0]
             elif len(matching_slbs) > 1:

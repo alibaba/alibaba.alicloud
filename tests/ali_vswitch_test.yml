@@ -13,8 +13,7 @@
   tasks:
     - name: Changed. Modifying name.
       ali_vswitch:
-        vpc_id: '{{ item.vpc_id}}'
-        cidr_block: '{{ item.cidr_block}}'
+        vswitch_id: '{{ item.id}}'
         name: '{{ name }}-modified'
       with_items: '{{vswitches.vswitches}}'
 

@@ -72,7 +72,7 @@ options:
     type: str
   vswitch_id:
     description:
-      - (Deprecated) VSwitch ID.
+      - VSwitch ID.
     aliases: ['subnet_id', 'id']
     type: str
   tags:
@@ -196,25 +196,28 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def vswitch_exists(conn, module, vpc_id, cidr):
+def vswitch_exists(conn, module, vswitch_id, vpc_id, cidr):
     try:
-        for vsw in conn.describe_vswitches(vpc_id=vpc_id):
-            if vsw.cidr_block == cidr:
-                return vsw
+        for vsw in conn.describe_vswitches():
+            if cidr and vsw.cidr_block != cidr:
+                continue
+            if vpc_id and vpc_id != vsw.vpc_id:
+                continue
+            if vswitch_id and vswitch_id != vsw.vswitch_id:
+                continue
+            return vsw
     except Exception as e:
         module.fail_json(msg="Couldn't get matching subnet: {0}".format(e))
-
-    return None
 
 
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(type='str', required=True),
+        cidr_block=dict(type='str'),
         description=dict(type='str'),
         zone_id=dict(type='str', aliases=['availability_zone', 'alicloud_zone']),
-        vpc_id=dict(type='str', required=True),
+        vpc_id=dict(type='str'),
         name=dict(type='str', aliases=['vswitch_name', 'subnet_name']),
         vswitch_id=dict(type='str', aliases=['subnet_id', 'id']),
         tags=dict(type='dict'),
@@ -230,9 +233,10 @@ def main():
 
     # Get values of variable
     state = module.params['state']
+    vswitch_id = module.params['vswitch_id']
 
     changed = False
-    vswitch = vswitch_exists(vpc, module, module.params['vpc_id'], module.params['cidr_block'])
+    vswitch = vswitch_exists(vpc, module, vswitch_id,  module.params['vpc_id'], module.params['cidr_block'])
 
     if state == 'absent':
         if not vswitch:
