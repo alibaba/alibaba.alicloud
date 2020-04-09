@@ -1,0 +1,19 @@
+---
+
+- hosts: localhost
+
+  remote_user: root
+
+  tasks:
+
+  - name: Get ROS Stack Info
+
+    ali_ros_info:
+
+      alicloud_access_key:
+
+      alicloud_secret_key:
+
+      alicloud_region:
+
+      stack_name: create_vpc_2020-04-08_test

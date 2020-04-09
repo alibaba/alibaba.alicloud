@@ -1,0 +1,69 @@
+---
+
+- hosts: localhost
+
+  remote_user: root
+
+  tasks:
+
+  - name: Create Ros Stack
+
+    ali_ros:
+
+      alicloud_access_key:
+
+      alicloud_secret_key:
+
+      alicloud_region:
+
+      state: "{{ stack_state | default('create') }}"
+
+      stack_name: vpc_2020-04-08_test
+
+      template: /tmp/create_vpn.json
+
+      create_timeout: 60
+
+      template_parameters:
+
+        CidrBlock: 192.168.0.0/16
+
+        VpcName: DemoVpc
+
+
+  - name: Update Ros Stack
+
+      ali_ros:
+
+        alicloud_access_key:
+
+        alicloud_secret_key:
+
+        alicloud_region:
+
+        state: "{{ stack_state | default('create') }}"
+
+        stack_name: vpc_2020-04-08_test
+
+        template: /tmp/update_vpc.json
+
+        create_timeout: 60
+
+        template_parameters:
+
+          CidrBlock: 192.168.0.0/16
+
+          VpcName: UpdateVpc
+
+
+  - name: Delete Ros Stack
+
+      ali_ros:
+
+        alicloud_access_key:
+
+        alicloud_secret_key:
+
+        alicloud_region:
+
+        stack_name: vpc_2020-04-08_test
