@@ -40,6 +40,7 @@ try:
     import footmark.sts
     import footmark.dns
     import footmark.ram
+    import footmark.ros
     import footmark.market
     HAS_FOOTMARK = True
 except ImportError:
@@ -222,6 +223,20 @@ def vpc_connect(module):
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return vpc
+
+
+def ros_connect(module):
+    """ Return an ros connection"""
+    ros_params = get_profile(module.params)
+    # If we have a region specified, connect to its endpoint.
+    region = module.params.get('alicloud_region')
+    if region:
+        try:
+            ros = connect_to_acs(footmark.ros, region, **ros_params)
+        except AnsibleACSError as e:
+            module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return ros
 
 
 def rds_connect(module):
