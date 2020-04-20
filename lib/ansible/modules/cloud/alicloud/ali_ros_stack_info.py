@@ -36,11 +36,6 @@ description:
 author:
     - "Steven"
 options:
-  stack_names:
-    description:
-      -  ROS stack resources names.
-    type: list
-    elements: str
   stack_ids:
     description:
       - A list of ROS IDs that exist in your account.
@@ -69,12 +64,6 @@ EXAMPLES = """
         stack_ids:
           - f83226ec-b0f2-4c78-8139-99fe24f36f2b
           - 0d87e1b4-c54f-4f3e-abed-2678e661c0a5
-          
--   name: Get ROS Stack Info By names
-    ali_ros_stack_info:
-        stack_names:
-          - stack_2020-04-13_test
-          - kong_stack_2020-04-13
     
 -   name: Get ROS Stack Info By name_prefix
     ali_ros_stack_info:
@@ -148,7 +137,6 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(
         dict(
-            stack_names=dict(type='list', elements='str'),
             stack_ids=dict(type='list', elements='str', aliases=['ros_stack_ids']),
             name_prefix=dict(type='str'),
             filters=dict(type='dict')
@@ -165,18 +153,12 @@ def main():
     filters = module.params['filters']
     if not filters:
         filters = {}
-    stack_names = module.params.get('stack_names')
     name_prefix = module.params.get('name_prefix')
     ros_infos = []
     ros_ids = []
     try:
         ros_conn = ros_connect(module)
-        if stack_names:
-            filters['stack_names'] = stack_names
-            ros_infos = ros_conn.list_stacks(**filters)
-            for ros_info in ros_infos:
-                ros_ids.append(ros_info.get('stack_id'))
-        elif stack_ids:
+        if stack_ids:
             for stack_id in stack_ids:
                 filters['stack_id'] = stack_id
                 stack_info = ros_conn.list_stacks(**filters)[0]
