@@ -69,9 +69,14 @@ def ecs_argument_spec():
         dict(
             alicloud_region=dict(required=True, aliases=['region', 'region_id'],
                                  fallback=(env_fallback, ['ALICLOUD_REGION', 'ALICLOUD_REGION_ID'])),
-            alicloud_assume_role_arn=dict(fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_ARN']), aliases=['assume_role_arn']),
-            alicloud_assume_role_session_name=dict(fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_NAME']), aliases=['assume_role_session_name']),
-            alicloud_assume_role_session_expiration=dict(type='int', fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION']), aliases=['assume_role_session_expiration']),
+            alicloud_assume_role_arn=dict(fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_ARN']),
+                                          aliases=['assume_role_arn']),
+            alicloud_assume_role_session_name=dict(fallback=(env_fallback, ['ALICLOUD_ASSUME_ROLE_SESSION_NAME']),
+                                                   aliases=['assume_role_session_name']),
+            alicloud_assume_role_session_expiration=dict(type='int',
+                                                         fallback=(env_fallback,
+                                                                   ['ALICLOUD_ASSUME_ROLE_SESSION_EXPIRATION']),
+                                                         aliases=['assume_role_session_expiration']),
             alicloud_assume_role=dict(type='dict', aliases=['assume_role']),
             profile=dict(fallback=(env_fallback, ['ALICLOUD_PROFILE'])),
             shared_credentials_file=dict(fallback=(env_fallback, ['ALICLOUD_SHARED_CREDENTIALS_FILE']))
@@ -114,8 +119,10 @@ def get_assume_role(params):
 
     assume_role_params = {
         'role_arn': params.get('alicloud_assume_role_arn') if params.get('alicloud_assume_role_arn') else assume_role.get('alicloud_assume_role_arn'),
-        'role_session_name': params.get('alicloud_assume_role_session_name') if params.get('alicloud_assume_role_session_name') else assume_role.get('alicloud_assume_role_session_name'),
-        'duration_seconds': params.get('alicloud_assume_role_session_expiration') if params.get('alicloud_assume_role_session_expiration') else assume_role.get('alicloud_assume_role_session_expiration', 3600),
+        'role_session_name': params.get('alicloud_assume_role_session_name') if params.get('alicloud_assume_role_session_name')
+        else assume_role.get('alicloud_assume_role_session_name'),
+        'duration_seconds': params.get('alicloud_assume_role_session_expiration') if params.get('alicloud_assume_role_session_expiration')
+        else assume_role.get('alicloud_assume_role_session_expiration', 3600),
         'policy': assume_role.get('alicloud_assume_role_policy', {})
     }
 
@@ -130,7 +137,7 @@ def get_assume_role(params):
 
 def get_profile(params):
     if not params['alicloud_access_key'] and not params['ecs_role_name'] and params['profile']:
-        path = params['shared_credentials_file'] if params['shared_credentials_file'] else os.getenv('HOME')+'/.aliyun/config.json'
+        path = params['shared_credentials_file'] if params['shared_credentials_file'] else os.getenv('HOME') + '/.aliyun/config.json'
         auth = {}
         with open(path, 'r') as f:
             for pro in json.load(f)['profiles']:
