@@ -1,6 +1,10 @@
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
+
 DOCUMENTATION = '''
 name: alicloud_ecs
 plugin_type: inventory
@@ -82,7 +86,7 @@ compose:
   ansible_host: public_ip_address
 
 # Example of enabling caching for an individual YAML configuration file
-plugin: alicloud_ecs 
+plugin: alicloud_ecs
 cache: yes
 cache_plugin: jsonfile
 cache_timeout: 7200
@@ -177,6 +181,16 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             'alicloud_region': alicloud_region
         }
         self.credentials = get_profile(credentials)
+
+    def connect_to_ecs(self, module, region):
+
+        # Check module args for credentials, then check environment vars access key pair and region
+        connect_args = self.credentials
+        connect_args['user_agent'] = 'Ansible-Provider-Alicloud/Dynamic-Inventory'
+        conn = connect_to_acs(module, region, **connect_args)
+        if conn is None:
+            self.fail_with_error("region name: %s likely not supported. Connection to region failed." % region)
+        return conn
 
     def _get_instances_by_region(self, regions, filters):
         '''
