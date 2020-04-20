@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_instance_info
-version_added: "2.8"
 short_description: Gather information on instances of Alibaba Cloud ECS.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -47,15 +47,16 @@ options:
         - (Deprecated) A list of ECS instance names. Please use filter item 'instance_name' instead.
       aliases: ["names"]
       type: list
+      elements: str
     instance_ids:
       description:
         - A list of ECS instance ids.
       aliases: ["ids"]
       type: list
+      elements: str
     name_prefix:
       description:
         - Use a instance name prefix to filter ecs instances.
-      version_added: '2.9'
       type: str
     tags:
       description:
@@ -69,7 +70,6 @@ options:
           Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
           connect different words in one parameter. 'InstanceIds' should be a list and it will be appended to
           I(instance_ids) automatically. 'Tag.n.Key' and 'Tag.n.Value' should be a dict and using I(tags) instead.
-      version_added: '2.9'
       type: dict
 author:
     - "He Guimin (@xiaozhu36)"
@@ -86,7 +86,7 @@ EXAMPLES = '''
 - name: Find all instances in the specified region
   ali_instance_info:
   register: all_instances
-  
+
 - name: Find all instances based on the specified ids
   ali_instance_info:
     instance_ids:
@@ -98,7 +98,7 @@ EXAMPLES = '''
   ali_instance_info:
     name_prefix: "ecs_instance_"
   register: instances_by_name_prefix
-  
+
 - name: Find instances based on tags
   ali_instance_info:
     tags:
@@ -114,7 +114,7 @@ instances:
         availability_zone:
             description: The availability zone of the instance is in.
             returned: always
-            type: string
+            type: str
             sample: cn-beijing-a
         block_device_mappings:
             description: Any block device mapping entries for the instance.
@@ -124,12 +124,12 @@ instances:
                 device_name:
                     description: The device name exposed to the instance (for example, /dev/xvda).
                     returned: always
-                    type: string
+                    type: str
                     sample: /dev/xvda
                 attach_time:
                     description: The time stamp when the attachment initiated.
                     returned: always
-                    type: string
+                    type: str
                     sample: "2018-06-25T04:08:26Z"
                 delete_on_termination:
                     description: Indicates whether the volume is deleted on instance termination.
@@ -139,12 +139,12 @@ instances:
                 status:
                     description: The attachment state.
                     returned: always
-                    type: string
+                    type: str
                     sample: in_use
                 volume_id:
                     description: The ID of the cloud disk.
                     returned: always
-                    type: string
+                    type: str
                     sample: d-2zei53pjsi117y6gf9t6
         cpu:
             description: The CPU core count of the instance.
@@ -154,12 +154,12 @@ instances:
         creation_time:
             description: The time the instance was created.
             returned: always
-            type: string
+            type: str
             sample: "2018-06-25T04:08Z"
         description:
             description: The instance description.
             returned: always
-            type: string
+            type: str
             sample: "my ansible instance"
         eip:
             description: The attribution of EIP associated with the instance.
@@ -169,25 +169,25 @@ instances:
                 allocation_id:
                     description: The ID of the EIP.
                     returned: always
-                    type: string
+                    type: str
                     sample: eip-12345
                 internet_charge_type:
                     description: The internet charge type of the EIP.
                     returned: always
-                    type: string
+                    type: str
                     sample: "paybybandwidth"
                 ip_address:
                     description: EIP address.
                     returned: always
-                    type: string
+                    type: str
                     sample: 42.10.2.2
         expired_time:
             description: The time the instance will expire.
             returned: always
-            type: string
+            type: str
             sample: "2099-12-31T15:59Z"
         gpu:
-            description: The attribution of instane GPU.
+            description: The attribution of instance GPU.
             returned: always
             type: complex
             contains:
@@ -199,52 +199,52 @@ instances:
                 spec:
                     description: The specification of the GPU.
                     returned: always
-                    type: string
+                    type: str
                     sample: ""
         host_name:
             description: The host name of the instance.
             returned: always
-            type: string
+            type: str
             sample: iZ2zewaoZ
         id:
             description: Alias of instance_id.
             returned: always
-            type: string
+            type: str
             sample: i-abc12345
         instance_id:
             description: ECS instance resource ID.
             returned: always
-            type: string
+            type: str
             sample: i-abc12345
         image_id:
             description: The ID of the image used to launch the instance.
             returned: always
-            type: string
+            type: str
             sample: m-0011223344
         instance_charge_type:
             description: The instance charge type.
             returned: always
-            type: string
+            type: str
             sample: PostPaid
         instance_name:
             description: The name of the instance.
             returned: always
-            type: string
+            type: str
             sample: my-ecs
         instance_type_family:
             description: The instance type family of the instance belongs.
             returned: always
-            type: string
+            type: str
             sample: ecs.sn1ne
         instance_type:
             description: The instance type of the running instance.
             returned: always
-            type: string
+            type: str
             sample: ecs.sn1ne.xlarge
         internet_charge_type:
             description: The billing method of the network bandwidth.
             returned: always
-            type: string
+            type: str
             sample: PayByBandwidth
         internet_max_bandwidth_in:
             description: Maximum incoming bandwidth from the internet network.
@@ -274,62 +274,63 @@ instances:
                 mac_address:
                     description: The MAC address.
                     returned: always
-                    type: string
+                    type: str
                     sample: "00:11:22:33:44:55"
                 network_interface_id:
                     description: The ID of the network interface.
                     returned: always
-                    type: string
+                    type: str
                     sample: eni-01234567
                 primary_ip_address:
                     description: The primary IPv4 address of the network interface within the vswitch.
                     returned: always
-                    type: string
+                    type: str
                     sample: 10.0.0.1
         osname:
             description: The operation system name of the instance owned.
             returned: always
-            type: string
+            type: str
             sample: CentOS
         ostype:
             description: The operation system type of the instance owned.
             returned: always
-            type: string
+            type: str
             sample: linux
         private_ip_address:
             description: The IPv4 address of the network interface within the subnet.
             returned: always
-            type: string
+            type: str
             sample: 10.0.0.1
         public_ip_address:
             description: The public IPv4 address assigned to the instance or eip address
             returned: always
-            type: string
+            type: str
             sample: 43.0.0.1
         resource_group_id:
             description: The id of the resource group to which the instance belongs.
             returned: always
-            type: string
+            type: str
             sample: my-ecs-group
         security_groups:
             description: One or more security groups for the instance.
             returned: always
-            type: complex
+            type: list
+            elements: dict
             contains:
-                - group_id:
-                      description: The ID of the security group.
-                      returned: always
-                      type: string
-                      sample: sg-0123456
-                - group_name:
-                      description: The name of the security group.
-                      returned: always
-                      type: string
-                      sample: my-security-group
+                group_id:
+                  description: The ID of the security group.
+                  returned: always
+                  type: str
+                  sample: sg-0123456
+                group_name:
+                  description: The name of the security group.
+                  returned: always
+                  type: str
+                  sample: my-security-group
         status:
             description: The current status of the instance.
             returned: always
-            type: string
+            type: str
             sample: running
         tags:
             description: Any tags assigned to the instance.
@@ -339,12 +340,12 @@ instances:
         vswitch_id:
             description: The ID of the vswitch in which the instance is running.
             returned: always
-            type: string
+            type: str
             sample: vsw-dew00abcdef
         vpc_id:
             description: The ID of the VPC the instance is in.
             returned: always
-            type: dict
+            type: str
             sample: vpc-0011223344
 ids:
     description: List of ECS instance IDs
@@ -371,8 +372,8 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         availability_zone=dict(aliases=['alicloud_zone']),
-        instance_ids=dict(type='list', aliases=['ids']),
-        instance_names=dict(type='list', aliases=['names']),
+        instance_ids=dict(type='list', elements='str', aliases=['ids']),
+        instance_names=dict(type='list', elements='str', aliases=['names']),
         name_prefix=dict(type='str'),
         tags=dict(type='dict', aliases=['instance_tags']),
         filters=dict(type='dict')
