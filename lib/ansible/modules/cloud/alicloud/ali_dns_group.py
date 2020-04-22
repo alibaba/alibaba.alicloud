@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_dns_group
-version_added: "2.9"
 short_description: Configure Alibaba Cloud DNS (DNS)
 description:
     - Create, Delete Alicloud cloud DNS group(DNS group).
@@ -90,24 +90,22 @@ groups:
         domain_count:
             description: Number of domain names in the group .
             returned: always
-            type: dict
-            returned: always
             type: int
             sample: 0
         group_id:
             description: The id of group.
             returned: always
-            type: string
+            type: str
             sample: xxxxxxxxxx
         id:
             description: alias of 'group_id'.
             returned: always
-            type: string
+            type: str
             sample: xxxxxxxxxx
         group_name:
             description: Name of group.
             returned: always
-            type: string
+            type: str
             sample: ansible_test
 '''
 

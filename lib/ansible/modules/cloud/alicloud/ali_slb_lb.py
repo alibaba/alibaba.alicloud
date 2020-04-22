@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_slb_lb
-version_added: "2.9"
 short_description: Create, Delete, Enable or Disable Server Load Balancer.
 description:
   - Create, Delete, Start or Stop Server Load Balancer.
@@ -47,6 +47,7 @@ options:
         It can contain numerals, "_", "/", "." or "-".
       - This is used to ensure idempotence.
     aliases: ['name', 'lb_name']
+    required: True
     type: str
   load_balancer_id:
     description:
@@ -154,17 +155,17 @@ load_balancer:
         address:
             description: The IP address of the loal balancer
             returned: always
-            type: string
+            type: str
             sample: "47.94.26.126"
         address_ipversion:
             description: The IP address version. IPV4 or IPV6.
             returned: always
-            type: string
+            type: str
             sample: "ipv4"
         address_type:
             description: The load balancer internet type
             returned: always
-            type: string
+            type: str
             sample: "internet"
         backend_servers:
             description: The load balancer's backend servers
@@ -174,7 +175,7 @@ load_balancer:
                 server_id:
                     description: The backend server id
                     returned: always
-                    type: string
+                    type: str
                     sample: "i-vqunci342"
                 weight:
                     description: The backend server weight
@@ -184,12 +185,12 @@ load_balancer:
                 description:
                     description: The backend server description
                     returned: always
-                    type: string
+                    type: str
                     sample: ""
                 type:
                     description: The backend server type, ecs or eni
                     returned: always
-                    type: string
+                    type: str
                     sample: "ecs"
         bandwidth:
             description: The load balancer internet bandwidth
@@ -199,22 +200,22 @@ load_balancer:
         create_time:
             description: The time of the load balancer was created
             returned: always
-            type: string
+            type: str
             sample: "2019-01-02T02:37:41Z"
         end_time:
             description: The time of the load balancer will be released
             returned: always
-            type: string
+            type: str
             sample: "2999-09-08T16:00:00Z"
         id:
             description: The ID of the load balancer was created. Same as load_balancer_id.
             returned: always
-            type: string
+            type: str
             sample: "lb-2zea9ohgtf"
         internet_charge_type:
             description: The load balancer internet charge type
             returned: always
-            type: string
+            type: str
             sample: "PayByTraffic"
         listeners:
             description: The listeners of the load balancer.
@@ -230,12 +231,12 @@ load_balancer:
                 listener_protocol:
                     description: The frontend protocol used by the SLB instance.
                     returned: always
-                    type: string
+                    type: str
                     sample: tcp
                 listener_forward:
                     description: Whether to enable listener forwarding.
                     returned: always
-                    type: string
+                    type: str
                     sample: ""
                 forward_port:
                     description: The destination listening port. It must be an existing HTTPS listening port.
@@ -245,62 +246,62 @@ load_balancer:
         load_balancer_id:
             description: The ID of the load balancer was created.
             returned: always
-            type: string
+            type: str
             sample: "lb-2zea9ohgtf"
         load_balancer_name:
             description: The name of the load balancer was created.
             returned: always
-            type: string
+            type: str
             sample: "ansible-ali_slb_lb"
         load_balancer_status:
             description: The load balancer current status.
             returned: always
-            type: string
+            type: str
             sample: "active"
         master_zone_id:
             description: The ID of the primary zone.
             returned: always
-            type: string
+            type: str
             sample: "cn-beijing-a"
         name:
             description: The name of the load balancer was created.
             returned: always
-            type: string
+            type: str
             sample: "ansible-ali_slb_lb"
         network_type:
             description: The network type of the load balancer was created.
             returned: always
-            type: string
+            type: str
             sample: "classic"
         pay_type:
             description: The load balancer instance charge type.
             returned: always
-            type: string
+            type: str
             sample: "PostPaid"
         resource_group_id:
             description: The resource group of the load balancer belongs.
             returned: always
-            type: string
+            type: str
             sample: "rg-acfmwvvtg5owavy"
         slave_zone_id:
             description: The ID of the backup zone
             returned: always
-            type: string
+            type: str
             sample: "cn-beijing-d"
         tags:
             description: The load balancer tags
             returned: always
-            type: complex
+            type: dict
             sample: {}
         vpc_id:
             description: The vpc of the load balancer belongs.
             returned: always
-            type: string
+            type: str
             sample: "vpc-fn3nc3"
         vswitch_id:
             description: The vswitch of the load balancer belongs.
             returned: always
-            type: string
+            type: str
             sample: "vsw-c3nc3r"
 '''
 
@@ -324,7 +325,7 @@ def main():
     argument_spec.update(dict(
         internet_charge_type=dict(type='str', choices=['PayByBandwidth', 'PayByTraffic'], default='PayByTraffic'),
         state=dict(type='str', choices=['present', 'absent', 'running', 'stopped'], default='present'),
-        load_balancer_name=dict(type='str', aliases=['name', 'lb_name']),
+        load_balancer_name=dict(type='str', required=True, aliases=['name', 'lb_name']),
         load_balancer_id=dict(type='str', aliases=['id']),
         is_internet=dict(type='bool', default=False),
         bandwidth=dict(type='int', default=1),

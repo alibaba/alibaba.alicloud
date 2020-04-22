@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_ram_policy
-version_added: "2.9"
 short_description: Create, Delete, Attach and Detach policy in Alibaba Cloud.
 description:
     - Create, Delete, Attach and Detach policy in Alibaba Cloud.
@@ -158,41 +158,40 @@ policy:
         create_date:
             description: The date and time when the policy was created.
             returned: always
-            type: string
-            sample: 2015-01-23T12:33:18Z
+            type: str
+            sample: '2015-01-23T12:33:18Z'
         default_version:
             description: The default version.
             returned: always
-            type: string
+            type: str
             sample: v1
         description:
             description: The policy description.
             returned: always
-            type: string
+            type: str
             sample: OSS administrator
         policy_name:
             description: The policy name.
             returned: always
-            type: string
+            type: str
             sample: OSS-Administrator
         name:
             description: alias of 'policy_name'.
             returned: always
-            type: string
+            type: str
             sample: OSS-Administrator
         policy_type:
             description: The policy type.
             returned: always
-            type: string
+            type: str
             sample: Custom
         update_date:
             description: The date and time when the policy was modified.
             returned: always
-            type: string
-            sample: 2015-01-23T12:33:18Z
+            type: str
+            sample: '2015-01-23T12:33:18Z'
 '''
 
-import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ram_connect
 

@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -161,12 +162,12 @@ eip:
         allocation_id:
             description: The EIP id.
             returned: always
-            type: string
+            type: str
             sample: "eip-2zee1nu68juox4"
         allocation_time:
             description: The time the EIP was created.
             returned: always
-            type: string
+            type: str
             sample: "2018-12-31T12:12:52Z"
         bandwidth:
             description: Maximum bandwidth from the internet network.
@@ -176,52 +177,52 @@ eip:
         charge_type:
             description: The eip charge type.
             returned: always
-            type: string
+            type: str
             sample: "PostPaid"
         description:
             description: interface description.
             returned: always
-            type: string
+            type: str
             sample: "My new EIP"
         id:
             description: Allocated EIP id (alias for allocation_id).
             returned: always
-            type: string
+            type: str
             sample: "eip-2zee1nu68juox4"
         instance_id:
             description: Associated instance id.
             returned: always
-            type: string
+            type: str
             sample: "i-123456"
         instance_region_id:
             description: The region id in which the associated instance.
             returned: always
-            type: string
+            type: str
             sample: "cn-beijing"
         instance_type:
             description: Associated instance type.
             returned: always
-            type: string
+            type: str
             sample: "EcsInstance"
         internet_charge_type:
             description: The EIP charge type.
             returned: always
-            type: string
+            type: str
             sample: "PayByTraffic"
         ip_address:
             description: The IP address of the EIP.
             returned: always
-            type: string
+            type: str
             sample: "39.96.169.143"
         name:
             description: The EIP name.
             returned: always
-            type: string
+            type: str
             sample: "from-ansible"
         status:
             description: The EIP status.
             returned: always
-            type: string
+            type: str
             sample: "inuse"
         tags:
             description: Any tags assigned to the EIP.

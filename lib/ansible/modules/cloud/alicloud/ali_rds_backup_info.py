@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_rds_backup_info
-version_added: "2.9"
 short_description: Gather info on backup of Alibaba Cloud.
 description:
      - Gather info on backup of Alibaba Cloud and Support to use id, status, mode to filter backup.
@@ -83,72 +83,72 @@ backups:
         backup_id:
             description: The ID of the backup set.
             returned: always
-            type: string
+            type: str
             sample: 321020562
         db_instance_id:
             description: The ID of the instance.
             returned: always
-            type: string
+            type: str
             sample: rm-uf6wjk5xxxxxxx
         backup_status:
             description: The status of the backup set.
             returned: always
-            type: string
+            type: str
             sample: Success
         backup_type:
             description: The backup type.
             returned: always
-            type: string
+            type: str
             sample: FullBackup
         backup_mode:
             description: The backup mode.
             returned: always
-            type: string
+            type: str
             sample: Automated
         backup_method:
             description: The ID of the instance.
             returned: always
-            type: string
+            type: str
             sample: Physical
         status:
             description: alias of backup_status.
             returned: always
-            type: string
+            type: str
             sample: Success
         id:
             description: alias of backup_id.
             returned: always
-            type: string
+            type: str
             sample: 321020562
         instance_id:
             description: alias of dbinstance_id.
             returned: always
-            type: string
+            type: str
             sample: rm-uf6wjk5xxxxxxx
         backup_start_time:
             description: The start time of the current backup.
             returned: always
-            type: string
-            sample: 2019-12-17T01:51:13Z
+            type: str
+            sample: '2019-12-17T01:51:13Z'
         backup_end_time:
             description: The end time of the current backup.
             returned: always
-            type: string
-            sample: 2019-12-17T01:52:36Z
+            type: str
+            sample: '2019-12-17T01:52:36Z'
         backup_intranet_download_url:
             description: The download link for the private network access. If the download is unavailable, this parameter is a null string.
             returned: always
-            type: string
-            sample: http://rdsbak-bj-v4.oss-cn-beijing-internal.aliyuncs.com/xxxxx
+            type: str
+            sample: 'http://rdsbak-bj-v4.oss-cn-beijing-internal.aliyuncs.com/xxxxx'
         backup_size:
             description: The size of the backup file. Unit Byte.
             returned: always
-            type: string
+            type: str
             sample: 10240
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect, vpc_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect
 
 HAS_FOOTMARK = False
 

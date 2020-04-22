@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,12 +30,10 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_vpc_info
-version_added: "2.9"
 short_description: Gather facts on vpcs of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
        The module must be called from within the vpc itself.
-
 options:
   vpc_name:
     description:
@@ -46,6 +45,7 @@ options:
       - A list of VPC IDs that exist in your account.
     aliases: ["ids"]
     type: list
+    elements: str
   name_prefix:
     description:
       - Use a VPC name prefix to filter VPCs.
@@ -102,7 +102,7 @@ ids:
     description: List all vpc's id after operating vpc.
     returned: when success
     type: list
-    sample: [ "vpc-2zegusms7jwd94lq7ix8o", "vpc-2ze5hrb3y5ksx5oa3a0xa" ]
+    sample: ["vpc-2zegusms7jwd94lq7ix8o", "vpc-2ze5hrb3y5ksx5oa3a0xa"]
 vpcs:
     description: Returns an array of complex objects as described below.
     returned: always
@@ -111,22 +111,22 @@ vpcs:
         cidr_block:
             description: The CIDR of the VPC.
             returned: always
-            type: string
+            type: str
             sample: 10.0.0.0/8
         creation_time:
             description: The time the VPC was created.
             returned: always
-            type: string
-            sample: 2018-06-24T15:14:45Z
+            type: str
+            sample: '2018-06-24T15:14:45Z'
         description:
             description: The VPC description.
             returned: always
-            type: string
+            type: str
             sample: "my ansible vpc"
         id:
             description: alias of 'vpc_id'.
             returned: always
-            type: string
+            type: str
             sample: vpc-c2e00da5
         is_default:
             description: indicates whether this is the default VPC.
@@ -136,12 +136,12 @@ vpcs:
         state:
             description: state of the VPC.
             returned: always
-            type: string
+            type: str
             sample: available
         tags:
             description: tags attached to the VPC, includes name.
             returned: always
-            type: complex
+            type: dict
             sample:
         user_cidrs:
             description: The custom CIDR of the VPC.
@@ -151,17 +151,17 @@ vpcs:
         vpc_id:
             description: VPC resource id.
             returned: always
-            type: string
+            type: str
             sample: vpc-c2e00da5
         vpc_name:
             description: Name of the VPC.
             returned: always
-            type: string
+            type: str
             sample: my-vpc
         vrouter_id:
             description: The ID of virtual router which in the VPC.
             returned: always
-            type: string
+            type: str
             sample: available
         vswitch_ids:
             description: List IDs of virtual switch which in the VPC.
@@ -169,7 +169,6 @@ vpcs:
             type: list
             sample: [vsw-123cce3, vsw-34cet4v]
 '''
-
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, vpc_connect
 
@@ -185,7 +184,7 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        vpc_ids=dict(type='list', aliases=['ids']),
+        vpc_ids=dict(type='list', elements='str', aliases=['ids']),
         vpc_name=dict(type='str', aliases=['name']),
         name_prefix=dict(type='str'),
         cidr_prefix=dict(type='str'),

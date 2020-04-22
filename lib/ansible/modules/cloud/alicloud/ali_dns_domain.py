@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_dns_domain
-version_added: "2.9"
 short_description: Configure Alibaba Cloud DNS (DNS)
 description:
     - Create, Delete Alicloud cloud DNS(DNS).
@@ -51,11 +51,11 @@ options:
     type: str
   resource_group_id:
     description:
-      - When add domain, You can specify the resource group id
+      - When add domain, You can specify the resource group id.
     type: str
   remark:
     description:
-      - Specify this parameter as a comment for dns
+      - Specify this parameter as a comment for dns.
     type: str
   state:
     description:
@@ -65,7 +65,7 @@ options:
     type: str
   user_client_ip:
     description:
-      - User client IP
+      - User client IP.
     type: str
 requirements:
     - "python >= 3.6"
@@ -102,7 +102,7 @@ EXAMPLES = """
 
 RETURN = '''
 dns:
-    description: info about the DNS that was created or deleted
+    description: info about the DNS that was created or deleted.
     returned: always
     type: complex
     contains:
@@ -124,31 +124,31 @@ dns:
         domain_name:
             description: The name of domain.
             returned: always
-            type: string
+            type: str
             sample: ansiblexxx.abc
         name:
             description: alias of 'domain_name'.
             returned: always
-            type: string
+            type: str
             sample: ansiblexxx.abc
         id:
             description: alias of 'domain_id'.
             returned: always
-            type: string
+            type: str
             sample: dns-c2e00da5
         puny_code:
-            description: Chinese domain name punycode code, English domain name returned empty
+            description: Chinese domain name punycode code, English domain name returned empty.
             type: bool
             sample: ansiblexxx.abc
         record_count:
-            description: The number of parsing records contained in the domain name
+            description: The number of parsing records contained in the domain name.
             returned: always
             type: int
             sample: 0
         remark:
-            description: A comment for dns
+            description: A comment for dns.
             returned: always
-            type: string
+            type: str
             sample: ansible_test_dns_domain
         starmark:
             description: Whether to query the domain name star.
@@ -156,19 +156,19 @@ dns:
             type: bool
             sample: false
         domain_id:
-            description: DNS resource id
+            description: DNS resource id.
             returned: always
-            type: string
+            type: str
             sample: dns-c2e00da5
         version_code:
-            description: Cloud resolution version Code
+            description: Cloud resolution version Code.
             returned: always
-            type: string
+            type: str
             sample: mianfei
         version_name:
-            description: Cloud resolution product name
+            description: Cloud resolution product name.
             returned: always
-            type: string
+            type: str
             sample: Alibaba Cloud DNS
 '''
 

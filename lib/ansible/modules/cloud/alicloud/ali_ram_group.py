@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_ram_group
-version_added: "2.9"
 short_description: Create, Delete, Update Ram Groups in Alibaba Cloud.
 description:
     - Create, Delete, Update group comments, name in Alibaba Cloud.
@@ -123,7 +123,7 @@ group:
             description: The date and time when the RAM user group was created.
             returned: always
             type: str
-            sample: 2015-01-23T12:33:18Z
+            sample: '2015-01-23T12:33:18Z'
         group_name:
             description: The RAM user group name.
             returned: alway
@@ -138,7 +138,7 @@ group:
             description: The date and time when a RAM user group was modified.
             returned: always
             type: str
-            sample: 2015-01-23T12:33:18Z
+            sample: '2015-01-23T12:33:18Z'
 '''
 
 import time

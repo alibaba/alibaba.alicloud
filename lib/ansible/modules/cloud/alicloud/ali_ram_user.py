@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_ram_user
-version_added: "2.9"
 short_description: Create, Delete, Update Ram User in Alibaba Cloud.
 description:
     - Create, Delete, Update Ram User in Alibaba Cloud.
@@ -115,48 +115,48 @@ user:
         user_name:
             description: The username.
             returned: always
-            type: string
+            type: str
             sample: Alice
         name:
             description: alias of 'user_name'.
             returned: always
-            type: string
+            type: str
             sample: Alice
         user_id:
             description: The ID of the RAM user.
             returned: always
-            type: string
+            type: str
             sample: 122748924538****
         id:
             description: alias of 'user_id'.
             returned: always
-            type: string
+            type: str
             sample: 122748924538****
         mobile_phone:
             description: The mobile phone number of the RAM user.
             returned: always
-            type: string
+            type: str
             sample: 86-1860000****
         phone:
             description: alias of 'mobile_phone'.
             returned: always
-            type: string
+            type: str
             sample: vpc-c2e00da5
         email:
             description: The email address of the RAM user.
             returned: always
-            type: string
+            type: str
             sample: alice@example.com
         display_name:
             description: The display name.
             returned: always
-            type: string
+            type: str
             sample: Alice
         create_date:
             description: The date and time when the RAM user was created.
             returned: always
-            type: string
-            sample: 2015-01-23T12:33:18Z
+            type: str
+            sample: '2015-01-23T12:33:18Z'
         comments:
             description: The comment.
             returned: always
@@ -164,7 +164,6 @@ user:
             sample: ansible test
 '''
 
-import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ram_connect
 

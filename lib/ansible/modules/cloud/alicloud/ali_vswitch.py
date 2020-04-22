@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_vswitch
-version_added: "2.9"
 short_description: Manage subnet in Alibaba Cloud virtual private cloud(VPC)
 description:
     - Manage subnet in Alibaba Cloud virtual private cloud(VPC).
@@ -124,22 +124,22 @@ vswitch:
         id:
             description: alias of vswitch_id
             returned: always
-            type: string
+            type: str
             sample: vsw-b883b2c4
         cidr_block:
             description: The IPv4 CIDR of the VSwitch
             returned: always
-            type: string
+            type: str
             sample: "10.0.0.0/16"
         zone_id:
             description: Availability zone of the VSwitch
             returned: always
-            type: string
+            type: str
             sample: cn-beijing-a
         state:
             description: state of the Subnet
             returned: always
-            type: string
+            type: str
             sample: available
         is_default:
             description: indicates whether this is the default VSwitch
@@ -154,33 +154,33 @@ vswitch:
         vpc_id:
             description: the id of the VPC where this VSwitch exists
             returned: always
-            type: string
+            type: str
             sample: vpc-67236184
         available_ip_address_count:
             description: number of available IPv4 addresses
             returned: always
-            type: string
+            type: str
             sample: 250
         vswitch_id:
             description: VSwitch resource id
             returned: always
-            type: string
+            type: str
             sample: vsw-b883b2c4
         subnet_id:
             description: alias of vswitch_id
             returned: always
-            type: string
+            type: str
             sample: vsw-b883b2c4
         vswitch_name:
             description: VSwitch resource name
             returned: always
-            type: string
+            type: str
             sample: my-vsw
         creation_time:
             description: The time the VSwitch was created.
             returned: always
-            type: string
-            sample: 2018-06-24T15:14:45Z
+            type: str
+            sample: '2018-06-24T15:14:45Z'
 '''
 
 import time
@@ -214,10 +214,10 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(type='str'),
+        cidr_block=dict(type='str', required=True),
         description=dict(type='str'),
         zone_id=dict(type='str', aliases=['availability_zone', 'alicloud_zone']),
-        vpc_id=dict(type='str'),
+        vpc_id=dict(type='str', required=True),
         name=dict(type='str', aliases=['vswitch_name', 'subnet_name']),
         vswitch_id=dict(type='str', aliases=['subnet_id', 'id']),
         tags=dict(type='dict'),

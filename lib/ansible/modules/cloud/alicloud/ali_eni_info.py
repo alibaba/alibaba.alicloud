@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -32,13 +33,13 @@ module: ali_eni_info
 short_description: Gather facts about ENI interfaces in Alibaba Cloud
 description:
     - Gather facts about ENI interfaces in Alibaba Cloud
-version_added: "2.9"
 options:
   eni_ids:
     description:
       - A list of ENI IDs that exist in your account.
     aliases: ['ids']
     type: list
+    elements: str
   name_prefix:
     description:
       - Use a name prefix to filter network interfaces.
@@ -99,69 +100,69 @@ interfaces:
     contains:
         associated_public_ip:
             description: The public IP address associated with the ENI.
-            type: string
+            type: str
             sample: 42.1.10.1
         zone_id:
             description: The availability zone of the ENI is in.
             returned: always
-            type: string
+            type: str
             sample: cn-beijing-a
         name:
             description: interface name
-            type: string
+            type: str
             sample: my-eni
         creation_time:
             description: The time the eni was created.
             returned: always
-            type: string
+            type: str
             sample: "2018-06-25T04:08Z"
         description:
             description: interface description
-            type: string
+            type: str
             sample: My new network interface
         security_groups:
             description: list of security group ids
             type: list
-            sample: [ "sg-f8a8a9da", "sg-xxxxxx" ]
+            sample: ["sg-f8a8a9da", "sg-xxxxxx"]
         network_interface_id:
             description: network interface id
-            type: string
+            type: str
             sample: "eni-123456"
         id:
             description: network interface id (alias for network_interface_id)
-            type: string
+            type: str
             sample: "eni-123456"
         instance_id:
             description: Attached instance id
-            type: string
+            type: str
             sample: "i-123456"
         mac_address:
             description: interface's physical address
-            type: string
+            type: str
             sample: "00:00:5E:00:53:23"
         private_ip_address:
             description: primary ip address of this interface
-            type: string
+            type: str
             sample: 10.20.30.40
         private_ip_addresses:
             description: list of all private ip addresses associated to this interface
-            type: list of dictionaries
-            sample: [ { "primary_address": true, "private_ip_address": "10.20.30.40" } ]
+            type: list
+            sample: [{ "primary_address": true, "private_ip_address": "10.20.30.40" }]
         state:
             description: network interface status
-            type: string
+            type: str
             sample: "pending"
         vswitch_id:
             description: which vswitch the interface is bound
-            type: string
+            type: str
             sample: vsw-b33i43f3
         vpc_id:
             description: which vpc this network interface is bound
-            type: string
+            type: str
             sample: vpc-cj3ht4ogn
         type:
             description: type of the ENI
-            type: string
+            type: str
             sample: Secondary
         tags:
             description: Any tags assigned to the ENI.
@@ -190,7 +191,7 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        eni_ids=dict(type='list', aliases=['ids']),
+        eni_ids=dict(type='list', elements='str', aliases=['ids']),
         name_prefix=dict(type='str'),
         tags=dict(type='dict'),
         filters=dict(type='dict'),

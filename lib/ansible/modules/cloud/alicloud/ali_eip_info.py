@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_eip_info
-version_added: "2.9"
 short_description: Gather facts about Elastic IP addresses in Alibaba Cloud
 description:
     - Gather facts about Elastic IP addresses in Alibaba Cloud
@@ -39,6 +39,7 @@ options:
       - A list of EIP IDs that exist in your account.
     aliases: ['ids']
     type: list
+    elements: str
   name_prefix:
     description:
       - Use a name prefix to filter EIPs.
@@ -101,12 +102,12 @@ eips:
         allocation_id:
             description: The EIP id
             returned: always
-            type: string
+            type: str
             sample: "eip-2zee1nu68juox4"
         allocation_time:
             description: The time the EIP was created
             returned: always
-            type: string
+            type: str
             sample: "2018-12-31T12:12:52Z"
         bandwidth:
             description: Maximum bandwidth from the internet network
@@ -116,52 +117,52 @@ eips:
         charge_type:
             description: The eip charge type.
             returned: always
-            type: string
+            type: str
             sample: "PostPaid"
         description:
             description: interface description
             returned: always
-            type: string
+            type: str
             sample: "My new EIP"
         id:
             description: Allocated EIP id (alias for allocation_id)
             returned: always
-            type: string
+            type: str
             sample: "eip-2zee1nu68juox4"
         instance_id:
             description: Associated instance id
             returned: always
-            type: string
+            type: str
             sample: "i-123456"
         instance_region_id:
             description: The region id in which the associated instance
             returned: always
-            type: string
+            type: str
             sample: "cn-beijing"
         instance_type:
             description: Associated instance type
             returned: always
-            type: string
+            type: str
             sample: "EcsInstance"
         internet_charge_type:
             description: The EIP charge type.
             returned: always
-            type: string
+            type: str
             sample: "PayByTraffic"
         ip_address:
             description: The IP address of the EIP
             returned: always
-            type: string
+            type: str
             sample: "39.96.169.143"
         name:
             description: The EIP name
             returned: always
-            type: string
+            type: str
             sample: "from-ansible"
         status:
             description: The EIP status
             returned: always
-            type: string
+            type: str
             sample: "inuse"
         tags:
             description: Any tags assigned to the EIP.
@@ -191,7 +192,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(
         dict(
-            eip_ids=dict(type='list', aliases=['ids']),
+            eip_ids=dict(type='list', elements='str', aliases=['ids']),
             name_prefix=dict(type='str'),
             ip_address_prefix=dict(type='str', aliases=['ip_prefix']),
             filters=dict(type='dict'),

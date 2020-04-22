@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_rds_database_info
-version_added: "2.9"
 short_description: Gather info on database of Alibaba Cloud RDS.
 description:
      - Gather info on database of Alibaba Cloud RDS and Support use status, name_prefix
@@ -84,52 +84,52 @@ databases:
         character_set_name:
             description: The character of database.
             returned: always
-            type: string
+            type: str
             sample: utf8
         db_description:
             description: The description of database.
             returned: always
-            type: string
+            type: str
             sample: test for ansible
         db_instance_id:
             description: The id of rds instance.
             returned: always
-            type: string
+            type: str
             sample: rm-uf6wjk5xxxxxxx        
         db_name:
             description: The name of database.
             returned: always
-            type: string
+            type: str
             sample: ansible_test
         db_status:
             description: The status of database.
             returned: always
-            type: string
+            type: str
             sample: Creating
         description:
             description: alias of 'db_description'.
             returned: always
-            type: string
+            type: str
             sample: test for ansible
         engine:
             description: The engine of database.
             returned: always
-            type: string
+            type: str
             sample: MySQL
         name:
             description: alias of 'db_name'.
             returned: always
-            type: string
+            type: str
             sample: ansible_test
         status:
             description: alias of 'db_status'.
             returned: always
-            type: string
+            type: str
             sample: Creating
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect, vpc_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect
 
 HAS_FOOTMARK = False
 

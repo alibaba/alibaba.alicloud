@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_security_group
-version_added: "2.9"
 short_description: Manage Alibaba Cloud Security Group and its rules.
 description:
   - Create and Delete Security Group, Modify its description and add/remove rules.
@@ -46,6 +46,7 @@ options:
         uppercase/lowercase letter or a Chinese character and can contain numerals, "_", "." or "-".
         It cannot begin with http:// or https://.
         This is used in combination with C(vpc_id) to determine if a Securty Group already exists.
+    required: True
     aliases: ['group_name']
     type: str
   description:
@@ -66,6 +67,7 @@ options:
         "dest_cidr_ip", "source_cidr_ip", "source_group_id", "source_group_owner_account", "source_group_owner_id",
         "priority" and "description".
     type: list
+    elements: dict
   rules_egress:
     description:
       - List of hash/dictionaries firewall outbound rules to enforce in this group (see example). If none are supplied,
@@ -75,6 +77,7 @@ options:
         "dest_cidr_ip", "source_cidr_ip", "dest_group_id", "dest_group_owner_account", "dest_group_owner_id",
         "priority" and "description".
     type: list
+    elements: dict
   purge_rules:
     description:
       - Purge existing rules on security group that are not found in rules
@@ -156,22 +159,22 @@ group:
         description:
             description: The Security Group description.
             returned: always
-            type: string
+            type: str
             sample: "my ansible group"
         group_name:
             description: Security group name
             sample: "my-ansible-group"
-            type: string
+            type: str
             returned: always
         group_id:
             description: Security group id
             sample: sg-abcd1234
-            type: string
+            type: str
             returned: always
         id:
             description: Alias of "group_id".
             sample: sg-abcd1234
-            type: string
+            type: str
             returned: always
         inner_access_policy:
             description: Whether can access each other in one security group.
@@ -180,15 +183,17 @@ group:
             returned: always
         tags:
             description: Tags associated with the security group
-            sample:
-            Name: My Security Group
-            From: Ansible
             type: dict
+            sample:
+              - Name: My Security Group
+                From: Ansible
+                type: dict
+                returned: always
             returned: always
         vpc_id:
             description: ID of VPC to which the security group belongs
             sample: vpc-abcd1234
-            type: string
+            type: str
             returned: always
         permissions:
             description: Inbound rules associated with the security group.
@@ -343,17 +348,17 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', type='str', choices=['present', 'absent']),
-        name=dict(type='str', aliases=['group_name']),
+        name=dict(type='str', required=True, aliases=['group_name']),
         description=dict(type='str'),
         vpc_id=dict(type='str'),
         security_group_id=dict(type='str', aliases=['id', 'group_id']),
         tags=dict(type='dict', aliases=['group_tags']),
-        rules=dict(type='list'),
-        rules_egress=dict(type='list'),
+        rules=dict(type='list', elements='dict'),
+        rules_egress=dict(type='list', elements='dict'),
         purge_rules=dict(type='bool', default=True),
         purge_rules_egress=dict(type='bool', default=True),
         multi_ok=dict(type='bool', default=False),
-        recent=dict(type='bool', default=False),
+        recent=dict(type='bool', default=False)
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

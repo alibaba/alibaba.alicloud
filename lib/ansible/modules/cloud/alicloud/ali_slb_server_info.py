@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,12 +30,11 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_slb_server_info
-version_added: "2.9"
 short_description: Gather facts on backend server of Alibaba Cloud SLB.
 description:
      - This module fetches data from the Open API in Alicloud.
        The module must be called from within the SLB backend server itself.
-options:    
+options:
     load_balancer_id:
       description:
         - ID of server load balancer.
@@ -46,6 +46,7 @@ options:
         - A list of backend server listening ports.
       aliases: ["ports"]
       type: list
+      elements: int
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -100,10 +101,8 @@ load_balancer_id:
     ]
 '''
 
-import time
-import sys
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, slb_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, slb_connect
 
 try:
     from footmark.exception import SLBResponseError
@@ -131,7 +130,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         load_balancer_id=dict(required=True, aliases=['lb_id']),
-        listener_ports=dict(type='list', aliases=['ports']),
+        listener_ports=dict(type='list', elements='int', aliases=['ports']),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

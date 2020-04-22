@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_vswitch_info
-version_added: "2.9"
 short_description: Gather facts on vswitchs of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -46,6 +46,7 @@ options:
       - A list of vswitch IDs to gather facts for.
     aliases: ['subnet_ids', 'ids']
     type: list
+    elements: str
   cidr_block:
     description:
       - (Deprecated) The CIDR block representing the Vswitch e.g. 10.0.0.0/8. New option `cidr_prefix` instead.
@@ -83,7 +84,7 @@ EXAMPLES = '''
 
 - name: Gather facts about all VPC vswitches
   ali_vswitch_info:
-      
+
 - name: Gather facts about a particular VPC subnet using ID
   ali_vswitch_info:
     vswitch_ids: [vsw-00112233]
@@ -114,22 +115,22 @@ vswitches:
         id:
             description: alias of vswitch_id
             returned: always
-            type: string
+            type: str
             sample: vsw-b883b2c4
         cidr_block:
             description: The IPv4 CIDR of the VSwitch
             returned: always
-            type: string
+            type: str
             sample: "10.0.0.0/16"
         availability_zone:
             description: Availability zone of the VSwitch
             returned: always
-            type: string
+            type: str
             sample: cn-beijing-a
         state:
             description: state of the Subnet
             returned: always
-            type: string
+            type: str
             sample: available
         is_default:
             description: indicates whether this is the default VSwitch
@@ -144,33 +145,33 @@ vswitches:
         vpc_id:
             description: the id of the VPC where this VSwitch exists
             returned: always
-            type: string
+            type: str
             sample: vpc-67236184
         available_ip_address_count:
             description: number of available IPv4 addresses
             returned: always
-            type: string
+            type: str
             sample: 250
         vswitch_id:
             description: VSwitch resource id
             returned: always
-            type: string
+            type: str
             sample: vsw-b883b2c4
         subnet_id:
             description: alias of vswitch_id
             returned: always
-            type: string
+            type: str
             sample: vsw-b883b2c4
         vswitch_name:
             description: VSwitch resource name
             returned: always
-            type: string
+            type: str
             sample: my-vsw
         creation_time:
             description: The time the VSwitch was created.
             returned: always
-            type: string
-            sample: 2018-06-24T15:14:45Z
+            type: str
+            sample: '2018-06-24T15:14:45Z'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -192,7 +193,7 @@ def main():
         cidr_block=dict(type='str'),
         name_prefix=dict(type='str'),
         cidr_prefix=dict(type='str'),
-        vswitch_ids=dict(type='list', aliases=['ids', 'subnet_ids']),
+        vswitch_ids=dict(type='list', elements='str', aliases=['ids', 'subnet_ids']),
         filters=dict(type='dict'),
         tags=dict(type='dict')
     )
