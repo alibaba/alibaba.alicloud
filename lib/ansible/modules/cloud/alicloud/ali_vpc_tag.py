@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -27,7 +28,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_vpc_tag
-version_added: "2.9"
 short_description: Add tags for Alibaba Cloud resource.
 description:
     - Add tags to Alibaba Cloud resources
@@ -41,6 +41,7 @@ options:
     description:
       - A list of resource ids.
     required: True
+    elements: str
   resource_type:
     description:
       - The type of resource. 
@@ -89,7 +90,7 @@ tags:
         tags:
             description: Tags of resource.
             returned: always
-            type: complex
+            type: dict
             sample: {"tag_key": "tag_value"}
 '''
 
@@ -143,7 +144,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        resource_ids=dict(type='list', required=True),
+        resource_ids=dict(type='list', elements='str', required=True),
         resource_type=dict(type='str', default='vpc', choices=['vpc', 'vswitch', 'eip']),
         tags=dict(type='dict')
     ))

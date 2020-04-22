@@ -19,6 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
+
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -26,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_disk
-version_added: "2.9"
 short_description: Create, Attach, Detach or Delete a disk in Alicloud ECS
 description:
   - Creates and delete a ECS disk.starts, stops, restarts or terminates ecs instances.
@@ -40,7 +43,7 @@ options:
     type: str
   alicloud_zone:
     description:
-      - Aliyun availability zone ID which to launch the disk
+      - Aliyun availability zone ID which to launch the disk.
     required: true
     aliases: ['zone_id', 'zone']
     type: str
@@ -86,6 +89,7 @@ options:
         tag_key must be not null when tag_value isn't null.
     aliases: ['tags']
     type: list
+    elements: dict
   instance_id:
     description:
       - Ecs instance ID is used to attach the disk. The specified instance and disk must be in the same zone.
@@ -198,7 +202,7 @@ instance_id:
 
 import time
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
 HAS_FOOTMARK = False
 
@@ -244,7 +248,7 @@ def main():
         disk_name=dict(type='str', aliases=['name']),
         disk_category=dict(type='str', aliases=['disk_type', 'volume_type'], choices=['cloud', 'cloud_efficiency', 'cloud_ssd', 'cloud_essd'], default='cloud'),
         size=dict(type='int', aliases=['disk_size', 'volume_size']),
-        disk_tags=dict(type='list', aliases=['tags']),
+        disk_tags=dict(type='list', aliases=['tags'], elements='str'),
         snapshot_id=dict(type='str', aliases=['snapshot']),
         description=dict(type='str', aliases=['disk_description']),
         instance_id=dict(type='str', aliases=['instance']),

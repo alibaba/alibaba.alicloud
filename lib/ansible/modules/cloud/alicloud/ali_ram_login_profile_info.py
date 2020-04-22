@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_ram_login_profile_info
-version_added: "2.9"
 short_description: Gather info on ram login profile in Alibaba Cloud.
 description:
      - Gather info on ram login profile in Alibaba Cloud.
@@ -66,8 +66,8 @@ users:
         create_date:
             description: The creation time.
             returned: always
-            type: string
-            sample: 2015-01-23T12:33:18Z
+            type: str
+            sample: '2015-01-23T12:33:18Z'
         mfabind_required:
             description: Indicates that you must attach an MFA device.
             returned: always
@@ -81,7 +81,7 @@ users:
         user_name:
             description: The username.
             returned: always
-            type: string
+            type: str
             sample: Alice
 '''
 from ansible.module_utils.basic import AnsibleModule

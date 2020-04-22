@@ -19,6 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
+
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -26,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_image
-version_added: "2.9"
 short_description: Create or delete user-defined image
 description:
     - Create user-defined image from ECS instance, snapshot or disk_mapping; delete user-defined image 
@@ -77,7 +80,8 @@ options:
       disk_size:
         description:
           - Size of the disk, in the range [5-2000GB]
-    type: list 
+    type: list
+    elements: dict
   wait:
     description:
       - wait for the Image to be available.     
@@ -167,7 +171,7 @@ image_id:
 '''
 import time
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
 HAS_FOOTMARK = False
 
@@ -280,7 +284,7 @@ def main():
         description=dict(type='str'),
         image_name=dict(type='str', aliases=['name']),
         image_version=dict(type='str', aliases=['version']),
-        disk_mapping=dict(type='list'),
+        disk_mapping=dict(type='list', elements='dict'),
         instance_id=dict(aliases=['instance']),
         state=dict(default='present', choices=['present', 'absent'], type='str'),
         wait=dict(default=False, type='bool'),

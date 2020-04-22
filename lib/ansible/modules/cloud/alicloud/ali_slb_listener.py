@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_slb_listener
-version_added: "2.9"
 short_description: Create, Delete, Start or Stop Server Load Balancer Listener in ECS
 description:
   - Create, Delete, Start or Stop Server Load Balancer Listener in ECS
@@ -54,20 +54,19 @@ options:
     type: str
   listener_port:
     description:
-      - Port used by the Server Load Balancer instance frontend
+      - Port used by the Server Load Balancer instance frontend, Value(1-65535).
     required: true
-    choices: [1~65535]
     type: int
     aliases: ['frontend_port']
   bandwidth:
     description:
-      - Bandwidth peak of Listener. It is required when C(present)
-    choices: [-1/1-1000]
+      - Bandwidth peak of Listener. It is required when C(present), Value(-1|1-5120)。
+      - If C(bandwidth=-1), For public network load balancing instances that are charged by traffic,
+        you can set the peak bandwidth to -1, which means that the peak bandwidth is not limited.
     type: int
   backend_server_port:
     description:
-      - Port used by the Server Load Balancer instance backend port
-    choices: [1~65535]
+      - Port used by the Server Load Balancer instance backend port, Value(1-65535).
     aliases: ['backend_port']
     type: int
   scheduler:
@@ -89,8 +88,7 @@ options:
     type: str
   cookie_timeout:
     description:
-      - Cookie timeout, Required when C(sticky_session='on', sticky_session_type='insert')
-    choices: [1~86400]
+      - Cookie timeout, Required when C(sticky_session='on', sticky_session_type='insert'), Value(1~86400)
     type: str
   cookie:
     description:
@@ -98,9 +96,8 @@ options:
     type: str
   persistence_timeout:
     description:
-      - Timeout of connection persistence.
+      - Timeout of connection persistence. Value(0-3600)
     default: 0
-    choices: [0~3600]
     type: int
   health_check:
     description:
@@ -126,15 +123,14 @@ options:
     type: str
   health_check_connect_port:
     description:
-      - Port used for health check. Required when C(health_check='on'). Default to C(backend_server_port).
-    choices: [1~65535]
+      - Port used for health check. Required when C(health_check='on'). Default to C(backend_server_port). Value(1~65535)
     type: int
   healthy_threshold:
     description:
       - Threshold determining the result of the health check is success.
         Namely, after how many successive successful health checks,
         the health check result of the backend server is changed from fail to success. Required when C(health_check='on').
-    choices: [1-10]
+        Value(1-10)
     default: 3
     type: int
   unhealthy_threshold:
@@ -142,19 +138,17 @@ options:
       - Threshold determining the result of the health check is fail.
         Namely, after how many successive failed health checks,
         the health check result of the backend server is changed from success to fail. Required when C(health_check='on').
-    choices: [1-10]
+        Value(1-10)
     default: 3
     type: int
   health_check_timeout:
     description:
-      - Maximum timeout of each health check response. Required when C(health_check='on').
-    choices: [1-300]
+      - Maximum timeout of each health check response. Required when C(health_check='on'). Value(1-300)
     default: 5
     type: int
   health_check_interval:
     description:
-      - Time interval of health checks. Required when C(health_check='on').
-    choices: [1-50]
+      - Time interval of health checks. Required when C(health_check='on'). Value(1-50)
     default: 2
     type: int
   health_check_http_code:
@@ -243,11 +237,8 @@ listener:
     }
 '''
 
-import time
-import sys
-from ast import literal_eval
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, slb_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, slb_connect
 
 
 HAS_ECS = False
@@ -284,28 +275,28 @@ def get_info(obj):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        listener_port=dict(type='int', required=True, choices=[i for i in range(1, 65536)], aliases=['frontend_port']),
+        listener_port=dict(type='int', required=True, aliases=['frontend_port']),
         state=dict(type='str', required=True, choices=['present', 'absent', 'stopped', 'running']),
         load_balancer_id=dict(type='str', required=True, aliases=['id']),
-        backend_server_port=dict(type='int', choices=[i for i in range(1, 65536)], aliases=['backend_port']),
-        bandwidth=dict(type='int', choices=([i for i in range(1, 1001)]).append(-1)),
+        backend_server_port=dict(type='int', aliases=['backend_port']),
+        bandwidth=dict(type='int'),
         sticky_session=dict(type='str', choices=['on', 'off'], default='off'),
         protocol=dict(type='str', choices=['http', 'https', 'tcp', 'udp']),
-        health_check=dict(type='str', default= 'on', choices=['on', 'off']),
+        health_check=dict(type='str', default='on', choices=['on', 'off']),
         scheduler=dict(type='str', default='wrr', choices=['wrr', 'wlc']),
         sticky_session_type=dict(type='str', choices=['insert', 'server']),
-        cookie_timeout=dict(type='str', choices=[i for i in range(1, 86401)]),
+        cookie_timeout=dict(type='str'),
         cookie=dict(type='str'),
         health_check_domain=dict(type='str'),
         health_check_uri=dict(type='str', default='/'),
-        health_check_connect_port=dict(type='int', choices=([i for i in range(1, 65536)]).append(-520)),
-        healthy_threshold=dict(type='int', default=3, choices=[i for i in range(1, 11)]),
-        unhealthy_threshold=dict(type='int', default=3, choices=[i for i in range(1, 11)]),
-        health_check_timeout=dict(type='int', default=5, choices=[i for i in range(1, 51)]),
-        health_check_interval=dict(type='int', default=2, choices=[i for i in range(1, 6)]),
-        health_check_http_code=dict(type='str', default='http_2xx', choices=['http_2xx','http_3xx', 'http_4xx', 'http_5xx']),
+        health_check_connect_port=dict(type='int'),
+        healthy_threshold=dict(type='int', default=3),
+        unhealthy_threshold=dict(type='int', default=3),
+        health_check_timeout=dict(type='int', default=5),
+        health_check_interval=dict(type='int', default=2),
+        health_check_http_code=dict(type='str', default='http_2xx', choices=['http_2xx', 'http_3xx', 'http_4xx', 'http_5xx']),
         vserver_group_id=dict(type='str'),
-        persistence_timeout=dict(type='int', default=0, choices=[i for i in range(0, 3601)]),
+        persistence_timeout=dict(type='int', default=0),
         server_certificate_id=dict(type='str'),
         health_check_type=dict(type='str', default='tcp', choices=['tcp', 'http']),
     ))

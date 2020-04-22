@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -33,7 +34,6 @@ short_description: Create and optionally attach an Elastic Network Interface (EN
 description:
     - Create and optionally attach an Elastic Network Interface (ENI) to an instance. If an ENI ID or private ip with
       vswitch id is provided, the existing ENI (if any) will be modified.
-version_added: "2.9"
 options:
   state:
     description:
@@ -73,6 +73,7 @@ options:
     description:
       - List of security group ids associated with the interface.
     type: list
+    elements: str
   attached:
     description:
       - Specifies if network interface should be attached or detached from instance. If ommited, attachment status
@@ -122,7 +123,7 @@ EXAMPLES = '''
       - sg-xxxxxx1
       - sg-xxxxxx2
     attached: True
- 
+
 - name: Update an ENI
   ali_eni:
     eni_id: eni-xxxxxxx
@@ -168,25 +169,25 @@ interface:
     contains:
         associated_public_ip:
             description: The public IP address associated with the ENI.
-            type: string
+            type: str
             sample: 42.1.10.1
         zone_id:
             description: The availability zone of the ENI is in.
             returned: always
-            type: string
+            type: str
             sample: cn-beijing-a
         name:
             description: interface name
-            type: string
+            type: str
             sample: my-eni
         creation_time:
             description: The time the eni was created.
             returned: always
-            type: string
+            type: str
             sample: "2018-06-25T04:08Z"
         description:
             description: interface description
-            type: string
+            type: str
             sample: My new network interface
         security_groups:
             description: list of security group ids
@@ -194,43 +195,43 @@ interface:
             sample: ["sg-f8a8a9da", "sg-xxxxxx"]
         network_interface_id:
             description: network interface id
-            type: string
+            type: str
             sample: "eni-123456"
         id:
             description: network interface id (alias for network_interface_id)
-            type: string
+            type: str
             sample: "eni-123456"
         instance_id:
             description: Attached instance id
-            type: string
+            type: str
             sample: "i-123456"
         mac_address:
             description: interface's physical address
-            type: string
+            type: str
             sample: "00:00:5E:00:53:23"
         private_ip_address:
             description: primary ip address of this interface
-            type: string
+            type: str
             sample: 10.20.30.40
         private_ip_addresses:
             description: list of all private ip addresses associated to this interface
-            type: list of dictionaries
+            type: list
             sample: [{"primary_address": true, "private_ip_address": "10.20.30.40"}]
         state:
             description: network interface status
-            type: string
+            type: str
             sample: "pending"
         vswitch_id:
             description: which vswitch the interface is bound
-            type: string
+            type: str
             sample: vsw-b33i43f3
         vpc_id:
             description: which vpc this network interface is bound
-            type: string
+            type: str
             sample: vpc-cj3ht4ogn
         type:
             description: type of the ENI
-            type: string
+            type: str
             sample: Secondary
         tags:
             description: Any tags assigned to the ENI.
@@ -285,7 +286,7 @@ def main():
             vswitch_id=dict(type='str', aliases=['subnet_id']),
             description=dict(type='str'),
             name=dict(type='str'),
-            security_groups=dict(type='list'),
+            security_groups=dict(type='list', elements='str'),
             state=dict(default='present', choices=['present', 'absent']),
             attached=dict(default=False, type='bool'),
             tags=dict(type='dict'),

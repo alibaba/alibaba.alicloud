@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_image_info
-version_added: "2.9"
 short_description: Gather facts on images of Alibaba Cloud ECS.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -41,11 +41,13 @@ options:
         - A list of ECS image ids.
       aliases: ["ids"]
       type: list
+      elements: str
     image_names:
       description:
         - A list of ECS image names.
       aliases: ["names"]
       type: list
+      elements: str
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -163,7 +165,7 @@ total:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, ecs_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
 HAS_FOOTMARK = False
 
@@ -209,8 +211,8 @@ def get_info(image):
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        image_ids=dict(type='list', aliases=['ids']),
-        image_names=dict(type='list', aliases=['names']),
+        image_ids=dict(type='list', elements='str', aliases=['ids']),
+        image_names=dict(type='list', elements='str', aliases=['names']),
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

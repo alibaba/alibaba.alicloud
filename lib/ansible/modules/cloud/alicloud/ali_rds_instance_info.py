@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_rds_instance_info
-version_added: "2.9"
 short_description: Gather info on rds instance in Alibaba Cloud.
 description:
      - Gather info on rds instance in Alibaba Cloud and Support use tags, name_prefix to
@@ -43,6 +43,7 @@ options:
     description:
       - Use instance ids to filter rds.
     type: list
+    elements: str
   tags:
     description:
       - A hash/dictionaries of rds tags. C({"key":"value"}).
@@ -74,57 +75,57 @@ instances:
         db_instance_class:
             description: The type of the instance.
             returned: always
-            type: string
+            type: str
             sample: rds.mysql.t1.small
         db_instance_description:
             description: The description of the instance.
             returned: always
-            type: string
+            type: str
             sample: ansible_test_rds
         db_instance_id:
             description: The ID of the instance.
             returned: always
-            type: string
+            type: str
             sample: rm-uf6wjk5xxxxxxxxxx
         db_instance_net_type:
             description: The network type of the instance.
             returned: always
-            type: string
+            type: str
             sample: Internet
         db_instance_status:
             description: The status of the instance.
             returned: always
-            type: string
+            type: str
             sample: Running
         db_instance_type:
             description: The type of the instance role.
             returned: always
-            type: string
+            type: str
             sample: Primary
         engine:
             description: The type of the database.
             returned: always
-            type: string
+            type: str
             sample: MySQL
         engine_version:
             description: The version of the database.
             returned: always
-            type: string
+            type: str
             sample: 5.6
         id:
             description: alias of 'db_instance_id'.
             returned: always
-            type: string
+            type: str
             sample: rm-uf6wjk5xxxxxxxxxx
         type:
             description: alias of 'db_instance_type'.
             returned: always
-            type: string
+            type: str
             sample: Primary
         instance_network_type:
             description: The network type of the instance.
             returned: always
-            type: string
+            type: str
             sample: VPC
         name:
             description: alias of 'db_instance_description'.
@@ -134,42 +135,42 @@ instances:
         pay_type:
             description: The billing method of the instance.
             returned: always
-            type: string
+            type: str
             sample: Postpaid
         resource_group_id:
             description: The ID of the resource group.
             returned: always
-            type: string
+            type: str
             sample: rg-acfmyxxxxxxx
         status:
             description: alias of 'db_instance_status'
             returned: always
-            type: string
+            type: str
             sample: Running
         vpc_cloud_instance_id:
             description: The ID of the VPC instance
             returned: always
-            type: string
+            type: str
             sample: rm-uf6wjk5xxxxxxx
         vpc_id:
             description: The ID of the VPC.
             returned: always
-            type: string
+            type: str
             sample: vpc-uf6f7l4fg90xxxxxxx
         vswitch_id:
             description: The ID of the VSwitch.
             returned: always
-            type: string
+            type: str
             sample: vsw-uf6adz52c2pxxxxxxx
         lock_mode:
             description: The lock mode of the instance.
             returned: always
-            type: string
+            type: str
             sample: Unlock
         connection_mode:
             description: The access mode of the instance.
             returned: always
-            type: string
+            type: str
             sample: Standard
         account_max_quantity:
             description: The maximum number of accounts that can be created in an instance.
@@ -179,42 +180,42 @@ instances:
         account_type:
             description: The type of the account.
             returned: always
-            type: string
+            type: str
             sample: Mix
         auto_upgrade_minor_version:
             description: The method of upgrading an instance to a minor version.
             returned: always
-            type: string
+            type: str
             sample: Auto
         availability_value:
             description: The availability of the instance.
             returned: always
-            type: string
+            type: str
             sample: 100.0%
         category:
             description: The edition (series) of the instance.
             returned: always
-            type: string
+            type: str
             sample: Basic
         connection_string:
             description: The private IP address of the instance.
             returned: always
-            type: string
+            type: str
             sample: rm-uf6wjk5xxxxxxxxxx.mysql.rds.aliyuncs.com
         creation_time:
             description: The time when the instance is created
             returned: always
-            type: string
-            sample: 2011-05-30T12:11:04Z
+            type: str
+            sample: '2011-05-30T12:11:04Z'
         current_kernel_version:
             description: The current kernel version.
             returned: always
-            type: string
+            type: str
             sample: rds_20181010
         db_instance_class_type:
             description: The instance type (specifications).
             returned: always
-            type: string
+            type: str
             sample: rds.mys2.small
         db_instance_cpu:
             description: The count of the instance cpu.
@@ -229,7 +230,7 @@ instances:
         db_instance_storage:
             description: The type of the instance.
             returned: always
-            type: string
+            type: str
             sample: rds.mysql.t1.small
         db_instance_storage_type:
             description: The storage capacity of the instance.
@@ -244,18 +245,18 @@ instances:
         dispense_mode:
             description: The allocation mode.
             returned: always
-            type: string
+            type: str
             sample: ClassicDispenseMode
         expire_time:
             description: The expiration time.
             returned: always
-            type: string
-            sample: 2019-03-27T16:00:00Z
+            type: str
+            sample: '2019-03-27T16:00:00Z'
         maintain_time:
             description: The maintenance period of the instance.
             returned: always
-            type: string
-            sample: 00:00Z-02:00Z
+            type: str
+            sample: '00:00Z-02:00Z'
         max_connections:
             description: The maximum number of concurrent connections.
             returned: always
@@ -269,12 +270,12 @@ instances:
         origin_configuration:
             description: The type of the instance.
             returned: always
-            type: string
+            type: str
             sample: rds.mysql.t1.small
         port:
             description: The private port of the instance.
             returned: always
-            type: string
+            type: str
             sample: 3306
         read_only_dbinstance_ids:
             description: The IDs of read-only instances attached to the master instance.
@@ -295,7 +296,7 @@ instances:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect, vpc_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect
 
 HAS_FOOTMARK = False
 
@@ -310,7 +311,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         name_prefix=dict(type='str'),
-        db_instance_ids=dict(type='list'),
+        db_instance_ids=dict(type='list', elements='str'),
         tags=dict(type='dict')
     ))
     module = AnsibleModule(argument_spec=argument_spec)

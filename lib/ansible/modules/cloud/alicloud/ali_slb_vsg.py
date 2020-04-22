@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_slb_vsg
-version_added: "2.9"
 short_description: Create, Delete VServerGroup and Modify its name or backend servers.
 description:
   - Create and delete a VServer group
@@ -63,6 +63,7 @@ options:
           Currently the valid keys including "server_ids", "server_id", "port", "weight" and "type".
         - If you have multiple servers to add and they have the same port, weight, type, you can use the server_ids parameter, which is a list of ids.
       type: list
+      elements: dict
     purge_backend_servers:
       description:
         - Purge existing backend servers or ENIs on VServer group that are not found in backend_servers.
@@ -145,9 +146,8 @@ vserver_group:
         address:
             description: The IP address of the loal balancer
             returned: always
-            type: string
+            type: str
             sample: "47.94.26.126"
-
         backend_servers:
             description: The load balancer's backend servers
             returned: always
@@ -161,12 +161,12 @@ vserver_group:
                 server_id:
                     description: The backend server id
                     returned: always
-                    type: string
+                    type: str
                     sample: "i-vqunci342"
                 type:
                     description: The backend server type, ecs or eni
                     returned: always
-                    type: string
+                    type: str
                     sample: "ecs"
                 weight:
                     description: The backend server weight
@@ -176,27 +176,27 @@ vserver_group:
         id:
             description: The ID of the virtual server group was created. Same as vserver_group_id.
             returned: always
-            type: string
+            type: str
             sample: "rsp-2zehblhcv"
         vserver_group_id:
             description: The ID of the virtual server group was created.
             returned: always
-            type: string
+            type: str
             sample: "rsp-2zehblhcv"
         vserver_group_name:
             description: The name of the virtual server group was created.
             returned: always
-            type: string
+            type: str
             sample: "ansible-ali_slb_vsg"
         name:
             description: The name of the virtual server group was created.
             returned: always
-            type: string
+            type: str
             sample: "ansible-ali_slb_vsg"
         tags:
             description: The load balancer tags
             returned: always
-            type: complex
+            type: dict
             sample: {}
 '''
 
@@ -291,8 +291,8 @@ def main():
     argument_spec.update(dict(
         state=dict(type='str', default='present', choices=['present', 'absent']),
         load_balancer_id=dict(type='str', required=True, aliases=['lb_id']),
-        vserver_group_name=dict(type='str', aliases=['group_name', 'name']),
-        backend_servers=dict(type='list'),
+        vserver_group_name=dict(type='str', required=True, aliases=['group_name', 'name']),
+        backend_servers=dict(type='list', elements='dict'),
         vserver_group_id=dict(type='str', aliases=['group_id']),
         purge_backend_servers=dict(type='bool', default=False),
         multi_ok=dict(type='bool', default=False)

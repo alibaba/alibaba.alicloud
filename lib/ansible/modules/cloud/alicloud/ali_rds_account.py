@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_rds_account
-version_added: "2.9"
 short_description: Create, Delete, Modyfy, Reset rds account, Grant or Revoke privilege in Alibaba Cloud.
 description:
   - This module allows the user to manage rds account. Includes support for creating, deleting,
@@ -86,6 +86,7 @@ options:
     description:
       - The names of the database that the account needs to access.
     type: list
+    elements: str
   account_privilege:
     description:
       - The account privilege. For MySQL and MariaDB, the values are ReadWrite, ReadOnly, DDLOnly, and DMLOnly.
@@ -155,52 +156,52 @@ account:
         account_description:
             description: Account remarks
             returned: always
-            type: string
+            type: str
             sample: account from ansible
         account_name:
             description: The name of account.
             returned: always
-            type: string
+            type: str
             sample: account
         account_type:
             description: Privilege type of account.
             returned: always
-            type: string
+            type: str
             sample: Normal
         db_instance_id:
             description: The ID of the instance to which the account belongs.
             returned: always
-            type: string
+            type: str
             sample: rm-2zeib35bbexxxxxx
         name:
             description: alias of account_name.
             returned: always
-            type: string
+            type: str
             sample: account
         account_status:
             description: The status of the account.
             returned: always
-            type: string
+            type: str
             sample: Available
         account_type:
             description: The type of the account.
             returned: always
-            type: string
+            type: str
             sample: Super
         status:
             description: alias of status.
             returned: always
-            type: string
+            type: str
             sample: Available
         type:
             description: alias of type.
             returned: always
-            type: string
+            type: str
             sample: Super
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, rds_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, rds_connect
 
 HAS_FOOTMARK = False
 
@@ -215,7 +216,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        db_names=dict(type='list'),
+        db_names=dict(type='list', elements='str'),
         db_instance_id=dict(type='str', aliases=['instance_id'], required=True),
         account_name=dict(type='str', aliases=['name'], required=True),
         account_password=dict(type='str', aliases=['password']),

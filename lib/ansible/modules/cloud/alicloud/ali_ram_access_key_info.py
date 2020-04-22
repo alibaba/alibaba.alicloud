@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_ram_access_key_info
-version_added: "2.9"
 short_description: List the AccessKeys of a RAM user in Alibaba Cloud.
 description:
      - List the AccessKeys of a RAM user.
@@ -69,17 +69,17 @@ users:
         access_key_id:
             description: The AccessKeyId.
             returned: always
-            type: string
+            type: str
             sample: 0wNEpMMlzy7s****
         create_date:
             description: The date and time when the AccessKey was created.
             returned: always
-            type: string
-            sample: 2015-01-23T12:33:18Z
+            type: str
+            sample: '2015-01-23T12:33:18Z'
         status:
             description: The status of the AccessKey.
             returned: always
-            type: string
+            type: str
             sample: Active
 '''
 

@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_vpc
-version_added: "2.9"
 short_description: Configure Alibaba Cloud virtual private cloud(VPC)
 description:
     - Create, Delete Alicloud virtual private cloud(VPC).
@@ -63,11 +63,13 @@ options:
     description:
       - The primary CIDR of the VPC. This is used in conjunction with the C(name) to ensure idempotence.
     aliases: ['cidr']
+    required: True
     type: str
   user_cidrs:
     description:
       - List of user custom cidr in the VPC. It no more than three.
     type: list
+    elements: str
   multi_ok:
     description:
       - By default the module will not create another VPC if there is another VPC with the same name and CIDR block.
@@ -92,15 +94,15 @@ options:
     default: False
     type: bool
 notes:
-  - There will be launch a virtual router along with creating a vpc successfully.
-  - There is only one virtual router in one vpc and one route table in one virtual router.
+    - There will be launch a virtual router along with creating a vpc successfully.
+    - There is only one virtual router in one vpc and one route table in one virtual router.
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.14.1"
 extends_documentation_fragment:
     - alicloud
 author:
-  - "He Guimin (@xiaozhu36)"
+    - "He Guimin (@xiaozhu36)"
 """
 
 EXAMPLES = """
@@ -133,22 +135,22 @@ vpc:
         cidr_block:
             description: The CIDR of the VPC
             returned: always
-            type: string
+            type: str
             sample: 10.0.0.0/8
         creation_time:
             description: The time the VPC was created.
             returned: always
-            type: string
-            sample: 2018-06-24T15:14:45Z
+            type: str
+            sample: '2018-06-24T15:14:45Z'
         description:
             description: The VPC description.
             returned: always
-            type: string
+            type: str
             sample: "my ansible vpc"
         id:
             description: alias of 'vpc_id'.
             returned: always
-            type: string
+            type: str
             sample: vpc-c2e00da5
         is_default:
             description: indicates whether this is the default VPC
@@ -158,12 +160,12 @@ vpc:
         state:
             description: state of the VPC
             returned: always
-            type: string
+            type: str
             sample: available
         tags:
             description: tags attached to the VPC, includes name
             returned: always
-            type: complex
+            type: dict
             sample:
         user_cidrs:
             description: The custom CIDR of the VPC
@@ -173,17 +175,17 @@ vpc:
         vpc_id:
             description: VPC resource id
             returned: always
-            type: string
+            type: str
             sample: vpc-c2e00da5
         vpc_name:
             description: Name of the VPC
             returned: always
-            type: string
+            type: str
             sample: my-vpc
         vrouter_id:
             description: The ID of virtual router which in the VPC
             returned: always
-            type: string
+            type: str
             sample: available
         vswitch_ids:
             description: List IDs of virtual switch which in the VPC
@@ -242,9 +244,9 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(type='str', aliases=['cidr']),
-        user_cidrs=dict(type='list'),
-        name=dict(type='str', aliases=['vpc_name']),
+        cidr_block=dict(type='str', required=True, aliases=['cidr']),
+        user_cidrs=dict(type='list', elements='str'),
+        name=dict(type='str', required=True, aliases=['vpc_name']),
         vpc_id=dict(type='str', aliases=['id']),
         multi_ok=dict(type='bool', default=False),
         description=dict(type='str'),

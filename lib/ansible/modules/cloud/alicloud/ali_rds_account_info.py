@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_rds_account_info
-version_added: "2.9"
 short_description: Gather info on RDS accounts of Alibaba Cloud.
 description:
      - Gather info on RDS accounts of Alibaba Cloud and Support to use name_prefix to filter accounts.
@@ -74,47 +74,47 @@ rds_accounts:
         account_description:
             description: Account remarks
             returned: always
-            type: string
+            type: str
             sample: account from ansible
         account_name:
             description: The name of account.
             returned: always
-            type: string
+            type: str
             sample: account
         account_type:
             description: Privilege type of account.
             returned: always
-            type: string
+            type: str
             sample: Normal
         db_instance_id:
             description: The ID of the instance to which the account belongs.
             returned: always
-            type: string
+            type: str
             sample: rm-2zeib35bbexxxxxx
         name:
             description: alias of account_name.
             returned: always
-            type: string
+            type: str
             sample: account
         account_status:
             description: The status of the account.
             returned: always
-            type: string
+            type: str
             sample: Available
         account_type:
             description: The type of the account.
             returned: always
-            type: string
+            type: str
             sample: Super
         status:
             description: alias of account_status.
             returned: always
-            type: string
+            type: str
             sample: Available
         type:
             description: alias of account_type.
             returned: always
-            type: string
+            type: str
             sample: Super
 '''
 

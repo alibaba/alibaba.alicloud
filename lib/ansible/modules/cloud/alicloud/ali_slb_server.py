@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_slb_server
-version_added: "2.9"
 short_description: Add or remove a list of backend servers to/from a specified SLB
 description:
   - Returns information about the backend servers. Will be marked changed when called only if state is changed.
@@ -53,6 +53,7 @@ options:
     required: true
     aliases: ['servers']
     type: list
+    elements: dict
     suboptions:
       server_id:
         description:
@@ -71,7 +72,7 @@ options:
         description:
           - The type of backend server in the load balancer.
         choices: ['ecs', 'eni']
-        default: 'ecs'     
+        default: 'ecs'
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.19.0"
@@ -153,10 +154,8 @@ load_balancer_id:
     ]
 '''
 
-import time
-import sys
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import get_acs_connection_info, ecs_argument_spec, slb_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, slb_connect
 
 try:
     from footmark.exception import SLBResponseError
@@ -328,7 +327,7 @@ def validate_backend_server_info(module, backend_servers, default_weight):
 
         for k in backend_server:
             if k not in VALID_PARAMS:
-                module.fail_json(msg='Invalid backend_server parameter \'{}\''.format(k))
+                module.fail_json(msg='Invalid backend_server parameter {}'.format(k))
 
         if "server_id" not in backend_server and "server_ids" not in backend_server:
             module.fail_json(msg="'server_id' or 'server_ids': required field is set")
@@ -370,7 +369,7 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(choices=['present', 'absent'], default='present', type='str'),
-        backend_servers=dict(required=True, type='list', aliases=['servers']),
+        backend_servers=dict(required=True, type='list', elements='dict', aliases=['servers']),
         load_balancer_id=dict(required=True, aliases=['lb_id'], type='str'),
     ))
 

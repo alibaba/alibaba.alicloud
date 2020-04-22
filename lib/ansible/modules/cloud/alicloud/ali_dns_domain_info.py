@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ali_dns_domain_info
-version_added: "2.9"
 short_description: Gather info on dns of Alibaba Cloud.
 description:
      - This module fetches data from the Open API in Alicloud.
@@ -38,7 +38,6 @@ options:
   domain_name:
     description:
       -  The name to give your DNS.
-    required: True
     aliases: ['name']
     type: str
   filters:
@@ -67,7 +66,7 @@ EXAMPLES = """
 
 RETURN = '''
 dns:
-    description: info about the DNS that was created or deleted
+    description: info about the DNS that was created or deleted.
     returned: always
     type: complex
     contains:
@@ -87,17 +86,17 @@ dns:
         domain_name:
             description: The name of domain.
             returned: always
-            type: string
+            type: str
             sample: ansiblexxx.abc
         name:
             description: alias of 'domain_name'.
             returned: always
-            type: string
+            type: str
             sample: ansiblexxx.abc
         id:
             description: alias of 'domain_id'.
             returned: always
-            type: string
+            type: str
             sample: dns-c2e00da5
         puny_code:
             description: Chinese domain name punycode code, English domain name returned empty
@@ -111,7 +110,7 @@ dns:
         remark:
             description: A comment for dns
             returned: always
-            type: string
+            type: str
             sample: ansible_test_dns_domain
         starmark:
             description: Whether to query the domain name star.
@@ -121,17 +120,17 @@ dns:
         domain_id:
             description: DNS resource id
             returned: always
-            type: string
+            type: str
             sample: dns-c2e00da5
         version_code:
             description: Cloud resolution version Code
             returned: always
-            type: string
+            type: str
             sample: mianfei
         version_name:
             description: Cloud resolution product name
             returned: always
-            type: string
+            type: str
             sample: Alibaba Cloud DNS
 '''
 

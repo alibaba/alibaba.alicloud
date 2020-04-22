@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -28,7 +29,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_market_product_info
-version_added: "2.9"
 short_description: Gather info on Market product of Alibaba Cloud.
 description:
      - Gather info on Market product of Alibaba Cloud.
@@ -36,32 +36,42 @@ options:
   name_prefix:
     description:
       - Use a product name prefix to filter products.
+    type: str
   search_term:
     description:
       - Search term in this query.
+    type: str
   sort:
     description:
       - This field determines how to sort the filtered results.
     choices: ['user_count-desc', 'created_on-desc', 'price-desc', 'score-desc']
+    type: str
   category_id:
     description:
       - The Category ID of products. For more information. see more (https://help.aliyun.com/document_detail/89834.htm).
+    type: str
   product_type:
     description:
       - The type of products.
     choices: ["APP", "SERVICE", "MIRROR", "DOWNLOAD", "API_SERVICE"]
+    type: str
   suggested_price:
     description:
       - The suggested price of the product.
+    type: float
   supplier_id:
     description:
       - The supplier id of the product.
+    type: str
   supplier_name_keyword:
     description:
       - The supplier name keyword of the product.
+    type: str
   ids:
     description:
       - A list of product code.
+    type: list
+    elements: str
 
 author:
     - "He Guimin (@xiaozhu36)"
@@ -93,12 +103,12 @@ products:
         code:
             description: The code of the product.
             returned: always
-            type: string
+            type: str
             sample: cmjj016644
         name:
             description: The name of the product.
             returned: always
-            type: string
+            type: str
             sample: WordPress博客环境(Centos6.8 64位 )
         score:
             description: The score of the product.
@@ -108,12 +118,12 @@ products:
         short_description:
             description: The short description of the product.
             returned: always
-            type: string
+            type: str
             sample: "集成Nginx1.13、PHP5.6、PHPMYADMIN4.6.6、MySQL 5.6.34、WordPress4.7.3"            
         type:
             description: The type of the product.
             returned: always
-            type: string
+            type: str
             sample: MIRROR
         images:
             description: The type of the product.
@@ -123,17 +133,17 @@ products:
                 - display_name:
                       description: The display name of image.
                       returned: always
-                      type: string
+                      type: str
                       sample: 华北 1_V1.1
                 - type:
                       description: The type of the image.
                       returned: always
-                      type: string
+                      type: str
                       sample: single_string
                 - value:
                       description: The id of image.
                       returned: always
-                      type: string
+                      type: str
                       sample: m-2ze0ua7jvif73kxxxxx
 '''
 from ansible.module_utils.basic import AnsibleModule
@@ -159,7 +169,7 @@ def main():
         suggested_price=dict(type='float'),
         supplier_id=dict(type='str'),
         supplier_name_keyword=dict(type='str'),
-        ids=dict(typr='list')
+        ids=dict(typr='list', elements='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

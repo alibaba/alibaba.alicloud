@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
@@ -29,7 +30,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 module: ali_security_group_info
-version_added: "2.9"
 short_description: Gather facts on security group of Alibaba Cloud ECS.
 description:
   - This module fetches data from the Open API in Alicloud.
@@ -41,6 +41,7 @@ options:
       - A list of ECS security group IDs.
     aliases: ["ids"]
     type: list
+    elements: str
   group_name:
     description:
       - (Deprecated) Name of the security group. New option `name_prefix` instead.
@@ -81,7 +82,7 @@ EXAMPLES = '''
   ali_security_group_info:
     filters:
       vpc-id: vpc-12345678
-      
+
 - name: Gather facts about a security group using a name_prefix
   ali_security_group_info:
     name_prefix: example
@@ -113,22 +114,22 @@ groups:
         description:
             description: The Security Group description.
             returned: always
-            type: string
+            type: str
             sample: "my ansible group"
         group_name:
             description: Security group name.
             sample: "my-ansible-group"
-            type: string
+            type: str
             returned: always
         group_id:
             description: Security group id.
             sample: sg-abcd1234
-            type: string
+            type: str
             returned: always
         id:
             description: Alias of "group_id".
             sample: sg-abcd1234
-            type: string
+            type: str
             returned: always
         inner_access_policy:
             description: Whether can access each other in one security group.
@@ -138,14 +139,14 @@ groups:
         tags:
             description: Tags associated with the security group.
             sample:
-            Name: My Security Group
-            From: Ansible
+              - Name: My Security Group
+                From: Ansible
             type: dict
             returned: always
         vpc_id:
             description: ID of VPC to which the security group belongs.
             sample: vpc-abcd1234
-            type: string
+            type: str
             returned: always
         permissions:
             description: Inbound rules associated with the security group.
@@ -210,7 +211,7 @@ def main():
         group_name=dict(type='str', aliases=['name']),
         name_prefix=dict(type='str'),
         tags=dict(type='dict'),
-        group_ids=dict(type='list', aliases=['ids']),
+        group_ids=dict(type='list', elements='str', aliases=['ids']),
         filters=dict(type='dict')
     ))
 
