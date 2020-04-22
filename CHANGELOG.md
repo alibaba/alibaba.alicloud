@@ -1,5 +1,14 @@
 # Ansible-Alicloud Change Log
-## 1.19.0 (Unreleased)
+## 1.20.0 (Unreleased)
+
+## 1.19.0 (22 April, 2020)
+- Add resource_id for some modules ([#260](https://github.com/alibaba/ansible-provider/pull/260))
+- Add new module ali_ros_stack ([#263](https://github.com/alibaba/ansible-provider/pull/263))
+- improve ros: del ros_stack_info stacknames ([#266](https://github.com/alibaba/ansible-provider/pull/266))
+- improve instance: Format module instance ([#267](https://github.com/alibaba/ansible-provider/pull/267))
+- Format some utils ([#268](https://github.com/alibaba/ansible-provider/pull/268))
+- Add new module oos ([#259](https://github.com/alibaba/ansible-provider/pull/259))
+- Format modules ([#269](https://github.com/alibaba/ansible-provider/pull/269))
 
 ## 1.18.0 (20 March, 2020)
 - improve(ali_instance): support modify instance charge type  ([#256](https://github.com/alibaba/ansible-provider/pull/256))

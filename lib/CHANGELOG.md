@@ -1,5 +1,12 @@
 # Ansible-Alicloud-Module_Utils Change Log
-## 1.5.0 (unreleased)
+## 1.6.0 (unreleased)
+
+## 1.5.0 (22 April, 2020)
+IMPROVEMENTS:
+
+   * alicloud_ecs.py: support ros ([#263](https://github.com/alibaba/ansible-provider/pull/263))
+   * alicloud_ecs.py: support oos ([#259](https://github.com/alibaba/ansible-provider/pull/259))
+
 
 ## 1.4.0 (1 March, 2020)
 
