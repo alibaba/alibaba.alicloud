@@ -1,67 +1,76 @@
-# Ansible ECS Module
+# Ansible Collection - alibaba.alicloud
 
-Ansible Alicloud Module is a new ansible module, and you can manage Alicloud ECS and other services more flexibly and conveniently via it. Next to introduce simply this module.
+## Installation and Usage
+#### Installing the Collection from Ansible Galaxy
+Before using the alicloud collection, you need to install the collection with the ansible-galaxy CLI:
+```
+ansible-galaxy collection install alibaba.alicloud
+```
+#### Installing dependency footmark
+```
+pip install footmark
+```
 
-<a href="https://shell.aliyun.com/?action=git_open&git_repo=https://code.aliyun.com/labs/tutorial-cli-ansible.git&tutorial=tutorial-zh.md#/" target="try_ansible_in_cloudshell">
-  <img src="https://img.alicdn.com/tfs/TB1wt1zq9zqK1RjSZFpXXakSXXa-1066-166.png" width="180" />
-</a>
+#### Usage
+```
+collections:
+- name: alibaba.alicloud
+```
 
-## lib/ansible/modules/cloud/alicloud
-There are several files in the module directory, and these files describe some function that can operate alicloud products.
+## Include modules
+- `ali_instance`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
+- `ali_disk`: Create, Attach, Detach or Delete a disk in ECS
+- `ali_dns_domian`: Create, Delete and Update DNS domain
+- `ali_dns_group`: Create, Delete and Update DNS group
+- `ali_ecs_tag`: Add tags for alicloud resource
+- `ali_eip`: Create eip address and bind it to a specified device
+- `ali_image`: Create or delete user-defined image
+- `ali_market_product_info`: Gather info on Market product of alicloud
+- `ali_oos_execution`: Create, Delete, Notify, Cancel OOS Execution
+- `ali_oos_template`: Create, Delete, Update OOS template
+- `ali_oss_bucket`: Create, Delete, Retrieve Bucket
+- `ali_oss_object`: Uploading and Downloading objects, Retrieving object keys
+- `ali_ram_access_key`: Create, Delete Ram Access Key and Update status
+- `ali_ram_group`: Create, Delete, Update Ram group
+- `ali_ram_login_profile`: Create, Delete, Update Ram login profile
+- `ali_ram_policy`: Create, Delete, Attach and Detach Ram policy
+- `ali_ram_role`: Create, Delete, Update Ram Role
+- `ali_ram_user`: Create, Delete, Update Ram User
+- `ali_rds_account`: Create, Delete, Modyfy, Reset rds account and Grant, Revoke privilege
+- `ali_rds_backup`: Create, Delete rds backup
+- `ali_rds_database`: Create, Delete or Copy an rds database
+- `ali_rds_instance`: Create, Restart or Delete an RDS Instance
+- `ali_ros_stack`: Create, Delete and Modify for ROS Stack
+- `ali_security_group`: Create or Delete a Security Group
+- `ali_vpc.py`: Create or Delete a Vpc
+- `ali_vswitch`: Create or Delete a VSwitch
+- `ali_route_entry`: Create or Delete a route entry
+- `ali_slb_lb`: Create or Delete a Load balancer
+- `ali_slb_listener`: Create or Delete a listener for one Load balancer
+- `ali_slb_server`: Add or Remove backend server to/from Load balancer
+- `ali_slb_vsg`: Create and delete a VServer group
+- `ali_ess_group`: Create or Delete a scaling group
+- `ali_ess_configuration`: Create or Delete a scaling configuration
+- `ali_ess_instance`: Add or Remove ECS instnaces in a specified scaling group
+- `ali_ess_task`: Create or Delete a scheduled task for scaling activity
+- `ali_ess_rule`: Create or Delete a scaling rule
+- `ali_eni`: Create or Delete a network interface
 
-- `ali_instance.py`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
-- `ali_disk.py`: Create, Attach, Detach or Delete a disk in ECS
-- `ali_security_group.py`: Create or Delete a Security Group
-- `ali_vpc.py`: Create or Delete a Vpc.
-- `ali_vswitch.py`: Create or Delete a VSwitch.
-- `ali_route_entry.py`: Create or Delete a route entry.
-- `ali_slb_lb.py`: Create or Delete a Load balancer.
-- `ali_slb_listener.py`: Create or Delete a listener for one Load balancer.
-- `ali_slb_server.py`: Add or Remove backend server to/from Load balancer.
-- `ali_ess_group.py`: Create or Delete a scaling group.
-- `ali_ess_configuration.py`: Create or Delete a scaling configuration.
-- `ali_ess_instance.py`: Add or Remove ECS instnaces in a specified scaling group.
-- `ali_ess_task.py`: Create or Delete a scheduled task for scaling activity.
-- `ali_ess_rule.py`: Create or Delete a scaling rule.
-- `ali_eni.py`: Create or Delete a network interface.
-- `ali_bucket.py`: Create or Delete an OSS bucket.
-- `ali_bucket_object.py`: Upload or Download an object to/from an OSS bucket.
 
-## lib/ansible/module_utils
-In the module utils directory, the file alicloud_ecs.py identifies and gains playbook params, and provides this params to modules/*.py. In addition, this file implements connection between ansible and Alicloud API via footmark.
+## Inventory plugin
+#### Usage
+config file
+```
+alicloud.yaml
 
-## examples
-There are some playbooks to create some alicloud resource or build infrastructure architecture.
+plugin: alibaba.alicloud.alicloud_ecs
+```
+Execute command line
+```
+ansible-inventory -i alicloud.yml --graph
+```
 
-### Install
-There are two ways to install alicloud provider. However, before installing it. you should ensure `Ansible` has existed in your server.
-If not, please install it using the following command:
-
-    sudo pip install ansible
-
-* First one
-
-    Ansible provider has been released, and you can install it easily using the following command:
-
-      sudo pip install ansible_alicloud
-
-* Second one
-
-    Ansible provider's modules support to install independently. That means you can download one or more modules from lib/ansible/modules/cloud/alicloud and then run them independently.
-    However, before running them, you should ensure `ansible_alicloud_module_utils` has existed in your server. If not, please install it using the following command:
-
-      sudo pip install ansible_alicloud_module_utils
-
-### Execute playbook
-
-* Input your alicloud access key in the playbook or set environment variable:`ALICLOUD_ACCESS_KEY` and `ALICLOUD_SECRET_KEY`).
-* Input others resource params in the playbook.
-* execute ansible-playbook command as follows:
-
-	  $ ansible-playbook xxx.yml
-	   
-## Refrence
-
+## DOC
 Ansible Document: https://docs.ansible.com/ansible/latest/
 
 Ansible Alicloud: [Docs Details](http://47.88.222.42:8080/ansible-alicloud/latest/modules/list_of_cloud_modules.html)

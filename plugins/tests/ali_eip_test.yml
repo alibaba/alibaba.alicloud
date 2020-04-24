@@ -1,0 +1,193 @@
+---
+- name: Validate module ali_instance
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    allocate_public_ip: False
+    name: ansible-testacc-ali_eip-module
+
+  collections:
+    - alibaba.alicloud
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+    - network_interface
+
+  tasks:
+    - name: Changed. Associate new elastic IPs with each of the instances
+      ali_eip:
+        instance_id: "{{ item }}"
+      loop: "{{ instances.ids }}"
+      register: eips
+
+    - name: No Changed. No instances will be associated.
+      ali_eip:
+        instance_id: "{{ item }}"
+      loop: "{{ instances.ids }}"
+
+    - name: Changed. Unassociate the elastic IPs from each of the instances
+      ali_eip:
+        instance_id: "{{ item }}"
+        state: absent
+      loop: "{{ instances.ids }}"
+
+    - name: No Changed. No instnaces will be unassociated
+      ali_eip:
+        instance_id: "{{ item }}"
+        state: absent
+      loop: "{{ instances.ids }}"
+
+    - name: No Changed. Output the IP
+      debug:
+        msg: "Allocated IP is {{ item.eip.ip_address }}"
+      loop: "{{ eips.results }}"
+
+    - name: Changed. Associate existing elastic IPs with each of the instances
+      ali_eip:
+        instance_id: "{{ item }}"
+        reuse_existing_ip_allowed: True
+      loop: "{{ instances.ids }}"
+      register: new
+
+    - name: No Changed. Output the IP
+      debug:
+        msg: "Allocated IP is {{ item.eip.ip_address }}"
+      loop: "{{ new.results }}"
+
+    - name: Changed. Release ips with release_on_disassociation.
+      ali_eip:
+        instance_id: "{{ item }}"
+        release_on_disassociation: True
+        state: absent
+      loop: "{{ instances.ids }}"
+
+    - name: Changed. Associate a new elastic IP with a eni
+      ali_eip:
+        instance_id: "{{ enis.ids[0] }}"
+      register: eip
+
+    - name: Changed. Re-associate the elastic IP with a new instance
+      ali_eip:
+        instance_id: "{{ instances.ids[0] }}"
+        ip_address: "{{ eip.eip.ip_address }}"
+        allow_reassociation: True
+
+    - name: Changed. Release the eip with release_on_disassociation.
+      ali_eip:
+        instance_id: "{{ instances.ids[0] }}"
+        release_on_disassociation: True
+        state: absent
+
+    - name: Changed. Associate new elastic IP with name and description
+      ali_eip:
+        name: "{{ name }}-ali-eip"
+        description: "{{ description }}-ali-eip"
+      register: eip
+
+    - name: No Changed. There is no any attribute need to modify.
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        name: "{{ name }}-ali-eip"
+        description: "{{ description }}-ali-eip"
+
+    - name: Changed. Modify eip attribute
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        name: "{{ name }}-ali-eip-updated"
+        description: "{{ description }}-ali-eip"
+        bandwidth: 2
+
+    - name: Changed. Add Tags.
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+
+    - name: Filter eip using tags
+      ali_eip_info:
+        tags:
+          Test1: "add1"
+
+    - name: Get the existing eip
+      ali_eip_info:
+        name_prefix: '{{name}}'
+
+    - name: Changed. Modify Tags.
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+
+    - name: No Changed. No tags need to be added
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+
+    - name: Get the existing eip
+      ali_eip_info:
+        name_prefix: '{{name}}'
+
+    - name: Changed. Removing tags.
+      ali_eip:
+        allocation_id: "{{ eip.eip.allocation_id }}"
+        purge_tags: True
+        tags:
+          Test1: "add1"
+
+    - name: No Changed. No tags need to be removed.
+      ali_eip:
+        allocation_id: "{{ eip.eip.allocation_id }}"
+        purge_tags: True
+        tags:
+          Test1: "add1"
+
+    - name: Get the existing eip
+      ali_eip_info:
+        name_prefix: '{{name}}'
+      register: eips
+
+    - name: Changed. Release ips.
+      ali_eip:
+        ip_address: "{{ eip.eip.ip_address }}"
+        state: absent
+
+    # Delete all of resource
+    - name: Changed. Deleting instances
+      ali_instance:
+        instance_ids: '{{instances.ids}}'
+        force: True
+        state: absent
+
+    - name: Changed. Deleting enis
+      ali_eni:
+        id: '{{item}}'
+        state: absent
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        cidr_block: '{{ item.cidr_block }}'
+        name: '{{ item.vpc_name }}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'

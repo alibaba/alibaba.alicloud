@@ -1,0 +1,10 @@
+---
+- name: Changed. Create dns group.
+  alibaba.alicloud.ali_dns_group:
+    group_name: '{{ group_name }}'
+  register: group
+
+- name: Get the existing group
+  alibaba.alicloud.ali_dns_group_info:
+    name_prefix: '{{ group_name }}'
+  register: groups

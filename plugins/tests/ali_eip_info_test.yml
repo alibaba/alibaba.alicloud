@@ -1,0 +1,32 @@
+---
+- name: Validate module ali_instance
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    name: ansible-testacc-ali_eip_facts-module
+
+  collections:
+    - alibaba.alicloud
+  roles:
+    - eip
+
+  tasks:
+    - name: Filter eip using name_regex
+      ali_eip_info:
+        name_prefix: '{{name}}'
+      register: eips
+
+    - name: Filter eip using ip address regex
+      ali_eip_info:
+        name_prefix: '{{eip.eip.ip_address}}'
+
+    - name: Retrieving all eips
+      ali_eip_info:
+
+    - name: Changed. Deleting eips
+      ali_eip:
+        ip_address: '{{item.ip_address}}'
+        state: absent
+      with_items: '{{eips.eips}}'
+

@@ -1,7 +1,0 @@
----
-# tasks file for deploy
-- include_tasks: create.yml
-  when: not exist
-- name: excute inventory file to get target host
-  shell: ./{{ alicloud_path }} --list
-- include_tasks: deploy.yml
