@@ -59,5 +59,5 @@ setup(
     package_dir={'': 'lib'},
     packages=find_packages('lib'),
     include_package_data=True,
-    install_requires=['ansible', 'footmark>=1.20.0', 'ansible_alicloud_module_utils>=1.5.0']
+    install_requires=['ansible', 'footmark>=1.20.0', 'ansible_alicloud_module_utils>=1.5.0', 'ruamel.yaml==0.10.2']
 )
