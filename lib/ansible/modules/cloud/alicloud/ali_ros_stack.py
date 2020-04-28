@@ -209,7 +209,7 @@ def main():
                 msg='Stack name "%s" is invalid and exceeds 255 character limit. Stack names must contain only '
                     'alphanumeric characters and hyphens and must start with an alphabetic character.' % stack_name)
         if template_type:
-            if not template_type == "json":
+            if template_type not in ['json', 'yaml', 'yml']:
                 module.fail_json(
                     msg='Input template type : %s error, Please check it' % template_type)
         ros_conn = ros_connect(module)
