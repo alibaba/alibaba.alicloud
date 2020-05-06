@@ -83,6 +83,12 @@ options:
         environment variable.
       - If this is not set and a profile is specified,  ~/.aliyun/config.json will be used.
     type: str
+  alicloud_protocol:
+    description:
+      - The type of protocol.
+    type: str
+    aliases: ['protocol']
+    default: https
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
