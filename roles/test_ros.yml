@@ -1,0 +1,166 @@
+# This Playbook contains test scenario for ros
+
+- name: Testing Ros Stack
+  hosts: localhost
+  connection: local
+  vars:
+    # create vpc
+    alicloud_region: cn-beijing
+    state: present
+    stateDel: absent
+    cidr_block: 10.0.0.0/8
+    vpc_name: travis-ansible-vpc
+    description: travis-ansible-vpc
+    # create vswitch
+    vsw_cidr: 10.0.13.0/24
+    vsw_name: Test_Vswitch
+    alicloud_zone: cn-beijing-a
+    vsw_description: Test vswitch created
+
+    # create group
+    sg_name: travis-ansible-instance
+    inboundRules:
+      - proto: tcp
+        port_range: 22/22
+        cidr_ip: 0.0.0.0/0
+        priority: 1
+
+      - proto: tcp
+        port_range: 80/80
+        cidr_ip: 0.0.0.0/0
+        priority: 1
+
+      - proto: udp
+        port_range: 10988/10989
+        cidr_ip: 47.89.23.33/32
+        priority: 2
+
+    outboundRules:
+      - proto: tcp
+        port_range: 80/80
+        cidr_ip: 192.168.0.54/32
+        priority: 1
+
+      - proto: tcp
+        port_range: 8080/8085
+        cidr_ip: 47.89.23.33/32
+        priority: 1
+
+      - proto: udp
+        port_range: 10989/10997
+        cidr_ip: 47.89.23.33/32
+        priority: 2
+
+    # create ecs instance connected to the switch
+    image: ubuntu_14_0405_32_40G_alibase_20170711.vhd
+    type: ecs.n4.small
+    instance_name: travis-ansible-instance
+    host_name: myhost
+    password: pass@123
+    count: 1
+    allocate_public_ip: False
+    user_data: "#!/bin/sh\ncd /root\ntouch hahah\nwget http://wordpress.org/latest.tar.gz\n"
+
+   # create ros stack
+    stack_name: create_same_instance_by_ros
+    template: /tmp/create_instance.json
+    timeout_in_minutes: 60
+
+  tasks:
+    - name: Create VPC
+      ali_vpc:
+        alicloud_region: '{{ alicloud_region }}'
+        state: '{{ state }}'
+        cidr_block: '{{ cidr_block }}'
+        vpc_name: '{{ vpc_name }}'
+        description: '{{ description }}'
+      register: create_vpc
+    - debug: var=create_vpc
+
+    - name: Create VSwitch
+      ali_vswitch:
+        alicloud_region: '{{ alicloud_region }}'
+        alicloud_zone: '{{ alicloud_zone }}'
+        state: '{{ state }}'
+        cidr_block: '{{ vsw_cidr }}'
+        vswitch_name: '{{ vsw_name }}'
+        description: '{{ vsw_description }}'
+        vpc_id: '{{ create_vpc["vpc_id"] }}'
+      register: create_vsw
+    - debug: var=create_vsw
+
+    - name: Creating security group
+      ali_security_group:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ sg_name }}'
+        description: '{{description}}'
+        vpc_id: '{{ create_vpc.vpc_id }}'
+        rules: '{{ inboundRules }}'
+        rules_egress: '{{ outboundRules }}'
+      register: createsgeresult
+    - debug: var=createsgeresult
+
+    - name: Creating an ECS instance
+      ali_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        image: '{{ image }}'
+        type: '{{ type }}'
+        instance_name: '{{ instance_name }}'
+        description: '{{ description }}'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+        count: '{{ count }}'
+        group_id: '{{ createsgeresult.group_id }}'
+        allocate_public_ip: '{{ allocate_public_ip }}'
+        vswitch_id: '{{ create_vsw.vswitch_id }}'
+        user_data: '{{ user_data }}'
+      register: create_instance_result
+    - debug: var=create_instance_result
+
+    - name: Specify ECS InstanceId to Create a Group of ECS Instances with the Same Configuration by Ros Stack
+      ali_ros_stack:
+        alicloud_region: '{{ alicloud_region }}'
+        state: '{{ state }}'
+        stack_name: '{{ stack_name }}'
+        template: '{{ template }}'
+        # About template info, see detail: https://rosnext.console.aliyun.com/cn-beijing/samples/Ecs_Instance_Group_Clone
+        timeout_in_minutes: '{{ timeout_in_minutes }}'
+        template_parameters:
+          InstanceName: new_instance_with_ros
+          SourceInstanceId: '{{ create_instance_result["instance_ids"][0] }}'
+          MaxAmount: 1
+          Password: '{{ password }}'
+      register: create_stack
+    - debug: var=create_stack
+
+    - name: Delete ECS Instance by Ros Stack
+      ali_ros_stack:
+        alicloud_region: '{{ alicloud_region }}'
+        state: '{{ stateDel }}'
+        stack_name: '{{ create_stack.stack_name }}'
+
+    - name: Delete ECS Instance
+      ali_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{ create_instance_result["instance_ids"][0] }}'
+        force: true
+        state: '{{ stateDel }}'
+
+    - name: Delete Vswitch
+      ali_vswitch:
+        state: '{{ stateDel }}'
+        alicloud_region: '{{ alicloud_region }}'
+        vpc_id: '{{ create_vpc["vpc_id"] }}'
+        vswitch_id: '{{ create_vsw["vswitch_id"] }}'
+
+    - name: Delete Security Group
+      ali_security_group:
+        state: '{{ stateDel }}'
+        alicloud_region: '{{ alicloud_region }}'
+        group_id: '{{ createsgeresult.group_id }}'
+
+    - name: Delete VPC
+      ali_vpc:
+        alicloud_region: '{{ alicloud_region }}'
+        vpc_id: '{{ create_vpc["vpc_id"] }}'
+        state: '{{ stateDel }}'
