@@ -1,0 +1,18 @@
+galaxy_info:
+  author:
+    - "Steven"
+  description: Specify ECS InstanceId to Create a Group of ECS Instances with the Same Configuration by Ros Stack
+
+  company: ????
+
+  license: license (GPL-2.0-or-later, MIT, etc)
+
+  min_ansible_version: 2.9
+
+  galaxy_tags:
+    - alicloud_ros
+    - image
+    - alicloud
+    - ecs
+
+dependencies: []

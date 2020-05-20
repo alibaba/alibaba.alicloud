@@ -1,0 +1,96 @@
+{
+  "Description": "According the existing ECS instance, clone a set of ECS instanes with the same configuration(InstanceType, ImageId, InternetChargeType, InternetMaxBandwidthIn, InternetMaxBandwidthOut, system disk, data disk configurations, VPC properties). The user only needs to specify SourceInstanceId.",
+  "Parameters": {
+    "InstanceName": {
+      "Type": "String",
+      "Description": {
+        "en": "[2, 128] alphanumeric letters, underline, dot or hyphen",
+        "zh-cn": "实例名称；2~128个字符，可包含英文、中文、数字、下划线（_）、点号（.）和连字符（-）。"
+      },
+      "Label": "Instance Name",
+      "ConstraintDescription": "[2, 128] characters, consists of uppercase letter, lowercase letter, number or special characters.",
+      "MinLength": 2,
+      "MaxLength": 128,
+      "Default": "ClonedECS"
+    },
+    "SourceInstanceId": {
+      "Type": "String",
+      "Description": {
+        "en": "The source ECS instance ID to be cloned",
+        "zh-cn": "需要克隆的ECS实例ID"
+      },
+      "Label": "Source Instance ID"
+    },
+    "MaxAmount": {
+      "Type": "Number",
+      "Description": {
+        "en": "The maximum of ECS instances, must be greater than or equal to the minimum.",
+        "zh-cn": "一次性创建ECS实例的最大个数，必须大于或等于一次性创建ECS实例的最小个数"
+      },
+      "Label": "The Maximum of ECS Instances",
+      "MinValue": 1,
+      "ConstraintDescription": "An integer within [1, 100]",
+      "MaxValue": 100,
+      "Default": 1
+    },
+    "Password": {
+      "NoEcho": true,
+      "Type": "String",
+      "Description": {
+        "en": "[8, 30] characters, consists of uppercase letter, lowercase letter, number or special characters such as ( ) ` ~ ! @ # $ % ^ & * - + = | { } [ ] : ; ‘ < > , . ? / ",
+        "zh-cn": "长度为8~30个字符。必须同时包含三项（大、小写字母，数字和特殊符号），支持以下特殊字符：( ) ` ~ ! @ # $ % ^ & * - + = | { } [ ] : ; ‘ < > , . ? /。"
+      },
+      "AllowedPattern": "[a-zA-Z0-9-\\(\\)\\`\\~\\!@\\#\\$%\\^&\\*-+=\\|\\{\\}\\[\\]\\:\\;\\‘\\,\\.\\?\\/]*",
+      "Label": "ECS Instance Password",
+      "ConstraintDescription": "[8, 30] characters, consists of uppercase letter, lowercase letter, number or special characters.",
+      "MinLength": 8,
+      "MaxLength": 30
+    }
+  },
+  "ROSTemplateFormatVersion": "2015-09-01",
+  "Outputs": {
+    "PublicIps": {
+      "Description": "Public IP address list of created ecs instance.",
+      "Value": {
+        "Fn::GetAtt": [
+          "ECSInstanceGroup",
+          "PublicIps"
+        ]
+      }
+    },
+    "ZoneIds": {
+      "Description": "Zone ID of created instance.",
+      "Value": {
+        "Fn::GetAtt": [
+          "ECSInstanceGroup",
+          "ZoneIds"
+        ]
+      }
+    },
+    "InstanceIds": {
+      "Description": "The instance ID list of created ecs instance",
+      "Value": {
+        "Fn::GetAtt": [
+          "ECSInstanceGroup",
+          "InstanceIds"
+        ]
+      }
+    }
+  },
+  "Resources": {
+    "ECSInstanceGroup": {
+      "Type": "ALIYUN::ECS::InstanceGroupClone",
+      "Properties": {
+        "SourceInstanceId": {
+          "Ref": "SourceInstanceId"
+        },
+        "MaxAmount": {
+          "Ref": "MaxAmount"
+        },
+        "Password": {
+          "Ref": "Password"
+        }
+      }
+    }
+  }
+}

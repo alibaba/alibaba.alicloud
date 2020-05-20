@@ -1,0 +1,46 @@
+---
+- name: Creating ECS instances
+  ali_instance:
+    image: '{{ image_id }}'
+    type: '{{ instance_type }}'
+    instance_name: '{{ instance_name }}'
+    description: '{{ instance_description }}'
+    host_name: '{{ host_name }}'
+    password: '{{ password }}'
+
+    allocate_public_ip: '{{ allocate_public_ip }}'
+    internet_charge_type: '{{ internet_charge_type }}'
+    max_bandwidth_in: '{{ max_bandwidth_in }}'
+    max_bandwidth_out: '{{ max_bandwidth_out }}'
+
+    security_groups: ['{{ sgs.groups.0.id }}']
+    vswitch_id: '{{ vswitches.vswitches.0.id }}'
+
+    system_disk_category: '{{ system_disk_category }}'
+    system_disk_size: '{{ system_disk_size }}'
+    count: '{{ number_of_instances }}'
+    tags: '{{ instance_tags }}'
+
+- name: Get Instances by name regex
+  ali_instance_info:
+    name_prefix: '{{instance_name}}'
+  register: all_instances
+
+- name: copy Ros template file
+  copy:
+    src: copy_instance_template.json
+    dest: '{{ template }}'
+
+- name: Specify ECS InstanceId to Create a Group of ECS Instances with the Same Configuration by Ros Stack
+  ali_ros_stack:
+    state: '{{ state }}'
+    stack_name: '{{ stack_name }}'
+    template: '{{ template }}'
+    timeout_in_minutes: '{{ timeout_in_minutes }}'
+    template_parameters:
+      InstanceName: new_instance_with_ros
+      SourceInstanceId: '{{ all_instances.ids.0 }}'
+      MaxAmount: 1
+      Password: '{{ password }}'
+  register: create_stack
+- debug: var=create_stack

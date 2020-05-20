@@ -1,0 +1,7 @@
+---
+- name: Create a new alicloud VPC resource
+  ali_vpc:
+    cidr_block: '{{ vpc_cidr }}'
+    vpc_name: '{{ vpc_name }}'
+    description: '{{ vpc_description }}'
+  register: vpc
