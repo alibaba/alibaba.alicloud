@@ -1,0 +1,34 @@
+---
+- name: Get Instance by id
+  ali_instance_info:
+    instance_ids: ['{{instance_id}}']
+  register: all_instances
+
+- name: Get Instance by filter_params
+  ali_instance_info:
+    tags: '{{instance_tags}}'
+    name_prefix: '{{instance_name_prefix}}'
+    filters: '{{instance_filters}}'
+  register: instances
+- set_fact:
+    all_instances: "{{instances}}"
+  when: not all_instances.ids
+
+- name: Copy Ros template file
+  copy:
+    src: ros_copy_instance_template.json
+    dest: '{{ template }}'
+
+- name: Specify ECS InstanceId to Create a Group of ECS Instances with the Same Configuration by Ros Stack
+  ali_ros_stack:
+    state: '{{ state }}'
+    stack_name: '{{ stack_name }}'
+    template: '{{ template }}'
+    timeout_in_minutes: '{{ timeout_in_minutes }}'
+    template_parameters:
+      InstanceName: '{{ create_instance_name }}'
+      SourceInstanceId: '{{ all_instances.ids.0 }}'
+      MaxAmount: 1
+      Password: '{{ password }}'
+  register: create_stack
+  when: all_instances.ids

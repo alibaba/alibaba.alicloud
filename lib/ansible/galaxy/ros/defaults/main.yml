@@ -1,0 +1,13 @@
+---
+alicloud_region: cn-beijing
+# ros stack parameters
+state: present
+stack_name: copy_ecs_by_ros
+timeout_in_minutes: 60
+create_instance_name: Instance_From_Ros
+password: Test12345
+template: /tmp/ros_copy_instance_template.json
+instance_id: i-2ze50dakjhda
+instance_name_prefix:
+instance_tags:
+instance_filters:

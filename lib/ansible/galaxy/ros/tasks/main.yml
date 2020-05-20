@@ -1,0 +1,2 @@
+---
+- include_tasks: copy_instance_by_ros.yml
