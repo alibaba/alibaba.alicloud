@@ -36,3 +36,4 @@ script:
   - ansible-playbook -i roles/hosts -M module/ roles/test_vpc.yml
   - ansible-playbook -i roles/hosts -M module/ roles/test_oss.yml
   - ansible-playbook -i roles/hosts -M module/ roles/test_rds.yml
+  - ansible-playbook -M module/ tests/ali_key_pair_test.yml
