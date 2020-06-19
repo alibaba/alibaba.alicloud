@@ -610,6 +610,7 @@ ids:
 '''
 
 import re
+from ast import literal_eval
 import time
 import traceback
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
@@ -667,6 +668,11 @@ def run_instance(module, ecs, exact_count):
     spot_price_limit = module.params['spot_price_limit']
     spot_strategy = module.params['spot_strategy']
     unique_suffix = module.params['unique_suffix']
+    count_tag = module.params['count_tag']
+    tags = module.params['tags']
+
+    merged_tags = tags.update(literal_eval(count_tag))
+
     # check whether the required parameter passed or not
     if not image_id:
         module.fail_json(msg='image_id is required for new instance')
@@ -691,7 +697,8 @@ def run_instance(module, ecs, exact_count):
                                       amount=exact_count, instance_charge_type=instance_charge_type, period=period, period_unit="Month",
                                       auto_renew=auto_renew, auto_renew_period=auto_renew_period, key_pair_name=key_name,
                                       user_data=user_data, client_token=client_token, ram_role_name=ram_role_name,
-                                      spot_price_limit=spot_price_limit, spot_strategy=spot_strategy, unique_suffix=unique_suffix)
+                                      spot_price_limit=spot_price_limit, spot_strategy=spot_strategy, unique_suffix=unique_suffix,
+                                      tags=merged_tags)
 
     except Exception as e:
         module.fail_json(msg='Unable to create instance, error: {0}'.format(e))
@@ -830,7 +837,7 @@ def main():
             module.fail_json(msg="There are no instances in our record based on instance_ids {0}. "
                                  "Please check it and try again.".format(instance_ids))
     elif count_tag:
-        instances = ecs.describe_instances(zone_id=zone_id, tags=eval(count_tag))
+        instances = ecs.describe_instances(zone_id=zone_id, tags=literal_eval(count_tag))
     elif instance_name:
         instances = ecs.describe_instances(zone_id=zone_id, instance_name=instance_name)
 
@@ -853,7 +860,7 @@ def main():
         except Exception as e:
             module.fail_json(msg='Delete instance got an error: {0}'.format(e))
 
-    if module.params['allocate_public_ip'] and max_bandwidth_out < 0:
+    if module.params['allocate_public_ip'] and max_bandwidth_out <= 0:
         module.fail_json(msg="'max_bandwidth_out' should be greater than 0 when 'allocate_public_ip' is True.")
     if not module.params['allocate_public_ip']:
         module.params['max_bandwidth_out'] = 0
