@@ -874,7 +874,7 @@ def main():
                     instances.pop(len(instances) - 1)
             else:
                 try:
-                    if re.search(r"-\[\d+,\d+\]-", host_name):
+                    if host_name and re.search(r"-\[\d+,\d+\]-", host_name):
                         module.fail_json(msg='Ordered hostname is not supported, If you want to add an ordered '
                                              'suffix to the hostname, you can set unique_suffix to True')
                     new_instances = run_instance(module, ecs, count - len(instances))
