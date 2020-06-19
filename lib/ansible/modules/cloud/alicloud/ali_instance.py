@@ -671,7 +671,12 @@ def run_instance(module, ecs, exact_count):
     count_tag = module.params['count_tag']
     tags = module.params['tags']
 
-    merged_tags = tags.update(literal_eval(count_tag))
+    merged_tags = {}
+    if tags:
+        merged_tags = tags
+
+    if literal_eval(count_tag):
+        merged_tags.update(literal_eval(count_tag))
 
     # check whether the required parameter passed or not
     if not image_id:
