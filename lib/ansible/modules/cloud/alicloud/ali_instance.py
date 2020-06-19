@@ -914,16 +914,16 @@ def main():
         # Security Group join/leave ends here
 
         # Attach/Detach key pair
-        inst_ids = []
+        keypair_ids = []
         for inst in instances:
             if key_name is not None and key_name != inst.key_name:
                 if key_name == "":
                     if inst.detach_key_pair():
                         changed = True
                 else:
-                    inst_ids.append(inst.id)
-        if inst_ids:
-            changed = ecs.attach_key_pair(instance_ids=inst_ids, key_pair_name=key_name)
+                    keypair_ids.append(inst.id)
+        if keypair_ids:
+            changed = ecs.attach_key_pair(instance_ids=keypair_ids, key_pair_name=key_name)
 
         # Modify instance attribute
         for inst in instances:
@@ -933,12 +933,12 @@ def main():
                 ids.append(inst.id)
 
         # Modify instance charge type
-        ids = []
+        charge_type_ids = []
         for inst in instances:
             if inst.instance_charge_type != instance_charge_type:
-                ids.append(inst.id)
-        if ids:
-            params = {"instance_ids": ids, "instance_charge_type": instance_charge_type,
+                charge_type_ids.append(inst.id)
+        if charge_type_ids:
+            params = {"instance_ids": charge_type_ids, "instance_charge_type": instance_charge_type,
                       "include_data_disks": module.params['include_data_disks'], "dry_run": module.params['dry_run'],
                       "auto_pay": True}
             if instance_charge_type == 'PrePaid':
@@ -947,7 +947,7 @@ def main():
 
             if ecs.modify_instance_charge_type(**params):
                 changed = True
-                wait_for_instance_modify_charge(ecs, ids, instance_charge_type)
+                wait_for_instance_modify_charge(ecs, charge_type_ids, instance_charge_type)
 
     else:
         if len(instances) < 1:
