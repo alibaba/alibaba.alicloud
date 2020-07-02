@@ -1,0 +1,2 @@
+---
+- include_tasks: clone_instances_across_region_by_oos.yml

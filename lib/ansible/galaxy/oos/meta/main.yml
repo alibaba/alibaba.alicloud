@@ -1,0 +1,16 @@
+galaxy_info:
+  author:
+    - "Kang"
+  description: Cross Region copy and run ECS instance by InstanceIds
+
+  company: ????
+
+  license: license (GPL-2.0-or-later, MIT, etc)
+
+  min_ansible_version: 2.9
+
+  galaxy_tags:
+    - alicloud_oos
+    - alicloud
+
+dependencies: []

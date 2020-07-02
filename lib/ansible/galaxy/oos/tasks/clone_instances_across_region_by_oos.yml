@@ -1,0 +1,20 @@
+---
+- name: Create oos template
+  ali_oos_template:
+    template_name: '{{ template_name }}'
+    content: '{{ content }}'
+  register: create_template
+
+- name: Cross Region copy and run ECS instance by InstanceIds
+  ali_oos_execution:
+    template_name: '{{ template_name }}'
+    safety_check: Skip
+    parameters:
+      instanceIds: '{{ instance_ids }}'
+      regionId: '{{ region_id }}'
+      targetRegionId: '{{ target_region_id }}'
+      targetInstanceType: '{{ target_instance_type }}'
+      targetSecurityGroupId: '{{ target_security_group_id}}'
+      targetVSwitchId: '{{ target_vswitch_id }}'
+      targetZoneId: '{{ target_zone_id }}'
+  register: start_execution
