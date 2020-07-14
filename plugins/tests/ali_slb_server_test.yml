@@ -1,0 +1,82 @@
+---
+- name: Validate module ali_slb_server
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    number_of_instances: 4
+    name: ansible-testacc-ali_slb_lb
+
+  collections:
+    - alibaba.alicloud
+  roles:
+    - vpc
+    - vswitch
+    - slb
+    - security_group
+    - instance
+
+  tasks:
+    - name: Add backend servers
+      ali_slb_server:
+        lb_id: '{{ slbpri.load_balancer.id }}'
+        backend_servers:
+          - server_id: '{{instances.ids.0}}'
+            weight: 100
+          - server_id: '{{instances.ids.1}}'
+            weight: 90
+          - server_ids: ['{{instances.ids.2}}', '{{instances.ids.3}}']
+            weight: 80
+
+    - name: Filter slb using name_regex
+      ali_slb_lb_info:
+        name_prefix: '{{name}}'
+      register: slbs
+
+    - name: Remove backend servers
+      ali_slb_server:
+        lb_id: '{{ slbpri.load_balancer.id }}'
+        state: absent
+        backend_servers:
+          - server_id: '{{instances.ids.0}}'
+            weight: 100
+          - server_ids: ['{{instances.ids.2}}', '{{instances.ids.3}}']
+            weight: 80
+
+    - name: Filter slb using name_regex
+      ali_slb_lb_info:
+        name_prefix: '{{name}}'
+      register: slbs
+
+    - name: Changed. Delete ecs instances
+      ali_instance:
+        instance_ids: '{{ instances.ids }}'
+        force: True
+        state: absent
+
+    - name: Changed. Delete slb instance when C(absent)
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        state: absent
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'

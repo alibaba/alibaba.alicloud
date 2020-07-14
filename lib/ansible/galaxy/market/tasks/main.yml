@@ -1,6 +1,0 @@
----
-# tasks file for market
-- include_tasks: vpc.yml
-- include_tasks: vswitch.yml
-- include_tasks: security.yml
-- include_tasks: create.yml

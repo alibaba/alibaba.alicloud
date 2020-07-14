@@ -1,0 +1,31 @@
+---
+- name: Validate module ali_rds_backup
+  hosts: localhost
+  remote_user: root
+
+  collections:
+    - alibaba.alicloud
+  roles:
+    - vpc
+    - vswitch
+    - rds
+
+  tasks:
+    - name: Changed. Create backup
+      ali_rds_backup:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        backup_method: Logical
+        state: present
+      register: bk
+
+    - name: Get the existing backup
+      ali_rds_backup_info:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        backup_id: bk.backup.id
+      register: dk
+
+    - name: Changed. Delete backup
+      ali_rds_backup:
+        db_instance_id: '{{ rds.instances.0.id }}'
+        backup_id: bk.backup.id
+        state: absent

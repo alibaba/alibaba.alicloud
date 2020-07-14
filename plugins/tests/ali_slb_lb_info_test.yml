@@ -1,0 +1,56 @@
+---
+- name: Validate module ali_instance
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    name: ansible-testacc-ali_slb_lb_facts
+
+  collections:
+    - alibaba.alicloud
+  roles:
+    - vpc
+    - vswitch
+    - slb
+
+  tasks:
+    - name: Retrieving slbs using ids
+      ali_slb_lb_info:
+        ids: '{{slbpub.load_balancer.id}}'
+
+    - name: Create a slb and used to test name_regex
+      ali_slb_lb:
+        name: '{{name}}regex'
+
+    - name: Filter slb using name_regex
+      ali_slb_lb_info:
+        name_prefix: '{{name}}regex'
+
+    - name: Retrieving all slbs
+      ali_slb_lb_info:
+
+    - name: Retrieving all slbs based on name_regex
+      ali_slb_lb_info:
+        name_prefix: '{{name}}'
+      register: slbs
+
+    - name: Changed. Deleting slbs
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        state: absent
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'
+
