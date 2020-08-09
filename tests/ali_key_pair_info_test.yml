@@ -1,0 +1,13 @@
+---
+- name: Validate module ali_key_pair_info
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Get the existing key pair
+      ali_key_pair_info:
+        name: test
+
+    - name: Get the existing key pair by finger print
+        ali_key_pair_info:
+          key_pair_finger_print: ""
