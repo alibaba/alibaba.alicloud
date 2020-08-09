@@ -56,7 +56,6 @@ options:
   force:
     description:
       - Force overwrite of already existing key pair if key has changed.
-    required: false
     default: True
     type: bool
   tags:
@@ -65,7 +64,7 @@ options:
     type: dict
 requirements:
     - "python >= 3.6"
-    - "footmark >= 1.13.0"
+    - "footmark >= 1.21.0"
 extends_documentation_fragment:
     - alicloud
 author:
