@@ -236,7 +236,7 @@ def get_disk_detail(disk):
             'type': disk.type,
             'instance_id': disk.instance_id,
             'encrypted': disk.encrypted,
-            'kms_key_id': disk.k_m_s_key_id,
+            'kms_key_id': disk.kmskey_id,
             }
 
 
@@ -328,7 +328,7 @@ def main():
             current_disk = ecs.create_disk(zone_id=zone_id, disk_name=disk_name,
                                            description=description, disk_category=disk_category, size=size,
                                            disk_tags=disk_tags, snapshot_id=snapshot_id, client_token=client_token,
-                                           encrypted=encrypted, k_m_s_key_id=kms_key_id)
+                                           encrypted=encrypted, kmskey_id=kms_key_id)
             changed = True
         except Exception as e:
             module.fail_json(msg='Creating a new disk is failed, error: {0}'.format(e))
