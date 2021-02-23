@@ -64,7 +64,7 @@ EXAMPLES = """
         stack_ids:
           - f83226ec-b0f2-4c78-8139-99fe24f36f2b
           - 0d87e1b4-c54f-4f3e-abed-2678e661c0a5
-    
+
 -   name: Get ROS Stack Info By name_prefix
     ali_ros_stack_info:
         name_prefix: kong_stack
@@ -120,6 +120,28 @@ stacks:
             returned: always
             type: int
             sample: 60
+        outputs: 
+            description: ROS output parameters of the stack.
+            returned: when set outputs parameters true
+            type: list
+            sample: 
+                [
+                    {
+                        "description": "SSH login on the node by this ip",
+                        "output_key": "JumpHost",
+                        "output_value": "101.200.XXX.81"
+                    },
+                    {
+                        "description": "API Server Public IP",
+                        "output_key": "APIServerInternet",
+                        "output_value": "https://101.200.XXX.81:6443"
+                    },
+                    {
+                        "description": "API Server Inner IP",
+                        "output_key": "APIServerIntranet",
+                        "output_value": "https://192.168.XXX.104:6443"
+                    }
+                ]
 """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ros_connect
@@ -128,6 +150,7 @@ HAS_FOOTMARK = False
 
 try:
     from footmark.exception import ROSResponseError
+
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
@@ -139,6 +162,7 @@ def main():
         dict(
             stack_ids=dict(type='list', elements='str', aliases=['ros_stack_ids']),
             name_prefix=dict(type='str'),
+            outputs=dict(type='bool', default=False),
             filters=dict(type='dict')
         )
     )
@@ -154,6 +178,7 @@ def main():
     if not filters:
         filters = {}
     name_prefix = module.params.get('name_prefix')
+    outputs = module.params.get('outputs')
     ros_infos = []
     ros_ids = []
     try:
@@ -161,7 +186,10 @@ def main():
         if stack_ids:
             for stack_id in stack_ids:
                 filters['stack_id'] = stack_id
-                stack_info = ros_conn.list_stacks(**filters)[0]
+                if outputs:
+                    stack_info = ros_conn.get_stack(stack_id=stack_id)
+                else:
+                    stack_info = ros_conn.list_stacks(**filters)[0]
                 if stack_info.get('stack_id') not in ros_ids:
                     ros_infos.append(stack_info)
                     ros_ids.append(stack_info.get('stack_id'))
@@ -170,6 +198,8 @@ def main():
             for stack_info in all_stack_infos:
                 if stack_info.get('stack_name').startswith(name_prefix) and stack_info.get(
                         'stack_id') not in ros_ids:
+                    if outputs:
+                        stack_info = ros_conn.get_stack(stack_id=stack_info.get('stack_id'))
                     ros_infos.append(stack_info)
                     ros_ids.append(stack_info.get('stack_id'))
         module.exit_json(ids=ros_ids, stacks=ros_infos, changed=False)
