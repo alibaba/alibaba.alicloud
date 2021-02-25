@@ -150,7 +150,6 @@ HAS_FOOTMARK = False
 
 try:
     from footmark.exception import ROSResponseError
-
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
