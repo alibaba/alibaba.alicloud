@@ -114,7 +114,7 @@ options:
       description:
         - Category of the system disk.
       default: 'cloud_efficiency'
-      choices: ['cloud_efficiency', 'cloud_ssd']
+      choices: ['cloud_efficiency', 'cloud_ssd', 'cloud_essd']
       type: str
     system_disk_size:
       description:
@@ -773,7 +773,7 @@ def main():
         internet_charge_type=dict(type='str', default='PayByBandwidth', choices=['PayByBandwidth', 'PayByTraffic']),
         max_bandwidth_in=dict(type='int', default=200),
         max_bandwidth_out=dict(type='int', default=0),
-        system_disk_category=dict(type='str', default='cloud_efficiency', choices=['cloud_efficiency', 'cloud_ssd']),
+        system_disk_category=dict(type='str', default='cloud_efficiency', choices=['cloud_efficiency', 'cloud_ssd', 'cloud_essd']),
         system_disk_size=dict(type='int', default=40),
         system_disk_name=dict(type='str'),
         system_disk_description=dict(type='str'),
