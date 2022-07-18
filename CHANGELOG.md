@@ -1,5 +1,15 @@
 # Ansible-Alicloud Change Log
-## 1.20.0 (Unreleased)
+## 1.21.0 (Unreleased)
+## 1.20.0 (18 July 2022)
+
+- ali_oss_xxx: supports setting ecs_role_name ([#302](https://github.com/alibaba/ansible-provider/pull/302))
+- Support specifying cloud_essd as sysdisk for the gen6 instances. Fix #292 ([#301](https://github.com/alibaba/ansible-provider/pull/301))
+- Support specifying cloud_essd as sysdisk for the gen6 instances. ([#293](https://github.com/alibaba/ansible-provider/pull/293))
+- ansible ros ([#290](https://github.com/alibaba/ansible-provider/pull/290))
+- add oos role ([#281](https://github.com/alibaba/ansible-provider/pull/281))
+- fix several bugs of module instance ([#279](https://github.com/alibaba/ansible-provider/pull/279))
+- add ros role ([#277](https://github.com/alibaba/ansible-provider/pull/277))
+- add yaml module in setup.py ([#273](https://github.com/alibaba/ansible-provider/pull/273))
 
 ## 1.19.0 (22 April, 2020)
 - Add resource_id for some modules ([#260](https://github.com/alibaba/ansible-provider/pull/260))
