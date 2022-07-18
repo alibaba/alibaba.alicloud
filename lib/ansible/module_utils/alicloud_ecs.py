@@ -28,6 +28,7 @@
 
 import os
 import json
+import requests
 from ansible.module_utils.basic import env_fallback
 
 try:
@@ -172,6 +173,15 @@ def get_profile(params):
                 params = get_assume_role(params)
     elif params.get('alicloud_assume_role_arn') or params.get('assume_role'):
         params = get_assume_role(params)
+    elif params.get('ecs_role_name'):
+        # if the sdk does not support ecs_role_name, there needs to get sts credential manually and setting them.
+        r = requests.get('http://100.100.100.200/latest/meta-data/Ram/security-credentials/' + params['ecs_role_name'])
+        params.update(dict(alicloud_access_key=r.json().get('AccessKeyId'),
+                           alicloud_secret_key=r.json().get('AccessKeySecret'),
+                           alicloud_security_token=r.json().get('SecurityToken')
+                           )
+                      )
+        params = get_acs_connection_info(params)
     else:
         params = get_acs_connection_info(params)
     return params
