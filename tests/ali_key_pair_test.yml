@@ -5,16 +5,16 @@
 
   tasks:
     - name: Changed. Create a new key pair
-      ali_key_pair:
+      alibaba.alicloud.ali_key_pair:
         name: ansible
         comments: create for ansible
 
     - name: Changed. Force update key pair
-      ali_key_pair:
+      alibaba.alicloud.ali_key_pair:
         name: ansible
         force: yes
 
     - name: Changed. Remove key pair
-      ali_key_pair:
+      alibaba.alicloud.ali_key_pair:
         name: ansible
         state: absent
