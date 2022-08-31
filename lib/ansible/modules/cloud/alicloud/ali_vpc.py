@@ -48,7 +48,6 @@ options:
         It cannot begin with http:// or https://.
         This is used in combination with C(cidr_block) to determine if a VPC already exists.
     aliases: ['vpc_name']
-    required: True
     type: str
   vpc_id:
     description:
@@ -63,7 +62,6 @@ options:
     description:
       - The primary CIDR of the VPC. This is used in conjunction with the C(name) to ensure idempotence.
     aliases: ['cidr']
-    required: True
     type: str
   user_cidrs:
     description:
@@ -244,9 +242,9 @@ def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
         state=dict(default='present', choices=['present', 'absent']),
-        cidr_block=dict(type='str', required=True, aliases=['cidr']),
+        cidr_block=dict(type='str', aliases=['cidr']),
         user_cidrs=dict(type='list', elements='str'),
-        name=dict(type='str', required=True, aliases=['vpc_name']),
+        name=dict(type='str', aliases=['vpc_name']),
         vpc_id=dict(type='str', aliases=['id']),
         multi_ok=dict(type='bool', default=False),
         description=dict(type='str'),
