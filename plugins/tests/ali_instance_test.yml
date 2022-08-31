@@ -1,0 +1,138 @@
+---
+- name: Validate module ali_instance
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+
+  tasks:
+    - name: Changed. Modifying name, host name and description when C(present)
+      ali_instance:
+        instance_ids: '{{ instances.ids}}'
+        name: '{{ name }}-modified'
+        description: 'Test modify name, host name and description'
+        host_name: 'modify-host-name'
+
+    - name: No Changed. Password and userdata will not be effect when C(present)
+      ali_instance:
+        instance_ids: '{{ instances.ids}}'
+        password: 'NewTest12345'
+        user_data: '#!/bin/bash -v \n cd /usr \n mkdir -p alicloud/ansible'
+
+    - name: Changed. Modifying password when C(restarted)
+      ali_instance:
+        state: restarted
+        instance_ids: '{{ instances.ids}}'
+        password: 'NewTest12345'
+        force: True
+
+    - name: Changed. Modifying userdata when C(stopped)
+      ali_instance:
+        state: stopped
+        instance_ids: '{{ instances.ids}}'
+        user_data: '#!/bin/bash -v \n cd /usr \n mkdir -p alicloud/ansible'
+
+    - name: Changed. Running the instance and modifying name, host name and description when C(running)
+      ali_instance:
+        state: running
+        instance_ids: '{{ instances.ids}}'
+        name: '{{ name }}'
+        description: '{{instance_description}}'
+        host_name: 'modify-host-name'
+
+    - name: No Changed. There is no any attribute changed
+      ali_instance:
+        instance_ids: '{{ instances.ids}}'
+        name: '{{ name }}'
+        description: '{{instance_description}}'
+        host_name: 'modify-host-name'
+        password: 'Test12345'
+
+    - name: Changed. Adding a tag
+      ali_instance:
+        instance_ids: '{{ instances.ids}}'
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+
+    - name: Changed. Modifying a tag
+      ali_instance:
+        instance_ids: '{{ instances.ids}}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+
+    - name: No Changed. No tags need to be added
+      ali_instance:
+        instance_ids: '{{ instances.ids}}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+
+    - name: Changed. Removing other tags
+      ali_instance:
+        instance_ids: '{{instances.ids}}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+
+    - name: No Changed. No tags need to be removed
+      ali_instance:
+        instance_ids: '{{instances.ids}}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+
+#    - name: Changed. Modifying instance charge type
+#      ali_instance:
+#        instance_ids: '{{ instances.ids }}'
+#        instance_charge_type: 'PrePaid'
+#
+#    - name: No Changed. Modifying instance charge type
+#      ali_instance:
+#        instance_ids: '{{ instances.ids }}'
+#        instance_charge_type: 'PrePaid'
+#
+#    - name: Changed. Modifying instance charge type
+#      ali_instance:
+#        instance_ids: '{{ instances.ids }}'
+#        instance_charge_type: 'PostPaid'
+#
+#    - name: No Changed. Modifying instance charge type
+#      ali_instance:
+#        instance_ids: '{{ instances.ids }}'
+#        instance_charge_type: 'PostPaid'
+
+    # Delete all of resource
+    - name: Changed. Deleting instances
+      ali_instance:
+        instance_ids: '{{instances.ids}}'
+        force: True
+        state: absent
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'

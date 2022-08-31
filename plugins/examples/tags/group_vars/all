@@ -1,0 +1,27 @@
+---
+state: state
+alicloud_region: "cn-hangzhou"
+
+# default tags
+tags: {env: prod, source: ansible, usage: poc}
+
+# ecs instance filter parameters and tags
+instance_name: 'Ansible_Instance'
+instance_filters: {}
+instance_tags: {applicate: hello-word, network: vpc, os: ubuntu}
+
+# security group filter parameters and tags
+security_group_name: 'Ansible_Security_Group'
+security_group_filters: {}
+security_group_tags: {for: ecs-instance, network: vpc}
+
+# vpc filter parameters and tags
+vpc_name: 'Ansible_VPC'
+vpc_filters: {}
+vpc_tags: {env: prod, for: ecs, cidr: 172.16.0.0/16}
+
+# vswitch filter parameters and tags
+vswitch_name: "Ansible_VSwitch"
+vswitch_filters: {}
+vswitch_tags: {usage: poc, applicate: hello-word}
+

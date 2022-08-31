@@ -1,6 +1,6 @@
 ---
 - name: Create a new alicloud EIP resource
-  ali_eip:
+  alibaba.alicloud.ali_eip:
     internet_charge_type: '{{ internet_charge_type }}'
     bandwidth: 1
     name: '{{ name }}-ali-eip'

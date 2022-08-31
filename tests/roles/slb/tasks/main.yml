@@ -1,6 +1,6 @@
 ---
 - name: Creating a public SLB instance
-  ali_slb_lb:
+  alibaba.alicloud.ali_slb_lb:
     name: '{{ name }}-public'
     internet_charge_type: '{{ internet_charge_type }}'
     is_internet: True
@@ -9,7 +9,7 @@
   register: slbpub
 
 - name: Creating a private SLB instance
-  ali_slb_lb:
+  alibaba.alicloud.ali_slb_lb:
     name: '{{ name }}-private'
     internet_charge_type: '{{ internet_charge_type }}'
     spec: slb.s1.small

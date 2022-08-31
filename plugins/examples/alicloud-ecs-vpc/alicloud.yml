@@ -1,0 +1,11 @@
+---
+- name: Create an alicloud vpc cluster using ansible-provider-alicloud
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+    - disk

@@ -1,0 +1,171 @@
+---
+- name: Validate module ali_ecs_tag
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+    - network_interface
+
+  tasks:
+    - name: Filter instance using name_regex
+      ali_instance_info:
+        name_prefix: 'ansible'
+      register: instances
+
+    - name: Changed. Add Tags.
+      ali_ecs_tag:
+        resource_type: 'instance'
+        resource_ids: '{{ instances.ids }}'
+        tags: {
+                "Ansible": "Add tags"
+        }
+
+    - name: No Changed. Add Tags.
+      ali_ecs_tag:
+        resource_type: 'instance'
+        resource_ids: '{{ instances.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: Changed. Remove Tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'instance'
+        resource_ids: '{{ instances.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: No Changed. Remove Tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'instance'
+        resource_ids: '{{ instances.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: Filter security group using name_regex
+      ali_security_group_info:
+        name_prefix: '{{ name }}'
+      register: sgs
+
+    - name: Changed. Add security group Tags.
+      ali_ecs_tag:
+        resource_type: 'securitygroup'
+        resource_ids: '{{ sgs.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: No Changed. Add security group Tags.
+      ali_ecs_tag:
+        resource_type: 'securitygroup'
+        resource_ids: '{{ sgs.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: Changed. Remove security group Tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'securitygroup'
+        resource_ids: '{{ sgs.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: No Changed. Remove security group Tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'securitygroup'
+        resource_ids: '{{ sgs.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: Filter eni using name_regex
+      ali_eni_info:
+        name_prefix: '{{ name }}'
+      register: enis
+
+    - name: Changed. Add eni Tags.
+      ali_ecs_tag:
+        resource_type: 'eni'
+        resource_ids: '{{ enis.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: No Changed. Add eni Tags.
+      ali_ecs_tag:
+        resource_type: 'eni'
+        resource_ids: '{{ enis.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: Changed. Remove eni Tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'eni'
+        resource_ids: '{{ enis.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    - name: No Changed. Remove eni Tags.
+      ali_ecs_tag:
+        state: absent
+        resource_type: 'eni'
+        resource_ids: '{{ enis.ids }}'
+        tags: {
+          "Ansible": "Add tags"
+        }
+
+    # Delete all of resource
+    - name: Changed. Deleting disks
+      ali_disk:
+        id: '{{item.id}}'
+        instance_id: '{{ item.instance_id }}'
+        state: absent
+      with_items: '{{disks.disks}}'
+
+    - name: Changed. Deleting enis
+      ali_eni:
+        id: '{{item}}'
+        state: absent
+      with_items: '{{enis.ids}}'
+
+    - name: Changed. Deleting instances
+      ali_instance:
+        instance_ids: '{{instances.ids}}'
+        force: True
+        state: absent
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'
+

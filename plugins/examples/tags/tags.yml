@@ -1,0 +1,68 @@
+---
+- name: Add or Remove tags for resource
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+
+    - name: Filter instance using name_regex
+      alibaba.alicloud.ali_instance_info:
+        alicloud_region: '{{ alicloud_region }}'
+        name_prefix: '{{ instance_name }}'
+        filters: '{{ instance_filters }}'
+      register: instances
+
+    - name: Changed. Operation instance tags.
+      alibaba.alicloud.ali_ecs_tag:
+        alicloud_region: '{{ alicloud_region }}'
+        state: '{{ state }}'
+        resource_type: 'instance'
+        resource_ids: '{{ instances.ids }}'
+        tags: '{{ instance_tags }}'
+
+
+    - name: Filter security group using name_regex
+      alibaba.alicloud.ali_security_group_info:
+        alicloud_region: '{{ alicloud_region }}'
+        name_prefix: '{{ security_group_name }}'
+        filters: '{{ security_group_filters }}'
+      register: sgs
+
+    - name: Changed. Operation security group Tags.
+      alibaba.alicloud.ali_ecs_tag:
+        alicloud_region: '{{ alicloud_region }}'
+        state: '{{ state }}'
+        resource_type: 'securitygroup'
+        resource_ids: '{{ sgs.ids }}'
+        tags: '{{ security_group_tags }}'
+
+
+    - name: Filter vpc using name_regex
+      alibaba.alicloud.ali_vpc_info:
+        alicloud_region: '{{ alicloud_region }}'
+        name_prefix: '{{ vpc_name }}'
+        filters: '{{ vpc_filters }}'
+      register: vpcs
+
+    - name: Changed. Operation vpc tags.
+      alibaba.alicloud.ali_vpc_tag:
+        alicloud_region: '{{ alicloud_region }}'
+        state: '{{ state }}'
+        resource_type: 'vpc'
+        resource_ids: '{{ vpcs.ids }}'
+        tags: '{{ vpc_tags }}'
+
+    - name: Filter the existing vswitch
+      alibaba.alicloud.ali_vswitch_info:
+        alicloud_region: '{{ alicloud_region }}'
+        name_prefix: '{{ vswitch_name }}'
+        filters: '{{ vswitch_filters }}'
+      register: vswithes
+
+    - name: Changed. Operation vswitch Tags.
+      alibaba.alicloud.ali_vpc_tag:
+        alicloud_region: '{{ alicloud_region }}'
+        state: '{{ state }}'
+        resource_type: 'vswitch'
+        resource_ids: '{{ vswithes.ids }}'
+        tags: '{{ vswitch_tags }}'

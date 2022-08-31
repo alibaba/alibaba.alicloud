@@ -1,0 +1,23 @@
+---
+- name: Validate module ali_dns_group
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - dns
+    - dns_group
+
+  tasks:
+    - name: Get the existing group
+      ali_dns_group_info:
+        name_prefix: '{{ group_name }}_new'
+
+    - name: Changed. Deleting dns
+      ali_dns_domain:
+        domain_name: '{{ domain_name }}'
+        state: absent
+
+    - name: Changed. Deleting dns group
+      ali_dns_group:
+        group_name: '{{ group_name }}'
+        state: absent

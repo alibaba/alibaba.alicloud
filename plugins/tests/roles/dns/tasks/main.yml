@@ -1,0 +1,11 @@
+---
+- name: Create a new domain
+  ali_dns_domain:
+    state: 'present'
+    domain_name: '{{ domain_name }}'
+    remark: '{{ remark }}'
+
+- name: Get the existing dns
+  ali_dns_domain_info:
+    domain_name: '{{ domain_name }}'
+  register: dns

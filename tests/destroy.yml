@@ -5,19 +5,19 @@
 
   tasks:
     - name: Get the existing instances
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         name_prefix: '{{ name }}'
       register: instances
 
     - name: Delete the existing instances
-      ali_instance:
+      alibaba.alicloud.ali_instance:
         instance_ids: '{{ instances.ids.0.id }}'
         force: true
         state: absent
       when: instances.ids
 #
 #    - name: Get the existing disks
-#      ali_disk_info:
+#      alibaba.alicloud.ali_disk_info:
 #        alicloud_region: '{{ alicloud_region }}'
 #        alicloud_zone: '{{ alicloud_zone }}'
 #        disk_names:
@@ -26,7 +26,7 @@
 #      register: disks
 #
 #    - name: Delete the existing disk 0
-#      ali_disk:
+#      alibaba.alicloud.ali_disk:
 #        alicloud_region: '{{ alicloud_region }}'
 #        alicloud_zone: '{{ alicloud_zone }}'
 #        disk_id: '{{ disks.disks.0.id }}'
@@ -34,7 +34,7 @@
 #      when: disks.disks
 #
 #    - name: Delete the existing disk 1
-#      ali_disk:
+#      alibaba.alicloud.ali_disk:
 #        alicloud_region: '{{ alicloud_region }}'
 #        alicloud_zone: '{{ alicloud_zone }}'
 #        disk_id: '{{ disks.disks.1.id}}'
@@ -42,12 +42,12 @@
 #      when: disks.disks
 
     - name: Retrieving all security groups based on name_regex
-      ali_security_group_info:
+      alibaba.alicloud.ali_security_group_info:
         name_prefix: '{{name}}'
       register: sgs
 
     - name: Changed. Deleting security groups
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
@@ -55,24 +55,24 @@
       when: sgs.groups
 
     - name: Retrieving all slbs based on name_regex
-      ali_slb_lb_info:
+      alibaba.alicloud.ali_slb_lb_info:
         name_prefix: '{{name}}'
       register: slbs
 
     - name: Changed. Deleting slbs
-      ali_slb_lb:
+      alibaba.alicloud.ali_slb_lb:
         name: '{{ item.name }}'
         state: absent
       with_items: '{{slbs.load_balancers}}'
       when: slbs.load_balancers
 
     - name: Retrieving all vswitches based on name_regex
-      ali_vswitch_info:
+      alibaba.alicloud.ali_vswitch_info:
         name_prefix: '{{name}}'
       register: vswitches
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
@@ -80,12 +80,12 @@
       when: vswitches.vswitches
 
     - name: Get the existing vpc
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         name_prefix: '{{name}}'
       register: vpcs
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ item.cidr_block }}'
         name: '{{ item.vpc_name }}'
         state: absent

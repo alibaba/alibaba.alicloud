@@ -8,26 +8,26 @@
 
   tasks:
     - name: Changed. Create a new template with json
-      ali_oos_template:
+      alibaba.alicloud.ali_oos_template:
         content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances of given status", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\{\{ Status \}\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
         template_name: '{{ name }}12345'
         tags:
           From: 'ansible'
 
     - name: No Changed. Create a new template
-      ali_oos_template:
+      alibaba.alicloud.ali_oos_template:
         content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances of given status", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\{\{ Status \}\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
         template_name: '{{ name }}'
         tags:
           From: 'ansible'
 
     - name: Changed. Delete template
-      ali_oos_template:
+      alibaba.alicloud.ali_oos_template:
         state: absent
         template_name: '{{ name }}'
 
     - name: Changed. Create a new template with yml
-      ali_oos_template:
+      alibaba.alicloud.ali_oos_template:
         content:
           FormatVersion: OOS-2019-06-01
           Description: Describe instances of given status
@@ -48,11 +48,11 @@
           From: 'ansible'
 
     - name: Changed. Update template
-      ali_oos_template:
+      alibaba.alicloud.ali_oos_template:
         content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\{\{ Status \}\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
         template_name: '{{ name }}'
 
     - name: Changed. Delete template
-      ali_oos_template:
+      alibaba.alicloud.ali_oos_template:
         state: absent
         template_name: '{{ name }}'

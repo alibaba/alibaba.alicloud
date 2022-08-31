@@ -1,0 +1,26 @@
+---
+- name: Get the existing vpc
+  alibaba.alicloud.ali_vpc_info:
+    region: '{{alicloud_region}}'
+    vpc_name: '{{vpc_name}}'
+  register: vpcs
+
+- name: Get the existing groups
+  alibaba.alicloud.ali_security_group_info:
+    region: '{{alicloud_region}}'
+    group_name: '{{ group_name }}'
+    filters:
+      vpc_id: '{{vpcs.vpcs.0.id}}'
+  register: sgs
+
+- name: Creating security group
+  alibaba.alicloud.ali_security_group:
+    alicloud_region: '{{ alicloud_region }}'
+    state: 'present'
+    name: '{{ group_name }}'
+    description: '{{ group_description }}'
+    vpc_id: '{{vpcs.vpcs.0.id}}'
+    rules: '{{ group_inboundRules }}'
+    rules_egress: '{{ group_outboundRules }}'
+  when: not sgs.groups
+  register: group

@@ -1,0 +1,34 @@
+---
+- name: Validate module ali_oos_template_info
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    name: ansible-testacc-ali_oos_template
+
+  tasks:
+    - name: Changed. Create a new template
+      ali_oos_template:
+        content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances of given status", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\{\{ Status \}\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
+        template_name: '{{ name }}'
+        tags:
+          From: 'ansible'
+
+    - name: No Changed. Get template with name_prefix
+      ali_oos_template_info:
+        name_prefix: 'ansible-testacc'
+
+    - name: No Changed. Get template with tags
+      ali_oos_template_info:
+        tags:
+          from: 'ansible'
+
+    - name: No Changed. Get template with filters
+      ali_oos_template_info:
+        filters:
+          share_type: Private
+
+    - name: Changed. Delete template
+      ali_oos_template:
+        state: absent
+        template_name: '{{ name }}'

@@ -1,0 +1,76 @@
+---
+- name: Validate module ali_route_entry
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    name: ansible-testacc-ali_vpc-module
+#    availability_zone: cn-hangzhou-b
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+
+  tasks:
+    - name: Changed. Create a route entry
+      ali_route_entry:
+        router_id: '{{ vpcs.vpcs.0.vrouter_id }}'
+        destination_cidrblock: "172.16.10.0/24"
+        nexthop_id: '{{ instances.instances.0.id }}'
+        nexthop_type: 'Instance'
+
+    - name: Get the existing route entry
+      ali_route_entry_info:
+        vrouter_id: '{{ vpcs.vpcs.0.vrouter_id }}'
+        route_table_id: '{{ vpcs.vpcs.0.router_table_ids.router_table_ids.0 }}'
+      register: route_entries
+
+    - name: Changed. Modify name.
+      ali_route_entry:
+        destination_cidrblock: "172.16.10.0/24"
+        router_id: '{{ route_entries.vrouter_id }}'
+        name: 'modify_route_entry_name'
+
+    - name: Not Changed. No any attribute changed.
+      ali_route_entry:
+        destination_cidrblock: "172.16.10.0/24"
+        router_id: '{{ route_entries.vrouter_id }}'
+        name: 'modify_route_entry_name'
+
+    - name: Changed. Deleting route entry
+      ali_route_entry:
+        destination_cidrblock: '172.16.10.0/24'
+        nexthop_id: '{{ instances.instances.0.id }}'
+        router_id: '{{ vpcs.vpcs.0.vrouter_id }}'
+        state: 'absent'
+
+    - name: Changed. Deleting instances
+      ali_instance:
+        instance_ids: '{{ instances.ids }}'
+        force: True
+        state: absent
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{ item.vpc_id }}'
+        state: absent
+      with_items: '{{ sgs.groups }}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{ vswitches.vswitches }}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{ item.vpc_name }}'
+        cidr_block: '{{ item.cidr_block }}'
+        state: absent
+      with_items: '{{ vpcs.vpcs }}'
+
+

@@ -5,9 +5,9 @@
 
   tasks:
     - name: Get the existing user with name_prefix
-      ali_ram_user_info:
+      alibaba.alicloud.ali_ram_user_info:
         name_prefix: ansible
       register: users
 
     - name: Get the existing users
-      ali_ram_user_info:
+      alibaba.alicloud.ali_ram_user_info:

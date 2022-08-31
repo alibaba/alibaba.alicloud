@@ -1,0 +1,58 @@
+---
+# market product info
+product_keyword: Wordpress
+product_supplier_keyword:
+product_suggestion_price: 0
+
+# ecs instance filter parameters
+alicloud_region: cn-beijing
+availability_zone: cn-beijing-h
+instance_name: 'Instance_From_Ansible_Market'
+instance_tags: {For: Market, Created: Ansible, From: example/market}
+image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
+instance_type: ecs.g5.large
+instance_description: "Create a new ECS instance resource via Ansible example market."
+password: YourPassword123
+
+allocate_public_ip: True
+internet_charge_type: "PayByTraffic"
+max_bandwidth_in: 200
+max_bandwidth_out: 50
+
+system_disk_category: "cloud_ssd"
+system_disk_size: 50
+number_of_instances: 1
+
+# security group filter parameters
+security_group_name: 'Security_Group_From_Ansible_Market'
+security_group_tags: {For: Market, Created: Ansible, From: example/market}
+
+group_description: "Create a new security group resource via Ansible example market."
+group_inboundRules:
+  - ip_protocol: tcp
+    port_range: 22/22
+    source_cidr_ip: 0.0.0.0/0
+    priority: 1
+
+  - ip_protocol: tcp
+    port_range: 80/80
+    source_cidr_ip: 0.0.0.0/0
+    priority: 1
+
+group_outboundRules:
+  - ip_protocol: tcp
+    port_range: 80/80
+    dest_cidr_ip: 192.168.0.54/32
+    priority: 1
+
+# vpc filter parameters
+vpc_name: 'Vpc_From_Ansible_Market'
+vpc_tags: {For: Market, Created: Ansible, From: example/market}
+vpc_cidr: "172.16.0.0/12"
+vpc_description: "Create a new VPC resource via Ansible example market."
+
+# vswitch parameters
+vswitch_cidr: "172.16.1.0/24"
+vswitch_description: "Create a new VSwitch resource via Ansible example market."
+vswitch_name: 'Vswitch_From_Ansible_Market'
+

@@ -10,7 +10,7 @@
 
   tasks:
     - name: Search products
-      ali_market_product_info:
+      alibaba.alicloud.ali_market_product_info:
         search_term: 'Wordpress'
         product_type: MIRROR
         category_id: '53616009'
@@ -18,14 +18,14 @@
       register: products
 
     - name: Get the existing ECS instances
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         name_prefix: 'Instance_From_Ansible_Market'
         filters:
           page_size: 100
       register: instances
 
     - name: Creating an ECS instance
-      ali_instance:
+      alibaba.alicloud.ali_instance:
         image: '{{ products.products.0.image_ids.2.value }}'
         type: 'ecs.g5.large'
         instance_name: 'Instance_From_Ansible_Market'

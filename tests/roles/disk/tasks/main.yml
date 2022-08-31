@@ -1,6 +1,6 @@
 ---
 - name: Create first new disk and attach it to an instance 0
-  ali_disk:
+  alibaba.alicloud.ali_disk:
     alicloud_zone: '{{ availability_zone }}'
     disk_name: '{{ disk_name }}-0'
     disk_category: '{{ disk_category }}'
@@ -12,7 +12,7 @@
   register: disk_details
 
 - name: Create a new disk and attach it to an instance
-  ali_disk:
+  alibaba.alicloud.ali_disk:
     alicloud_zone: '{{ availability_zone }}'
     disk_name: '{{ disk_name }}-1'
     disk_category: '{{ disk_category }}'

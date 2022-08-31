@@ -1,0 +1,36 @@
+---
+- name: Get the existing groups
+  alibaba.alicloud.ali_security_group_info:
+    region: '{{alicloud_region}}'
+    group_name: '{{ group_name }}'
+    filters:
+      vpc_id: '{{vpcs.vpcs.0.id}}'
+  register: sgs
+
+- name: Creating an ECS instance
+  alibaba.alicloud.ali_instance:
+    alicloud_region: '{{ alicloud_region }}'
+    alicloud_zone: '{{ alicloud_zone }}'
+    image: '{{ image_id }}'
+    type: '{{ instance_type }}'
+    instance_name: '{{ instance_name }}'
+    description: '{{ instance_description }}'
+    host_name: '{{ host_name }}'
+    password: '{{ password }}'
+
+    allocate_public_ip: '{{ allocate_public_ip }}'
+    internet_charge_type: '{{ internet_charge_type }}'
+    max_bandwidth_in: '{{ max_bandwidth_in }}'
+    max_bandwidth_out: '{{ max_bandwidth_out }}'
+    instance_tags: '{{ instance_tags }}'
+
+    security_groups: ['{{ sgs.groups.0.id }}']
+    vswitch_id: '{{ vswitch.vswitch.id }}'
+
+    system_disk_category: '{{ system_disk_category }}'
+    system_disk_size: '{{ system_disk_size }}'
+
+    state: 'present'
+    count: '{{ number_of_instances }}'
+  when: sgs.groups
+  register: instance

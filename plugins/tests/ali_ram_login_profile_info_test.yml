@@ -1,0 +1,9 @@
+---
+- name: Validate module ali_ram_login_profile_info
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Get the existing login profile.
+      ali_ram_login_profile_info:
+        user_name: ansible

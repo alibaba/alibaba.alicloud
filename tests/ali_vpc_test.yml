@@ -11,7 +11,7 @@
 
   tasks:
     - name: Changed. Create a new vpc with user_cidrs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ vpc_cidr }}'
         vpc_name: '{{ name }}-user_cidrs'
         description: '{{ vpc_description }}'
@@ -20,20 +20,20 @@
           - 172.16.101.0/24
 
     - name: Get the existing vpc
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         name_prefix: '{{name}}'
       register: vpcs
 
 # At present, it does not support modifying name
 #    - name: Changed. Modifying name.
-#      ali_vpc:
+#      alibaba.alicloud.ali_vpc:
 #        cidr_block: '{{ vpc_cidr }}'
 #        name: '{{ item.vpc_name }}'
 #        new_name: '{{ item.vpc_name }}-modified'
 #      with_items: '{{vpcs.vpcs}}'
 
     - name: Changed. Add Tags.
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ vpc_cidr }}'
         name: '{{ item.vpc_name }}'
         tags:
@@ -42,16 +42,16 @@
       with_items: '{{vpcs.vpcs}}'
 
     - name: Get the existing vpc
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         name_prefix: '{{name}}'
 
     - name: Filter vpc using tags
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         tags:
           Test1: "add1"
 
     - name: Changed. Modify Tags.
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ vpc_cidr }}'
         name: '{{ item.vpc_name }}'
         tags:
@@ -60,7 +60,7 @@
       with_items: '{{vpcs.vpcs}}'
 
     - name: No Changed. No tags need to be added
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ vpc_cidr }}'
         name: '{{ item.vpc_name }}'
         tags:
@@ -69,11 +69,11 @@
       with_items: '{{vpcs.vpcs}}'
 
     - name: Get the existing vpc
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         name_prefix: '{{name}}'
 
     - name: Changed. Removing tags.
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ vpc_cidr }}'
         name: '{{ item.vpc_name }}'
         purge_tags: True
@@ -82,7 +82,7 @@
       with_items: '{{vpcs.vpcs}}'
 
     - name: No Changed. No tags need to be removed.
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ vpc_cidr }}'
         name: '{{ item.vpc_name }}'
         purge_tags: True
@@ -91,28 +91,32 @@
       with_items: '{{ vpcs.vpcs }}'
 
     - name: Get the existing vpc
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         name_prefix: '{{ name }}'
 
     - name: Changed. Modify description with vpc id.
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         vpc_id: '{{ item.id }}'
+        cidr_block: '{{ item.cidr_block }}'
+        name: '{{ item.vpc_name }}'
         description: '{{ vpc_description }}-modified'
       with_items: '{{vpcs.vpcs}}'
 
     - name: Not Changed. No any attribute changed.
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         vpc_id: '{{ item.id }}'
+        cidr_block: '{{ item.cidr_block }}'
+        name: '{{ item.vpc_name }}'
         description: '{{ vpc_description }}-modified'
       with_items: '{{vpcs.vpcs}}'
 
     - name: Get the existing vpc
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         name_prefix: '{{name}}'
       register: vpcs
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ item.cidr_block }}'
         name: '{{ item.vpc_name }}'
         state: absent

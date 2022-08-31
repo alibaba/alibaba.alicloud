@@ -10,12 +10,12 @@
 
   tasks:
     - name: Filter slb using name_regex
-      ali_slb_lb_info:
+      alibaba.alicloud.ali_slb_lb_info:
         name_prefix: 'ansible'
       register: slbs
 
     - name: Changed. Add Tags.
-      ali_slb_tag:
+      alibaba.alicloud.ali_slb_tag:
         resource_type: 'instance'
         resource_ids: '{{ slbs.ids }}'
         tags: {
@@ -23,7 +23,7 @@
         }
 
     - name: No Changed. Add Tags.
-      ali_slb_tag:
+      alibaba.alicloud.ali_slb_tag:
         resource_type: 'instance'
         resource_ids: '{{ slbs.ids }}'
         tags: {
@@ -32,7 +32,7 @@
 
 
     - name: Changed. Remove Tags.
-      ali_slb_tag:
+      alibaba.alicloud.ali_slb_tag:
         state: absent
         resource_type: 'instance'
         resource_ids: '{{ slbs.ids }}'
@@ -41,7 +41,7 @@
         }
 
     - name: No Changed. Remove Tags.
-      ali_slb_tag:
+      alibaba.alicloud.ali_slb_tag:
         state: absent
         resource_type: 'instance'
         resource_ids: '{{ slbs.ids }}'
@@ -50,19 +50,19 @@
         }
 
     - name: Changed. Deleting slbs
-      ali_slb_lb:
+      alibaba.alicloud.ali_slb_lb:
         name: '{{ name }}'
         state: absent
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         name: '{{item.vpc_name}}'
         cidr_block: '{{item.cidr_block}}'
         state: absent

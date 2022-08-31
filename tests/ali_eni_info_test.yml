@@ -14,11 +14,11 @@
 
   tasks:
     - name: Retrieving enis using eni_ids
-      ali_eni_info:
+      alibaba.alicloud.ali_eni_info:
         eni_ids: '{{ enis.ids}}'
 
     - name: Add two new enis and used to test name_regex and tags
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         vswitch_id: '{{ vswitches.vswitches.0.id }}'
         security_groups: ['{{ sgs.groups.0.id }}']
         name: '{{ name }}regex'
@@ -27,45 +27,45 @@
           Test: tags
 
     - name: Filter instance using name_regex
-      ali_eni_info:
+      alibaba.alicloud.ali_eni_info:
         name_prefix: '{{name}}regex'
 
     - name: Retrieving instance using tags
-      ali_eni_info:
+      alibaba.alicloud.ali_eni_info:
         tags:
           Test: tags
 
     - name: Retrieving all enis
-      ali_eni_info:
+      alibaba.alicloud.ali_eni_info:
 
     - name: Retrieving all enis based on name_regex
-      ali_eni_info:
+      alibaba.alicloud.ali_eni_info:
         name_prefix: '{{name}}'
       register: enis
 
     # Delete all of resource
     - name: Changed. Deleting network interfaces
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         state: absent
       with_items: '{{enis.ids}}'
 
     - name: Changed. Deleting security groups
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         name: '{{item.vpc_name}}'
         cidr_block: '{{item.cidr_block}}'
         state: absent

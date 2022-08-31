@@ -1,0 +1,9 @@
+---
+- name: Validate module ali_ram_role_info
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Get the existing role
+      ali_ram_role_info:
+        name_prefix: ansible

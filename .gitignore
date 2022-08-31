@@ -109,3 +109,4 @@ var/
 *.cache
 *.index
 *.bak
+*issues
