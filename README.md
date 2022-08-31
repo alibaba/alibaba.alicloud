@@ -1,12 +1,58 @@
-# Ansible ECS Module
-
-Ansible Alicloud Module is a new ansible module, and you can manage Alicloud ECS and other services more flexibly and conveniently via it. Next to introduce simply this module.
+# Alibaba Cloud Collection
+The Ansible Alibaba Cloud collection includes a variety of Ansible content to help automate the management of Alibaba Cloud instances. This collection is maintained by the Alibaba Cloud team.
 
 <a href="https://shell.aliyun.com/?action=git_open&git_repo=https://code.aliyun.com/labs/tutorial-cli-ansible.git&tutorial=tutorial-zh.md#/" target="try_ansible_in_cloudshell">
   <img src="https://img.alicdn.com/tfs/TB1wt1zq9zqK1RjSZFpXXakSXXa-1066-166.png" width="180" />
 </a>
 
-## lib/ansible/modules/cloud/alicloud
+## Python version compatibility
+
+This collection requires Python 3.6 or greater.
+
+## Installing this collection
+
+You can install the Alibaba Cloud collection with the Ansible Galaxy CLI:
+
+    ansible-galaxy collection install alibaba.alicloud
+
+You can also include it in a `requirements.yml` file and install it with `ansible-galaxy collection install -r requirements.yml`, using the format:
+
+```yaml
+---
+collections:
+  - name: alibaba.alicloud
+```
+
+A specific version of the collection can be installed by using the `version` keyword in the `requirements.yml` file:
+
+```yaml
+---
+collections:
+  - name: alibaba.alicloud
+    version: 1.0.0
+```
+
+The python module dependencies are not installed by `ansible-galaxy`.  They can
+be manually installed using pip:
+
+    pip install requirements.txt
+
+## Using this collection
+
+You can either call modules by their Fully Qualified Collection Namespace (FQCN), such as `alibaba.alicloud.ali_vpc`, or you can call modules by their short name if you list the `alibaba.alicloud` collection in the playbook's `collections` keyword:
+
+```yaml
+---
+	- name: Create a new alicloud VPC resource
+	  alibaba.alicloud.ali_vpc:
+		state: 'present'
+		cidr_block: '{{ vpc_cidr }}'
+		vpc_name: '{{ name }}'
+		description: '{{ vpc_description }}'
+	  register: vpc
+```
+
+## plugins/modules
 There are several files in the module directory, and these files describe some function that can operate alicloud products.
 
 - `ali_instance.py`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
@@ -32,25 +78,6 @@ In the module utils directory, the file alicloud_ecs.py identifies and gains pla
 
 ## examples
 There are some playbooks to create some alicloud resource or build infrastructure architecture.
-
-### Install
-There are two ways to install alicloud provider. However, before installing it. you should ensure `Ansible` has existed in your server.
-If not, please install it using the following command:
-
-    sudo pip install ansible
-
-* First one
-
-    Ansible provider has been released, and you can install it easily using the following command:
-
-      sudo pip install ansible_alicloud
-
-* Second one
-
-    Ansible provider's modules support to install independently. That means you can download one or more modules from lib/ansible/modules/cloud/alicloud and then run them independently.
-    However, before running them, you should ensure `ansible_alicloud_module_utils` has existed in your server. If not, please install it using the following command:
-
-      sudo pip install ansible_alicloud_module_utils
 
 ### Execute playbook
 
