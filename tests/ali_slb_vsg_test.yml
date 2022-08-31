@@ -14,7 +14,7 @@
 
   tasks:
     - name: Changed. Create a VServer Group in SLB
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         lb_id: '{{ slbpri.load_balancer.id }}'
         name: '{{name}}'
         backend_servers:
@@ -25,7 +25,7 @@
       register: vsg
 
     - name: Changed. Add backend servers with vserver_group_id
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         vserver_group_id: '{{ vsg.vserver_group.vserver_group_id }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -35,7 +35,7 @@
             type: ecs
 
     - name: No Changed. There is no any new backend servers
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -49,7 +49,7 @@
             type: ecs
 
     - name: Changed. Change backend server weight and port
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -67,7 +67,7 @@
             type: ecs
 
     - name: No Changed. There is no any backend server need to change
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -85,7 +85,7 @@
             type: ecs
 
     - name: Changed. Remove a backend server
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -100,7 +100,7 @@
         purge_backend_servers: True
 
     - name: No Changed. There is no any backend server will be removed
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -115,7 +115,7 @@
         purge_backend_servers: True
 
     - name: Changed. Remove a backend server and add add a new one
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -130,7 +130,7 @@
         purge_backend_servers: True
 
     - name: Changed. Remove a backend server and add add two and modify existing
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -149,7 +149,7 @@
         purge_backend_servers: True
 
     - name: No Changed. There is no any changes
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
@@ -168,30 +168,30 @@
         purge_backend_servers: True
 
     - name: Changed. Delete the vserver group
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         state: absent
 
     - name: Filter slb using name_regex
-      ali_slb_lb_facts:
+      alibaba.alicloud.ali_slb_lb_facts:
         name_prefix: '{{name}}'
       register: slbs
 
     - name: Changed. Delete slb instances
-      ali_slb_lb:
+      alibaba.alicloud.ali_slb_lb:
         name: '{{ item.name }}'
         state: absent
       with_items: '{{slbs.load_balancers}}'
 
     - name: Changed. Delete ecs instances
-      ali_instance:
+      alibaba.alicloud.ali_instance:
         instance_ids: '{{ instances.ids }}'
         force: True
         state: absent
 
     - name: Changed. Deleting security groups
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
@@ -199,21 +199,21 @@
       when: sgs.groups
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting the security groups
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         name: '{{vpc.vpc.vpc_name}}'
         cidr_block: '{{vpc.vpc.cidr_block}}'
         state: absent

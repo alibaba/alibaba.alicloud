@@ -5,18 +5,18 @@
 
   tasks:
     - name: Changed. Create access key
-      ali_ram_access_key:
+      alibaba.alicloud.ali_ram_access_key:
         user_name: ansible
       register: access
 
     - name: Changed. Update access key
-      ali_ram_access_key:
+      alibaba.alicloud.ali_ram_access_key:
         user_access_key_id: '{{ access.access_key.access_key_id }}'
         user_name: ansible
         status: Inactive
 
     - name: Changed. Delete access key
-      ali_ram_access_key:
+      alibaba.alicloud.ali_ram_access_key:
         state: absent
         user_access_key_id: '{{ access.access_key.access_key_id }}'
         user_name: ansible

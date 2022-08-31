@@ -1,0 +1,25 @@
+---
+- name: Validate module ali_ram_role
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Changed. Create a role
+      ali_ram_role:
+        role_name: ansible
+        policy: '{"Statement": [{"Action": "sts:AssumeRole","Effect": "Allow","Principal": {"Service": ["rds.aliyuncs.com"]}}],"Version": "1"}'
+        description: create for ansible
+
+    - name: Get the existing role
+      ali_ram_role_info:
+        name_prefix: ansible
+
+    - name: Changed. Update role
+      ali_ram_role:
+        role_name: ansible
+        policy: '{"Statement": [{"Action": "sts:AssumeRole","Effect": "Allow","Principal": {"Service": ["ecs.aliyuncs.com"]}}],"Version": "1"}'
+
+    - name: Changed. Delete role
+      ali_ram_role:
+        state: absent
+        role_name: ansible

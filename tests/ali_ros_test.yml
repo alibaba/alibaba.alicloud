@@ -3,7 +3,7 @@
   remote_user: root
   tasks:
     - name: Changed. Create Ros Stack
-      ali_ros_stack:
+      alibaba.alicloud.ali_ros_stack:
         stack_name: vpc_2020-04-08_test
         template: /tmp/create_vpn.json
         timeout_in_minutes: 60
@@ -12,7 +12,7 @@
           VpcName: DemoVpc
 
     - name: Changed. Update Ros Stack
-      ali_ros_stack:
+      alibaba.alicloud.ali_ros_stack:
         stack_name: vpc_2020-04-08_test
         template: /tmp/update_vpc.json
         timeout_in_minutes: 60
@@ -21,6 +21,6 @@
           VpcName: UpdateVpc
 
     - name: Changed. Delete Ros Stack
-      ali_ros_stack:
+      alibaba.alicloud.ali_ros_stack:
         state: absent
         stack_name: vpc_2020-04-08_test

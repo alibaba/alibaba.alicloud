@@ -5,8 +5,8 @@
 
   tasks:
     - name: Get the existing group with name_prefix
-      ali_ram_group_info:
+      alibaba.alicloud.ali_ram_group_info:
         name_prefix: ansible
 
     - name: Get the existing groups
-      ali_ram_group_info:
+      alibaba.alicloud.ali_ram_group_info:

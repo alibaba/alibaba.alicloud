@@ -10,7 +10,7 @@
 
   tasks:
     - name: Create Database
-      ali_rds_database:
+      alibaba.alicloud.ali_rds_database:
         db_instance_id: '{{ rds.instances.0.id }}'
         db_name: ansible_test
         character_set_name: utf8
@@ -19,7 +19,7 @@
       register: database
 
     - name: Create another Database
-      ali_rds_database:
+      alibaba.alicloud.ali_rds_database:
         db_instance_id: '{{ rds.instances.0.id }}'
         db_name: ansible_test2
         character_set_name: utf8
@@ -28,13 +28,13 @@
       register: database2
 
     - name: Get the existing db
-      ali_rds_database_info:
+      alibaba.alicloud.ali_rds_database_info:
         name_prefix: ansible_test
         db_instance_id: '{{ rds.instances.0.id }}'
       register: db
 
     - name: Changed. Create rds account.
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
         account_password: Test12345
@@ -42,68 +42,68 @@
         account_type: Normal
 
     - name: No Changed. get rds account.
-      ali_rds_account_info:
+      alibaba.alicloud.ali_rds_account_info:
         db_instance_id: '{{ rds.instances.0.id }}'
         name_prefix: account_
 
     - name: Changed. Modify rds account password.
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
         account_password: Test12345_new
 
     - name: No Changed. Modify rds account password.
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
         account_password: Test12345_new
 
     - name: Changed. Modify rds account description.
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
         account_description: account from ansible
 
     - name: No Changed. Modify rds account description.
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
         account_description: account from ansible
 
     - name: Changed. Grant rds account privilege
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
         db_names: ['{{db.databases.0.name}}', '{{db.databases.1.name}}']
         account_privilege: ReadWrite
 
     - name: Changed. revoke account privilege
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
         db_names: ['{{db.databases.0.name}}', '{{db.databases.1.name}}']
         state: absent
 
     - name: Changed. Deleting account
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         state: absent
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
 
     - name: Changed. Deleting rds
-      ali_rds_instance:
+      alibaba.alicloud.ali_rds_instance:
         state: absent
         db_instance_name: '{{ rds.instances.0.name }}'
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         name: '{{vpc.vpc.vpc_name}}'
         cidr_block: '{{vpc.vpc.cidr_block}}'
         state: absent

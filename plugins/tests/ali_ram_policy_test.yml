@@ -1,0 +1,60 @@
+---
+- name: Validate module ali_ram_policy
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Changed. Create policy
+      ali_ram_policy:
+        policy_name: ansible_oss
+        policy_document: '{"Statement":[{"Action":["oss:*"],"Effect":"Allow","Resource":["acs:oss:*:*:*"]}],"Version":"1"}'
+        description: create for ansible
+
+    - name: Get the existing policy
+      ali_ram_policy_info:
+        name_prefix: ansible_oss
+      register: policies
+
+    - name: Changed. Attach policy to user
+      ali_ram_policy:
+        user_name: ansible
+        policy_name: ansible_oss
+        policy_type: Custom
+
+    - name: Changed. Detach policy from user
+      ali_ram_policy:
+        state: absent
+        user_name: ansible
+        policy_name: ansible_oss
+        policy_type: Custom
+
+    - name: Changed. Attach policy to group
+      ali_ram_policy:
+        group_name: ansible
+        policy_name: ansible_oss
+        policy_type: Custom
+
+    - name: Changed. Detach policy from group
+      ali_ram_policy:
+        state: absent
+        group_name: ansible
+        policy_name: ansible_oss
+        policy_type: Custom
+
+    - name: Changed. Attach policy to role
+      ali_ram_policy:
+        role_name: ansible
+        policy_name: ansible_oss
+        policy_type: Custom
+
+    - name: Changed. Detach policy from role
+      ali_ram_policy:
+        state: absent
+        role_name: ansible
+        policy_name: ansible_oss
+        policy_type: Custom
+
+    - name: Changed. Delete policy
+      ali_ram_policy:
+        state: absent
+        policy_name: ansible_oss

@@ -1,0 +1,10 @@
+---
+- name: Create an alicloud vpc cluster using ansible-provider-alicloud
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: get all instecs
+      alibaba.alicloud.ali_instance_facts:
+        alicloud_region: cn-hangzhou
+      register: all_instance

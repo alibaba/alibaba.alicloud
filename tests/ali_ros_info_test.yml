@@ -3,13 +3,13 @@
   remote_user: root
   tasks:
   - name: Get ROS Stack Info By ids
-    ali_ros_stack_info:
+    alibaba.alicloud.ali_ros_stack_info:
         stack_ids:
           - f83226ec-b0f2-4c78-8139-99fe24f36f2b
           - 0d87e1b4-c54f-4f3e-abed-2678e661c0a5
         outputs: true
 
   - name: Get ROS Stack Info By name_prefix
-    ali_ros_stack_info:
+    alibaba.alicloud.ali_ros_stack_info:
         name_prefix: kong_stack
         outputs: true

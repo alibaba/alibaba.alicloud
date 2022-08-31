@@ -1,0 +1,12 @@
+---
+- name: Create a new alicloud VPC resource
+  alibaba.alicloud.ali_vpc:
+    cidr_block: '{{ vpc_cidr }}'
+    vpc_name: '{{ vpc_name }}'
+    description: '{{ vpc_description }}'
+  register: vpc
+
+- name: Get the existing vpc
+  alibaba.alicloud.ali_vpc_info:
+    name_prefix: '{{vpc_name}}'
+  register: vpcs

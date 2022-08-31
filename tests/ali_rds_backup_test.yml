@@ -10,20 +10,20 @@
 
   tasks:
     - name: Changed. Create backup
-      ali_rds_backup:
+      alibaba.alicloud.ali_rds_backup:
         db_instance_id: '{{ rds.instances.0.id }}'
         backup_method: Logical
         state: present
       register: bk
 
     - name: Get the existing backup
-      ali_rds_backup_info:
+      alibaba.alicloud.ali_rds_backup_info:
         db_instance_id: '{{ rds.instances.0.id }}'
         backup_id: bk.backup.id
       register: dk
 
     - name: Changed. Delete backup
-      ali_rds_backup:
+      alibaba.alicloud.ali_rds_backup:
         db_instance_id: '{{ rds.instances.0.id }}'
         backup_id: bk.backup.id
         state: absent

@@ -10,12 +10,12 @@
 
   tasks:
     - name: Get the existing vpc
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         name_prefix: '{{name}}'
       register: vpcs
 
     - name: Changed. Add VPC Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'vpc'
         resource_ids: '{{ vpcs.ids }}'
         tags: {
@@ -23,7 +23,7 @@
         }
 
     - name: No Changed. Add VPC Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'vpc'
         resource_ids: '{{ vpcs.ids }}'
         tags: {
@@ -31,7 +31,7 @@
         }
 
     - name: Changed. Remove VPC Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'vpc'
         resource_ids: '{{ vpcs.ids }}'
@@ -40,7 +40,7 @@
         }
 
     - name: No Changed. Remove VPC Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'vpc'
         resource_ids: '{{ vpcs.ids }}'
@@ -49,14 +49,14 @@
         }
 
     - name: Get the existing vswitch
-      ali_vswitch_info:
+      alibaba.alicloud.ali_vswitch_info:
         name_prefix: '{{ name }}'
         filters:
           vpc_id: '{{vpc.vpc.id}}'
       register: vswitches
 
     - name: Changed. Add VSwitch Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'vswitch'
         resource_ids: '{{ vswitches.ids }}'
         tags: {
@@ -64,7 +64,7 @@
         }
 
     - name: No Changed. Add VSwitch Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'vswitch'
         resource_ids: '{{ vswitches.ids }}'
         tags: {
@@ -72,7 +72,7 @@
         }
 
     - name: Changed. Remove VSwitch Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'vswitch'
         resource_ids: '{{ vswitches.ids }}'
@@ -81,7 +81,7 @@
         }
 
     - name: No Changed. Remove VSwitch Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'vswitch'
         resource_ids: '{{ vswitches.ids }}'
@@ -90,12 +90,12 @@
         }
 
     - name: Get the existing eip
-      ali_eip_info:
+      alibaba.alicloud.ali_eip_info:
         name_prefix: '{{name}}'
       register: eips
 
     - name: Changed. Add EIP Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'eip'
         resource_ids: '{{ eips.ids }}'
         tags: {
@@ -103,7 +103,7 @@
         }
 
     - name: No Changed. Add EIP Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'eip'
         resource_ids: '{{ eips.ids }}'
         tags: {
@@ -111,7 +111,7 @@
         }
 
     - name: Changed. Remove EIP Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'eip'
         resource_ids: '{{ eips.ids }}'
@@ -120,7 +120,7 @@
         }
 
     - name: No Changed. Remove EIP Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'eip'
         resource_ids: '{{ eips.ids }}'
@@ -129,19 +129,19 @@
         }
 
     - name: Changed. Release ips.
-      ali_eip:
+      alibaba.alicloud.ali_eip:
         ip_address: "{{ eip.eip.ip_address }}"
         state: absent
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         cidr_block: '{{ item.cidr_block }}'
         name: '{{ item.vpc_name }}'
         state: absent

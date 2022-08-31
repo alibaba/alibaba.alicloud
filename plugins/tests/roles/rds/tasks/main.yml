@@ -1,0 +1,19 @@
+---
+- name: Changed. Create a new RDS Instance
+  ali_rds_instance:
+    state: present
+    engine: MySQL
+    engine_version: 5.6
+    db_instance_class: rds.mysql.t1.small
+    db_instance_storage: 30
+    db_instance_net_type: Intranet
+    security_ip_list: 10.23.12.24/24
+    pay_type: PostPaid
+    vswitch_id: '{{ vswitches.vswitches.0.id }}'
+    db_instance_name: ansible_test_rds
+  register: rds
+
+- name: Get the existing rds
+  ali_rds_instance_info:
+    db_instance_ids: ['{{ rds.instances.id }}']
+  register: rds

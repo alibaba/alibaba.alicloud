@@ -1,0 +1,85 @@
+---
+- name: Validate module ali_instance
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    name: ansible-testacc-ali_instance_facts-module
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+
+  tasks:
+    - name: Retrieving instances using instance_ids
+      ali_instance_info:
+        instance_ids: '{{ instances.ids}}'
+
+    - name: Add two new instances and used to test name_regex
+      ali_instance:
+        image: '{{ image_id }}'
+        type: '{{ instance_type }}'
+        instance_name: '{{name}}-name-regex'
+        description: 'New instance for testing name regex.'
+        host_name: '{{ host_name }}'
+        password: '{{ password }}'
+
+        max_bandwidth_in: '{{ max_bandwidth_in }}'
+        max_bandwidth_out: '{{ max_bandwidth_out }}'
+
+        security_groups: ['{{ sgs.groups.0.id }}']
+        vswitch_id: '{{ vswitches.vswitches.0.id }}'
+
+        system_disk_category: '{{ system_disk_category }}'
+        system_disk_size: '{{ system_disk_size }}'
+        count: 2
+        tags:
+          Tag1: "facts"
+          Tag2: "name_regex"
+
+    - name: Filter instance using name_regex
+      ali_instance_info:
+        name_prefix: '{{name}}-name'
+
+    - name: Retrieving instance using tags
+      ali_instance_info:
+        tags: '{{tags}}'
+
+    - name: Retrieving all instances
+      ali_instance_info:
+
+    - name: Retrieving all instances based on the name regex
+      ali_instance_info:
+        name_prefix: '{{name}}'
+      register: all_instances
+
+    # Delete all of resource
+    - name: Changed. Deleting instances
+      ali_instance:
+        instance_ids: '{{all_instances.ids}}'
+        force: True
+        state: absent
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'
+

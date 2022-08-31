@@ -5,5 +5,5 @@
 
   tasks:
     - name: No Changed. Get ram user all access key
-      ali_ram_access_key_info:
+      alibaba.alicloud.ali_ram_access_key_info:
         user_name: ansible

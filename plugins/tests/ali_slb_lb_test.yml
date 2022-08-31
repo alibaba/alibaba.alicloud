@@ -1,0 +1,99 @@
+---
+- name: Validate module ali_slb_lb
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    name: ansible-testacc-ali_slb_lb
+
+  roles:
+    - vpc
+    - vswitch
+    - slb
+
+  tasks:
+#    - name: Changed. Modifying internet charge type when C(present)
+#      ali_slb_lb:
+#        name: '{{ slbpub.load_balancer.name }}'
+#        internet_charge_type: 'PayByBandwidth'
+#        bandwidth: 5
+
+    - name: Filter slb using name_regex
+      ali_slb_lb_info:
+        name_prefix: '{{name}}'
+      register: slbs
+
+    - name: Changed. Add Tags with load_balancer_id.
+      ali_slb_lb:
+        load_balancer_id: '{{ item.load_balancer_id }}'
+        tags:
+          Test1: "add1"
+          Test2: "add2"
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Filter slb using tags
+      ali_slb_lb_info:
+        tags:
+          Test1: "add1"
+
+    - name: Changed. Modify Tags.
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: No Changed. No tags need to be added
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        tags:
+          Test1: "add1"
+          Test2: "add3"
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Removing tags.
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        purge_tags: True
+        tags:
+          Test1: "add1"
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Stop slb instance when C(stopped)
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        state: stopped
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Running slb instance when C(running)
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        state: running
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: No Changed. There is no changed when C(running)
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        state: running
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Delete slb instance when C(absent)
+      ali_slb_lb:
+        name: '{{ item.name }}'
+        state: absent
+      with_items: '{{slbs.load_balancers}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'

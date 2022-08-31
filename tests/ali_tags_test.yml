@@ -16,52 +16,52 @@
 
   tasks:
     - name: Filter instance using name_regex
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         name_prefix: '{{ instance_name_prefix }}'
       register: instances
 
     - name: Filter slb using name_regex
-      ali_slb_lb_info:
+      alibaba.alicloud.ali_slb_lb_info:
         name_prefix: '{{ slb_name_prefix }}'
       register: slbs
 
     - name: Filter vpc using name_regex
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         name_prefix: '{{ slb_name_prefix }}'
       register: vpcs
 
     - name: Filter the existing vswitch
-      ali_vswitch_info:
+      alibaba.alicloud.ali_vswitch_info:
         name_prefix: '{{ vswitch_name_prefix }}'
       register: vswitches
 
     - name: Filter the existing eip
-      ali_eip_info:
+      alibaba.alicloud.ali_eip_info:
         name_prefix: '{{ eip_name_prefix }}'
       register: eips
 
     - name: Filter disk using name
-      ali_disk_info:
+      alibaba.alicloud.ali_disk_info:
         disk_names: '{{ disk_names }}'
       register: disks
 
     - name: Filter security group using name_regex
-      ali_security_group_info:
+      alibaba.alicloud.ali_security_group_info:
         name_prefix: '{{ security_group_name_prefix }}'
       register: sgs
 
     - name: Filter eni using name_regex
-      ali_eni_info:
+      alibaba.alicloud.ali_eni_info:
         name_prefix: '{{ eni_name_prefix }}'
       register: enis
 
     - name: Filter image using name
-      ali_image_info:
+      alibaba.alicloud.ali_image_info:
         image_names: '{{ image_names }}'
       register: images
 
     - name: Changed. Add Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         resource_type: 'instance'
         resource_ids: '{{ instances.ids }}'
         tags: {
@@ -69,7 +69,7 @@
         }
 
     - name: Changed. Remove Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         state: absent
         resource_type: 'instance'
         resource_ids: '{{ instances.ids }}'
@@ -78,7 +78,7 @@
         }
 
     - name: Changed. Add Tags.
-      ali_slb_tag:
+      alibaba.alicloud.ali_slb_tag:
         resource_type: 'instance'
         resource_ids: '{{ slbs.ids }}'
         tags: {
@@ -86,7 +86,7 @@
         }
 
     - name: Changed. Remove Tags.
-      ali_slb_tag:
+      alibaba.alicloud.ali_slb_tag:
         state: absent
         resource_type: 'instance'
         resource_ids: '{{ slbs.ids }}'
@@ -95,7 +95,7 @@
         }
 
     - name: Changed. Add Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'vpc'
         resource_ids: '{{ vpcs.ids }}'
         tags: {
@@ -103,7 +103,7 @@
         }
 
     - name: Changed. Remove Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'vpc'
         resource_ids: '{{ vpcs.ids }}'
@@ -112,7 +112,7 @@
         }
 
     - name: Changed. Add disk Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         resource_type: 'disk'
         resource_ids: '{{ disks.disk_ids }}'
         tags: {
@@ -120,7 +120,7 @@
         }
 
     - name: Changed. Remove disk Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         state: absent
         resource_type: 'disk'
         resource_ids: '{{ disks.disk_ids }}'
@@ -129,7 +129,7 @@
         }
 
     - name: Changed. Add security group Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         resource_type: 'securitygroup'
         resource_ids: '{{ sgs.ids }}'
         tags: {
@@ -137,7 +137,7 @@
         }
 
     - name: Changed. Remove security group Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         state: absent
         resource_type: 'securitygroup'
         resource_ids: '{{ sgs.ids }}'
@@ -146,7 +146,7 @@
         }
 
     - name: Changed. Add eni Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         resource_type: 'eni'
         resource_ids: '{{ enis.ids }}'
         tags: {
@@ -154,7 +154,7 @@
         }
 
     - name: Changed. Remove eni Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         state: absent
         resource_type: 'eni'
         resource_ids: '{{ enis.ids }}'
@@ -163,7 +163,7 @@
         }
 
     - name: Changed. Add Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         resource_type: 'image'
         resource_ids: '{{ images.image_ids }}'
         tags: {
@@ -171,7 +171,7 @@
         }
 
     - name: Changed. Remove Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         state: absent
         resource_type: 'image'
         resource_ids: '{{ images.image_ids }}'
@@ -180,7 +180,7 @@
         }
 
     - name: Changed. Add EIP Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'eip'
         resource_ids: '{{ eips.ids }}'
         tags: {
@@ -188,7 +188,7 @@
         }
 
     - name: Changed. Remove EIP Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'eip'
         resource_ids: '{{ eips.ids }}'
@@ -197,7 +197,7 @@
         }
 
     - name: Changed. Add VSwitch Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         resource_type: 'vswitch'
         resource_ids: '{{ vswitches.ids }}'
         tags: {
@@ -205,7 +205,7 @@
         }
 
     - name: Changed. Remove VSwitch Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         state: absent
         resource_type: 'vswitch'
         resource_ids: '{{ vswitches.ids }}'

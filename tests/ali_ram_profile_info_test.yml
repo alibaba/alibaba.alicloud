@@ -5,5 +5,5 @@
 
   tasks:
     - name: Get the existing login profile.
-      ali_ram_login_profile_info:
+      alibaba.alicloud.ali_ram_login_profile_info:
         user_name: ansible

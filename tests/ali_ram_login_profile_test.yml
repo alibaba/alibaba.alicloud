@@ -5,16 +5,16 @@
 
   tasks:
     - name: Changed. Create login profile
-      ali_ram_login_profile:
+      alibaba.alicloud.ali_ram_login_profile:
         user_name: ansible
         password: YourPassword
 
     - name: Changed. update login profile
-      ali_ram_login_profile:
+      alibaba.alicloud.ali_ram_login_profile:
         user_name: ansible
         password_reset_required: True
 
     - name: Changed. Delete login profile
-      ali_ram_login_profile:
+      alibaba.alicloud.ali_ram_login_profile:
         state: absent
         user_name: ansible

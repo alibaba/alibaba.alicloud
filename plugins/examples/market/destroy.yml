@@ -1,0 +1,61 @@
+---
+- name: Delete resource
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Filter instance using name_regex
+      alibaba.alicloud.ali_instance_info:
+        alicloud_region: '{{ alicloud_region }}'
+        name_prefix: '{{ instance_name }}'
+      register: instances
+
+    - name: Changed. Deleting instances
+      alibaba.alicloud.ali_instance:
+        alicloud_region: '{{ alicloud_region }}'
+        instance_ids: '{{instances.ids}}'
+        force: True
+        state: absent
+
+    - name: Filter security group using name_regex
+      alibaba.alicloud.ali_security_group_info:
+        alicloud_region: '{{ alicloud_region }}'
+        name_prefix: '{{ security_group_name }}'
+      register: sgs
+
+    - name: Changed. Deleting the security groups
+      alibaba.alicloud.ali_security_group:
+        alicloud_region: '{{ alicloud_region }}'
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+
+    - name: Get the existing vswitch
+      alibaba.alicloud.ali_vswitch_info:
+        alicloud_region: '{{ alicloud_region }}'
+        name_prefix: '{{ vswitch_name }}'
+      register: vswitches
+
+    - name: Changed. Deleting vswitches
+      alibaba.alicloud.ali_vswitch:
+        alicloud_region: '{{ alicloud_region }}'
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Filter vpc using name_regex
+      alibaba.alicloud.ali_vpc_info:
+        alicloud_region: '{{ alicloud_region }}'
+        name_prefix: '{{ vpc_name }}'
+      register: vpcs
+
+    - name: Changed. Deleting vpcs
+      alibaba.alicloud.ali_vpc:
+        alicloud_region: '{{ alicloud_region }}'
+        cidr_block: '{{ item.cidr_block }}'
+        name: '{{ item.vpc_name }}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'

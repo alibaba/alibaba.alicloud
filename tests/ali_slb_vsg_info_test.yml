@@ -14,7 +14,7 @@
 
   tasks:
     - name: Changed. Create a VServer Group in public SLB
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         lb_id: '{{ slbpub.load_balancer.id }}'
         name: '{{name}}'
         backend_servers:
@@ -25,7 +25,7 @@
       register: vsg
 
     - name: Changed. Create four VServer Group in private SLB
-      ali_slb_vsg:
+      alibaba.alicloud.ali_slb_vsg:
         lb_id: '{{ slbpri.load_balancer.id }}'
         name: '{{name}}-{{item}}'
         backend_servers:
@@ -37,47 +37,47 @@
       register: vsgs
 
     - name: Filter slb using name_regex
-      ali_slb_lb_info:
+      alibaba.alicloud.ali_slb_lb_info:
         name_prefix: '{{name}}'
       register: slbs
 
     - name: Retrieving vsgs using slb id
-      ali_slb_vsg_info:
+      alibaba.alicloud.ali_slb_vsg_info:
         lb_id: '{{item}}'
       with_items: '{{slbs.ids}}'
 
     - name: Filter vsg using name_regex
-      ali_slb_vsg_info:
+      alibaba.alicloud.ali_slb_vsg_info:
         name_prefix: '{{name}}-'
         lb_id: '{{item}}'
       with_items: '{{slbs.ids}}'
 
     - name: Filter vsgs using ids
-      ali_slb_vsg_info:
+      alibaba.alicloud.ali_slb_vsg_info:
         ids: '{{item.vserver_group.id}}'
         lb_id: '{{slbpri.load_balancer.id}}'
       with_items: '{{vsgs.results}}'
 
     - name: Retrieving all vsgs based on name_regex
-      ali_slb_vsg_info:
+      alibaba.alicloud.ali_slb_vsg_info:
         name_prefix: '{{name}}'
         lb_id: '{{item}}'
       with_items: '{{slbs.ids}}'
 
     - name: Changed. Delete all slbs
-      ali_slb_lb:
+      alibaba.alicloud.ali_slb_lb:
         name: '{{ item.name }}'
         state: absent
       with_items: "{{slbs.load_balancers}}"
 
     - name: Changed. Delete ecs instances
-      ali_instance:
+      alibaba.alicloud.ali_instance:
         instance_ids: '{{ instances.ids }}'
         force: True
         state: absent
 
     - name: Changed. Deleting security groups
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
@@ -85,21 +85,21 @@
       when: sgs.groups
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting the security groups
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         name: '{{vpc.vpc.vpc_name}}'
         cidr_block: '{{vpc.vpc.cidr_block}}'
         state: absent

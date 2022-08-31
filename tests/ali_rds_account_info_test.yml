@@ -10,7 +10,7 @@
 
   tasks:
     - name: Changed. Create rds account.
-      ali_rds_account:
+      alibaba.alicloud.ali_rds_account:
         db_instance_id: '{{ rds.instances.0.id }}'
         account_name: account_test
         account_password: Test12345
@@ -18,10 +18,10 @@
         account_type: Normal
 
     - name: No Changed. get rds account with name_prefix.
-      ali_rds_account_info:
+      alibaba.alicloud.ali_rds_account_info:
         db_instance_id: '{{ rds.instances.0.id }}'
         name_prefix: account_
 
     - name: No Changed. Retrieving all rds account
-      ali_rds_account_info:
+      alibaba.alicloud.ali_rds_account_info:
         db_instance_id: '{{ rds.instances.0.id }}'

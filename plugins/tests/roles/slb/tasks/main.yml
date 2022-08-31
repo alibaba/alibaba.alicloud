@@ -1,0 +1,18 @@
+---
+- name: Creating a public SLB instance
+  ali_slb_lb:
+    name: '{{ name }}-public'
+    internet_charge_type: '{{ internet_charge_type }}'
+    is_internet: True
+    spec: slb.s1.small
+    state: 'present'
+  register: slbpub
+
+- name: Creating a private SLB instance
+  ali_slb_lb:
+    name: '{{ name }}-private'
+    internet_charge_type: '{{ internet_charge_type }}'
+    spec: slb.s1.small
+    vswitch_id: '{{ vswitches.vswitches.0.id }}'
+    state: 'present'
+  register: slbpri

@@ -5,8 +5,8 @@
 
   tasks:
     - name: Get the existing policy
-      ali_ram_policy_info:
+      alibaba.alicloud.ali_ram_policy_info:
         name_prefix: ansible_oss
 
     - name: Get the all policy
-      ali_ram_policy_info:
+      alibaba.alicloud.ali_ram_policy_info:

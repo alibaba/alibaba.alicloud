@@ -1,0 +1,55 @@
+---
+- name: Validate module ali_disk_info
+  hosts: localhost
+  remote_user: root
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+    - instance
+    - disk
+
+  tasks:
+    - name: Filter disk using disk_ids
+      ali_disk_info:
+        filters:
+          disk_ids: ['{{ disk_details.disk.id }}','{{ disk1_details.disk.id }}']
+          zone_id: '{{ availability_zone }}'
+          instance_id: '{{ disk_details.disk.instance_id }}'
+
+    - name: Filter disk using name_prefix
+      ali_disk_info:
+        name_prefix: '{{ disk_name }}'
+
+    - name: Filter all disks
+      ali_disk_info:
+
+    # Delete all of resource
+    - name: Changed. Deleting instances
+      ali_instance:
+        instance_ids: '{{instances.ids}}'
+        force: True
+        state: absent
+
+    - name: Changed. Deleting security groups
+      ali_security_group:
+        name: '{{ item.group_name }}'
+        vpc_id: '{{item.vpc_id}}'
+        state: absent
+      with_items: '{{sgs.groups}}'
+
+    - name: Changed. Deleting vswitches
+      ali_vswitch:
+        vpc_id: '{{ item.vpc_id}}'
+        cidr_block: '{{ item.cidr_block}}'
+        state: absent
+      with_items: '{{vswitches.vswitches}}'
+
+    - name: Changed. Deleting vpcs
+      ali_vpc:
+        name: '{{item.vpc_name}}'
+        cidr_block: '{{item.cidr_block}}'
+        state: absent
+      with_items: '{{vpcs.vpcs}}'
+

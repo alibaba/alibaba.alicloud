@@ -14,11 +14,11 @@
 
   tasks:
     - name: Retrieving instances using instance_ids
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         instance_ids: '{{ instances.ids}}'
 
     - name: Add two new instances and used to test name_regex
-      ali_instance:
+      alibaba.alicloud.ali_instance:
         image: '{{ image_id }}'
         type: '{{ instance_type }}'
         instance_name: '{{name}}-name-regex'
@@ -40,44 +40,44 @@
           Tag2: "name_regex"
 
     - name: Filter instance using name_regex
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         name_prefix: '{{name}}-name'
 
     - name: Retrieving instance using tags
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         tags: '{{tags}}'
 
     - name: Retrieving all instances
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
 
     - name: Retrieving all instances based on the name regex
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         name_prefix: '{{name}}'
       register: all_instances
 
     # Delete all of resource
     - name: Changed. Deleting instances
-      ali_instance:
+      alibaba.alicloud.ali_instance:
         instance_ids: '{{all_instances.ids}}'
         force: True
         state: absent
 
     - name: Changed. Deleting security groups
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         name: '{{item.vpc_name}}'
         cidr_block: '{{item.cidr_block}}'
         state: absent

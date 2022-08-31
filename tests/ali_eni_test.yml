@@ -15,39 +15,39 @@
 
   tasks:
     - name: Changed. Modifying name.
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{ item}}'
         name: '{{ name }}-modified'
       with_items: '{{enis.ids}}'
 
     - name: Changed. Modifying description.
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{ item}}'
         description: '{{description}}-modified'
       with_items: '{{enis.ids}}'
 
     - name: No Changed. There is no any attribute changed
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{ item}}'
         name: '{{ name }}-modified'
         description: '{{description}}-modified'
       with_items: '{{enis.ids}}'
 
     - name: Changed. Go back init value.
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         name: '{{ name }}'
         description: '{{description}}'
       with_items: '{{enis.ids}}'
 
     - name: Creating a new security group
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ name }}-group-eni'
         vpc_id: '{{vpcs.vpcs.0.id}}'
       register: group
 
     - name: Changed. Add a new security group.
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         security_groups:
           - '{{ sgs.groups.0.id }}'
@@ -55,20 +55,20 @@
       with_items: '{{enis.ids}}'
 
     - name: Get the existing groups
-      ali_security_group_info:
+      alibaba.alicloud.ali_security_group_info:
         name_prefix: '{{ name }}'
         filters:
           vpc_id: '{{vpcs.vpcs.0.id}}'
       register: sgs
 
     - name: No Changed. There is no any attribute changed
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         security_groups: '{{ sgs.ids }}'
       with_items: '{{enis.ids}}'
 
     - name: Changed. Attach a instance
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: "{{ item.0 }}"
         instance_id: "{{ item.1 }}"
         attached: True
@@ -77,7 +77,7 @@
         - "{{instances.ids}}"
 
     - name: No Changed. There is no new instance to be attached.
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: "{{ item.0 }}"
         instance_id: "{{ item.1 }}"
         attached: True
@@ -86,7 +86,7 @@
         - "{{instances.ids}}"
 
     - name: Changed. Detach a instance
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: "{{ item.0 }}"
         instance_id: "{{ item.1 }}"
         attached: False
@@ -95,7 +95,7 @@
         - "{{instances.ids}}"
 
     - name: No Changed. There is no new instance to be detached.
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: "{{ item.0 }}"
         instance_id: "{{ item.1 }}"
         attached: False
@@ -104,35 +104,35 @@
         - "{{instances.ids}}"
 
     - name: Changed. Attach two eni to a instance
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         instance_id: '{{ instances.ids.0 }}'
         attached: True
       with_items: '{{enis.ids}}'
 
     - name: No Changed. There is no new eni need to attach.
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         instance_id: '{{ instances.ids.0}}'
         attached: True
       with_items: '{{enis.ids}}'
 
     - name: Changed. Detach two eni from a instance
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         instance_id: '{{ instances.ids.0}}'
         attached: False
       with_items: '{{enis.ids}}'
 
     - name: No Changed. There is no new eni need to detach.
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         instance_id: '{{ instances.ids.0}}'
         attached: False
       with_items: '{{enis.ids}}'
 
     - name: Changed. Adding a tag
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         tags:
           Test1: "add1"
@@ -140,7 +140,7 @@
       with_items: '{{enis.ids}}'
 
     - name: Changed. Modifying a tag
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         tags:
           Test1: "add1"
@@ -148,7 +148,7 @@
       with_items: '{{enis.ids}}'
 
     - name: No Changed. No any Tags to be added
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         tags:
           Test1: "add1"
@@ -156,7 +156,7 @@
       with_items: '{{enis.ids}}'
 
     - name: Changed. Removing other tags
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         purge_tags: True
         tags:
@@ -165,7 +165,7 @@
       with_items: '{{enis.ids}}'
 
     - name: No Changed. No any Tags to be removed
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         purge_tags: True
         tags:
@@ -175,34 +175,34 @@
 
     # Delete all of resource
     - name: Changed. Deleting instances
-      ali_instance:
+      alibaba.alicloud.ali_instance:
         instance_ids: '{{instances.ids}}'
         force: True
         state: absent
 
     # Delete all of enis
     - name: Changed. Deleting enis
-      ali_eni:
+      alibaba.alicloud.ali_eni:
         id: '{{item}}'
         state: absent
       with_items: '{{enis.ids}}'
 #
     - name: Changed. Deleting security groups
-      ali_security_group:
+      alibaba.alicloud.ali_security_group:
         name: '{{ item.group_name }}'
         vpc_id: '{{item.vpc_id}}'
         state: absent
       with_items: '{{sgs.groups}}'
 
     - name: Changed. Deleting vswitches
-      ali_vswitch:
+      alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         state: absent
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Deleting vpcs
-      ali_vpc:
+      alibaba.alicloud.ali_vpc:
         name: '{{item.vpc_name}}'
         cidr_block: '{{item.cidr_block}}'
         state: absent

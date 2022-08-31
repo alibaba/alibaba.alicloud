@@ -5,5 +5,5 @@
 
   tasks:
     - name: Get the existing role
-      ali_ram_role_info:
+      alibaba.alicloud.ali_ram_role_info:
         name_prefix: ansible

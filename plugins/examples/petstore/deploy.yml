@@ -1,0 +1,58 @@
+---
+- name: Deploy petstore on ECS
+  hosts: alicloud
+  remote_user: root
+
+  tasks:
+    - name: create property file
+      shell: "{{item}}"
+      with_items:
+        - echo "petstore.loggingLevel  = warn" >> /root/antx.properties
+        - echo "petstore.loggingRoot   = /root/pet/logs" >> /root/antx.properties
+        - echo "petstore.upload        = /root/pet/upload" >> /root/antx.properties
+        - echo "petstore.work          = /root/pet" >> /root/antx.properties
+
+    - name: remove java11
+      apt:
+        pkg:
+          - openjdk-11-jre-headless
+          - openjdk-11-jdk
+        state: absent
+        force_apt_get: True
+
+    - name: build enviroment
+      apt:
+        pkg:
+          - apache2
+          - openjdk-8-jre-headless
+          - openjdk-8-jdk
+          - git
+          - maven
+        force_apt_get: True
+
+    - name: clone project
+      command: "{{item}}"
+      with_items:
+        - git clone https://github.com/webx/citrus-sample.git
+      ignore_errors: True
+
+    - name: mvn install
+      command: "{{item}}"
+      args:
+        chdir: /root/citrus-sample/petstore
+      with_items:
+        - mvn clean install
+      ignore_errors: True
+      async: 600
+      poll: 10
+
+    - name: run project
+      shell:
+        cmd: nohup mvn jetty:run-war &
+        chdir: /root/citrus-sample/petstore/web
+      register: petstore
+
+    - wait_for: port=8081 state=started
+
+    - debug:
+        msg: http://{{hostvars[inventory_hostname]['public_ip_address']}}:8081?home

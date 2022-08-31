@@ -1,0 +1,43 @@
+---
+- name: Validate module ali_ram_user
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+    - name: Changed. Create a new user
+      ali_ram_user:
+        user_name: ansible
+        display_name: ab
+        mobile_phone: 18988888888
+        email: 11288222@qq.com
+        comments: ansible_test
+
+    - name: Get the existing user
+      ali_ram_user_info:
+        name_prefix: ansible
+      register: users
+
+    - name: Changed. Update email
+      ali_ram_user:
+        user_name: '{{ users.users.0.name }}'
+        email: update_email@163.com
+
+    - name: No Changed. Update email
+      ali_ram_user:
+        user_name: '{{ users.users.0.name }}'
+        email: update_email@163.com
+
+    - name: Changed. Update user
+      ali_ram_user:
+        user_name: '{{ users.users.0.name }}'
+        new_user_name: ansible2
+
+    - name: No Changed. Update user
+      ali_ram_user:
+        user_name: '{{ users.users.0.name }}'
+        new_user_name: ansible2
+
+    - name: Changed. Delete user
+      ali_ram_user:
+        state: absent
+        user_name: ansible2
