@@ -62,7 +62,6 @@ def acs_common_argument_spec():
         alicloud_security_token=dict(aliases=['security_token'], no_log=True,
                                      fallback=(env_fallback, ['ALICLOUD_SECURITY_TOKEN'])),
         ecs_role_name=dict(aliases=['role_name'], fallback=(env_fallback, ['ALICLOUD_ECS_ROLE_NAME'])),
-        alicloud_protocol=dict(aliases=['protocol'], fallback=(env_fallback, ['ALICLOUD_PROTOCOL']), default='https')
     )
 
 
@@ -94,8 +93,7 @@ def get_acs_connection_info(params):
                       acs_secret_access_key=params.get('alicloud_secret_key'),
                       security_token=params.get('alicloud_security_token'),
                       ecs_role_name=params.get('ecs_role_name'),
-                      user_agent='Ansible-Provider-Alicloud'),
-                      alicloud_protocol=params.get('alicloud_protocol')
+                      user_agent='Ansible-Provider-Alicloud')
     return ecs_params
 
 
