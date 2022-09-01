@@ -64,6 +64,7 @@ filters:
 hostnames:
   - instance_id
   - public_ip_address
+  - tag:foo=bar,foo2
 
 
 # Example using constructed features to create groups and set ansible_host
@@ -229,7 +230,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             self.inventory.add_child('all', group)
 
     def _get_tag_hostname(self, preference, instance):
-        tag_hostnames = preference['tags']
+        tag_hostnames = preference.split('tag:', 1)[1]
         if ',' in tag_hostnames:
             tag_hostnames = tag_hostnames.split(',')
         else:
@@ -259,14 +260,14 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         '''
             :param instance: an instance dict returned by describe_instances()
             :param hostnames: a list of hostname destination variables in order of preference
-            :return the preferred identifer for the host
+            :return the preferred identifier for the host
         '''
         if not hostnames:
             hostnames = ['instance_id', 'instance_name']
 
         hostname = None
         for preference in hostnames:
-            if 'tag' in preference:
+            if preference.startswith('tag:'):
                 hostname = self._get_tag_hostname(preference, instance)
             else:
                 hostname = self._get_instance_attr(preference, instance)
