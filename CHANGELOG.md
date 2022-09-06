@@ -1,4 +1,13 @@
-# Ansible-Alicloud Change Log
+# Alibaba Cloud Collection Changelog
+## 1.0.0 (Unreleased)
+
+- collection supports new module ali_key_pair ([#308](https://github.com/alibaba/ansible-provider/pull/308))
+- improves the readme and requirements ([#307](https://github.com/alibaba/ansible-provider/pull/307))
+- ali_vpc: setting the vpc_name to optional ([#306](https://github.com/alibaba/ansible-provider/pull/306))
+- supports setting protocol ([#305](https://github.com/alibaba/ansible-provider/pull/305))
+- change the ansible-alicloud to collections ([#303](https://github.com/alibaba/ansible-provider/pull/303))
+
+# Ansible-Alicloud Changelog
 ## 1.21.0 (Unreleased)
 ## 1.20.0 (18 July 2022)
 

@@ -1,15 +1,15 @@
 namespace: alibaba
 name: alicloud
-version: 1.0.0-dev1
+version: 1.0.0
 readme: README.md
 authors:
 - He Guimin (@xiaozhu36)
 - Li Xue (@lixue323)
-description: Alibaba alicloud
+description: Alibaba Cloud
 license:
 - GPL-3.0-or-later
 license_file: COPYING
-tags: []
+tags: [alibaba, alicloud, aliyun, cloud]
 dependencies:
   ansible.netcommon: '>=0.0.1'
 repository: https://github.com/alibaba/alibaba.alicloud.git
