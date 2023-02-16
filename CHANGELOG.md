@@ -1,6 +1,5 @@
 # Alibaba Cloud Collection Changelog
-## 1.1.0 (Unreleased)
-## 1.0.0 (06 September 2022)
+## 1.0.0 (Unreleased)
 
 - module/ali_instance: removes the instance_charge_type default to fix the protentail issue ([#315](https://github.com/alibaba/ansible-provider/pull/315))
 - Update module license ([#312](https://github.com/alibaba/ansible-provider/pull/312))
