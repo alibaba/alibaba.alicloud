@@ -1,6 +1,12 @@
 # Alibaba Cloud Collection Changelog
-## 1.0.0 (Unreleased)
+## 1.1.0 (Unreleased)
+## 1.0.0 (06 September 2022)
 
+- module/ali_instance: removes the instance_charge_type default to fix the protentail issue ([#315](https://github.com/alibaba/ansible-provider/pull/315))
+- Update module license ([#312](https://github.com/alibaba/ansible-provider/pull/312))
+- Update LICENSE ([#311](https://github.com/alibaba/ansible-provider/pull/311))
+- fix the parameter alicloud_protocol setting bug ([#310](https://github.com/alibaba/ansible-provider/pull/310))
+- fixes the inventory bug while using tag to setting hostname ([#309](https://github.com/alibaba/ansible-provider/pull/309))
 - collection supports new module ali_key_pair ([#308](https://github.com/alibaba/ansible-provider/pull/308))
 - improves the readme and requirements ([#307](https://github.com/alibaba/ansible-provider/pull/307))
 - ali_vpc: setting the vpc_name to optional ([#306](https://github.com/alibaba/ansible-provider/pull/306))

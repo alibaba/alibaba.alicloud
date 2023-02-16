@@ -50,7 +50,6 @@ options:
   internet_charge_type:
     description:
       - The charge type of internet. It will be ignored when C(is_internet=False)
-    default: 'PayByTraffic'
     choices: ['PayByBandwidth', 'PayByTraffic']
     type: str
   master_zone_id:
@@ -306,7 +305,7 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        internet_charge_type=dict(type='str', choices=['PayByBandwidth', 'PayByTraffic'], default='PayByTraffic'),
+        internet_charge_type=dict(type='str', choices=['PayByBandwidth', 'PayByTraffic']),
         state=dict(type='str', choices=['present', 'absent', 'running', 'stopped'], default='present'),
         load_balancer_name=dict(type='str', required=True, aliases=['name', 'lb_name']),
         load_balancer_id=dict(type='str', aliases=['id']),
@@ -332,7 +331,10 @@ def main():
     name = module.params['load_balancer_name']
     load_balancer_id = module.params['load_balancer_id']
     is_internet = module.params['is_internet']
-    internet_charge_type = str(module.params['internet_charge_type']).lower()
+    # internet_charge_type = str(module.params['internet_charge_type']).lower()
+    internet_charge_type = module.params['internet_charge_type']
+    if internet_charge_type:
+        internet_charge_type = str(internet_charge_type).lower()
 
     changed = False
     matching = None
@@ -365,8 +367,9 @@ def main():
     if state == "present":
         if not matching:
             params = module.params
-            params['internet_charge_type'] = internet_charge_type
             params['client_token'] = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
+            if internet_charge_type:
+                params['internet_charge_type'] = internet_charge_type
             address_type = "intranet"
             if is_internet:
                 address_type = "internet"
