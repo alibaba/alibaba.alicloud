@@ -135,7 +135,6 @@ options:
       description:
         - The charge type of the instance.
       choices: ['PrePaid', 'PostPaid']
-      default: 'PostPaid'
       type: str
     period:
       description:
@@ -658,7 +657,7 @@ def run_instance(module, ecs, exact_count):
     if tags:
         merged_tags = tags
 
-    if literal_eval(count_tag):
+    if count_tag and literal_eval(count_tag):
         merged_tags.update(literal_eval(count_tag))
 
     # check whether the required parameter passed or not
@@ -778,7 +777,7 @@ def main():
         state=dict(default='present', choices=['present', 'running', 'stopped', 'restarted', 'absent']),
         description=dict(type='str'),
         allocate_public_ip=dict(type='bool', aliases=['assign_public_ip'], default=False),
-        instance_charge_type=dict(type='str', default='PostPaid', choices=['PrePaid', 'PostPaid']),
+        instance_charge_type=dict(type='str', choices=['PrePaid', 'PostPaid']),
         period=dict(type='int', default=1),
         auto_renew=dict(type='bool', default=False),
         instance_ids=dict(type='list', elements='str'),
@@ -918,7 +917,7 @@ def main():
         # Modify instance charge type
         charge_type_ids = []
         for inst in instances:
-            if inst.instance_charge_type != instance_charge_type:
+            if instance_charge_type and inst.instance_charge_type != instance_charge_type:
                 charge_type_ids.append(inst.id)
         if charge_type_ids:
             params = {"instance_ids": charge_type_ids, "instance_charge_type": instance_charge_type,
