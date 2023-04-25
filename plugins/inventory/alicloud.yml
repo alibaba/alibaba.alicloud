@@ -1,6 +1,6 @@
 plugin: alibaba.alicloud.alicloud_ecs
 
-alicloud_region: cn-hangzhou
+alicloud_region: cn-beijing
 # A list of regions in which to describe ECS instances.
 # If empty (the default) default this will include all regions, except possibly restricted ones like cn-beijing
 regions:
@@ -45,4 +45,5 @@ compose:
 #If true make invalid entries a fatal error, otherwise skip and continue
 #Since it is possible to use facts in the expressions they might not always be available and we ignore those errors by default.
 strict: true
+#use_contrib_script_compatible_sanitization: true
 

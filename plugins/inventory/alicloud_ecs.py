@@ -45,6 +45,13 @@ options:
           - Available filters are listed here U(https://www.alibabacloud.com/help/doc-detail/25506.htm).
       type: dict
       default: {}
+    use_contrib_script_compatible_sanitization:
+      description:
+          - By default this plugin has a behavior of using ``replace_dash_in_groups = True`` to replace hyphens with underscores.
+            This option allows you to override that, in efforts to allow migration from the old inventory script and
+            matches the sanitization of groups when the script's ``replace_dash_in_groups`` option is set to ``False``.
+      type: bool
+      default: False  
 '''
 
 EXAMPLES = '''
@@ -96,6 +103,7 @@ cache_prefix: alicloud_ecs
 '''
 
 import os
+import re
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native, to_text
 from ansible_collections.alibaba.alicloud.plugins.module_utils.alicloud_ecs import connect_to_acs, get_profile
@@ -327,6 +335,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         self._read_config_data(path)
         self._set_credentials()
 
+        if self.get_option('use_contrib_script_compatible_sanitization'):
+            self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
+
         # get user specifications
         regions = self.get_option('regions')
         filters = self.get_option('filters')
@@ -356,3 +367,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         # when the user is using caching, update the cached inventory
         if cache_needs_update or (not cache and self.get_option('cache')):
             self._cache[cache_key] = results
+
+    @staticmethod
+    def _legacy_script_compatible_group_sanitization(name):
+        # note that while this mirrors what the script used to do,
+        # it has many issues with unicode and usability in python
+        regex = re.compile(r"[^A-Za-z0-9\_\-]")
+
+        return regex.sub('_', name)
