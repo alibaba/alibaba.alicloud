@@ -13,14 +13,14 @@ This collection requires Python 3.6 or greater.
 
 You can install the Alibaba Cloud collection with the Ansible Galaxy CLI:
 
-1. create a requirements.txt with the following:
+1. create a `requirements.txt` file with the following:
    ```yaml
    collections:
      - name: https://github.com/alibaba/alibaba.alicloud.git
        type: git
        branch: master
    ```
-2. running the commond to install alibaba.alicloud:
+2. running the commond to install alibaba.alicloud using `requirements.txt` file:
    ```shell
    ansible-galaxy collection install -r requirements.txt
    ```
