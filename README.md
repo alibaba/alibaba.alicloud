@@ -13,27 +13,17 @@ This collection requires Python 3.6 or greater.
 
 You can install the Alibaba Cloud collection with the Ansible Galaxy CLI:
 
-    ansible-galaxy collection install -r requirements.txt
-
-```yaml
----
-collections:
-  - name: alibaba.alicloud
-```
-
-A specific version of the collection can be installed by using the `version` keyword in the `requirements.yml` file:
-
-```yaml
----
-collections:
-  - name: alibaba.alicloud
-    version: 1.0.0
-```
-
-The python module dependencies are not installed by `ansible-galaxy`.  They can
-be manually installed using pip:
-
-    pip install requirements.txt
+1. create a requirements.txt with the following:
+   ```yaml
+   collections:
+     - name: https://github.com/alibaba/alibaba.alicloud.git
+       type: git
+       branch: master
+   ```
+2. running the commond to install alibaba.alicloud:
+   ```shell
+   ansible-galaxy collection install -r requirements.txt
+   ```
 
 ## Using this collection
 
@@ -41,13 +31,27 @@ You can either call modules by their Fully Qualified Collection Namespace (FQCN)
 
 ```yaml
 ---
-	- name: Create a new alicloud VPC resource
-	  alibaba.alicloud.ali_vpc:
-		state: 'present'
-		cidr_block: '{{ vpc_cidr }}'
-		vpc_name: '{{ name }}'
-		description: '{{ vpc_description }}'
-	  register: vpc
+- name: Using module alibaba.alicloud.ali_vpc
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    name: "ansible-testacc-ali_vpc-module"
+    vpc_cidr: "172.16.0.0/12"
+    vpc_description: "Create a new VPC resource via Ansible example alicloud-ecs-vpc."
+
+  roles:
+    - vpc
+
+  tasks:
+    - name: Create a new vpc with user_cidrs
+      alibaba.alicloud.ali_vpc:
+        cidr_block: '{{ vpc_cidr }}'
+        vpc_name: '{{ name }}-user_cidrs'
+        description: '{{ vpc_description }}'
+        user_cidrs:
+          - 172.16.100.0/24
+          - 172.16.101.0/24
 ```
 
 ## plugins/modules
