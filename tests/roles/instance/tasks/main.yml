@@ -32,7 +32,7 @@
     count: '{{ number_of_instances }}'
 
     tags: '{{ tags }}'
-    ram_role_name: '{{ ram_role_name }}'
+    ram_role_name: '{{ ram_role.role.role_name }}'
 
     spot_price_limit: '{{ spot_price_limit }}'
     spot_strategy: "{{ spot_strategy }}"

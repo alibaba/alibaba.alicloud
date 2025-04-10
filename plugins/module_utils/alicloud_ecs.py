@@ -61,7 +61,7 @@ def acs_common_argument_spec():
                                  fallback=(env_fallback, ['ALICLOUD_SECRET_KEY', 'ALICLOUD_SECRET_ACCESS_KEY'])),
         alicloud_security_token=dict(aliases=['security_token'], no_log=True,
                                      fallback=(env_fallback, ['ALICLOUD_SECURITY_TOKEN'])),
-        ecs_role_name=dict(aliases=['role_name'], fallback=(env_fallback, ['ALICLOUD_ECS_ROLE_NAME'])),
+        ecs_role_name=dict(fallback=(env_fallback, ['ALICLOUD_ECS_ROLE_NAME'])),
     )
 
 
