@@ -100,11 +100,12 @@ def main():
         module.fail_json(msg="Package 'footmark' required for this module.")
 
     name_prefix = module.params['name_prefix']
+    filters = {'MaxItems': 1000}
 
     try:
         roles = []
-        for role in ram_connect(module).list_roles():
-            if name_prefix and not role.name.startswith(name_prefix):
+        for role in ram_connect(module).list_roles(**filters):
+            if name_prefix and not role.role_name.startswith(name_prefix):
                 continue
             roles.append(role.get().read())
         module.exit_json(changed=False, roles=roles)

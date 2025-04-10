@@ -1,0 +1,7 @@
+---
+- name: Create a new alicloud ram role
+  alibaba.alicloud.ali_ram_role:
+    role_name: '{{ ram_role_name }}'
+    policy: '{"Statement": [{"Action": "sts:AssumeRole","Effect": "Allow","Principal": {"Service": ["ecs.aliyuncs.com"]}}],"Version": "1"}'
+    description: create for ansible
+  register: ram_role

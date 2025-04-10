@@ -130,8 +130,9 @@ except ImportError:
 def role_exists(module, ram_conn, role_name, role_id):
     try:
         role = None
-        for r in ram_conn.list_roles():
-            if role_name and r.read()['name'] != role_name:
+        filters = {'MaxItems': 1000}
+        for r in ram_conn.list_roles(**filters):
+            if role_name and r.read()['role_name'] != role_name:
                 continue
             if role_id and r.read()['role_id'] != role_id:
                 continue

@@ -7,6 +7,7 @@
     - vpc
     - vswitch
     - security_group
+    - ram
     - instance
     - network_interface
 
@@ -110,6 +111,10 @@
           "Ansible": "Add tags"
         }
 
+    - name: Make sure all resources have been ready
+      pause:
+        seconds: 30
+
     - name: Changed. Remove eni Tags.
       alibaba.alicloud.ali_ecs_tag:
         state: absent
@@ -129,13 +134,6 @@
         }
 
     # Delete all of resource
-    - name: Changed. Deleting disks
-      alibaba.alicloud.ali_disk:
-        id: '{{item.id}}'
-        instance_id: '{{ item.instance_id }}'
-        state: absent
-      with_items: '{{disks.disks}}'
-
     - name: Changed. Deleting enis
       alibaba.alicloud.ali_eni:
         id: '{{item}}'
@@ -147,6 +145,12 @@
         instance_ids: '{{instances.ids}}'
         force: True
         state: absent
+
+    - name: Changed. Deleting ram role
+      alibaba.alicloud.ali_ram_role:
+        role_name: '{{ ram_role.role.role_name }}'
+        state: absent
+      with_items: '{{ram_role}}'
 
     - name: Changed. Deleting security groups
       alibaba.alicloud.ali_security_group:
