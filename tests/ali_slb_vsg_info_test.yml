@@ -9,6 +9,7 @@
     - vpc
     - vswitch
     - security_group
+    - ram
     - instance
     - slb
 
