@@ -234,7 +234,9 @@ def get_disk_detail(disk):
             'description': disk.description,
             'status': disk.status,
             'type': disk.type,
-            'instance_id': disk.instance_id
+            'instance_id': disk.instance_id,
+            'encrypted': disk.encrypted,
+            'kms_key_id': disk.kmskey_id,
             }
 
 
@@ -252,7 +254,9 @@ def main():
         snapshot_id=dict(type='str', aliases=['snapshot']),
         description=dict(type='str', aliases=['disk_description']),
         instance_id=dict(type='str', aliases=['instance']),
-        delete_with_instance=dict(type='bool', aliases=['delete_on_termination'], default=False)
+        delete_with_instance=dict(type='bool', aliases=['delete_on_termination'], default=False),
+        encrypted=dict(type='bool', default=False),
+        kms_key_id=dict(type='str', default=None),
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -269,6 +273,8 @@ def main():
     disk_name = module.params['disk_name']
     delete_with_instance = module.params['delete_with_instance']
     description = module.params['description']
+    encrypted = module.params['encrypted']
+    kms_key_id = module.params['kms_key_id']
 
     changed = False
     current_disk = None
@@ -321,7 +327,8 @@ def main():
         try:
             current_disk = ecs.create_disk(zone_id=zone_id, disk_name=disk_name,
                                            description=description, disk_category=disk_category, size=size,
-                                           disk_tags=disk_tags, snapshot_id=snapshot_id, client_token=client_token)
+                                           disk_tags=disk_tags, snapshot_id=snapshot_id, client_token=client_token,
+                                           encrypted=encrypted, kmskey_id=kms_key_id)
             changed = True
         except Exception as e:
             module.fail_json(msg='Creating a new disk is failed, error: {0}'.format(e))
