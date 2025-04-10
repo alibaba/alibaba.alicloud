@@ -1,20 +1,21 @@
 ---
 # common parameters
-alicloud_region: "cn-hangzhou"
-alicloud_zone: "cn-hangzhou-i"
+region_id: cn-beijing
+zone_id: cn-beijing-c
+name: ansible-testAcc
+description: "Test ansible module "
+tags: {For: testAcc, Created: Ansible, From: provider/tests}
+policy: '{"Statement": [{"Action": ["*"],"Effect": "Allow","Resource": ["*"]}],"Version":"1"}'
 
 # create vpc parameters
 vpc_cidr: "172.16.0.0/12"
-vpc_name: "Ansible_VPC"
 vpc_description: "Create a new VPC resource via Ansible example alicloud-ecs-vpc."
 
 # create vswitch parameters
 vswitch_cidr: "172.16.1.0/24"
-vswitch_name: "Ansible_VSwitch"
 vswitch_description: "Create a new VSwitch resource via Ansible example alicloud-ecs-vpc."
 
 # create security parameters
-group_name: "Ansible_Security_Group"
 group_description: "Create a new security group resource via Ansible example alicloud-ecs-vpc."
 group_inboundRules:
   - ip_protocol: tcp
@@ -50,8 +51,7 @@ group_outboundRules:
 
 # create ECS instance parameters
 image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
-instance_type: "ecs.t5-lc1m2.small"
-instance_name: "Ansible_Instance"
+instance_type: ecs.sn2ne.xlarge
 instance_description: "Create a new ECS instance resource via Ansible example alicloud-ecs-vpc."
 host_name: "my-instance-from-ansible"
 password: "Test12345"
@@ -60,17 +60,22 @@ allocate_public_ip: True
 internet_charge_type: "PayByTraffic"
 max_bandwidth_in: 200
 max_bandwidth_out: 50
-instance_tags: {tool: ansible, created_by: Ansible-Alicloud, created_from: examples/alicloud-ecs-vpc}
 
 system_disk_category: "cloud_ssd"
 system_disk_size: 50
 
 number_of_instances: 2
 
+spot_price_limit: 0.97
+spot_strategy: "SpotWithPriceLimit"
+unique_suffix: True
+
 # create ECS disk parameters
-disk_name: "Ansible_Disk"
+disk_name: "Disk_From_Ansible"
 disk_category: "cloud_ssd"
 disk_description: "Create a new ECS disk resource via Ansible example alicloud-ecs-vpc."
 data_disk_size: 80
 disk_tags: [{tag_key: "created_by", tag_value: "Ansible-Alicloud"}, {tag_key: "created_from", tag_value: "example-alicloud-ecs-vpc"}]
-delete_with_instance: False
+delete_with_instance: True
+
+delete: False

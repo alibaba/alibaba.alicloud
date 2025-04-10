@@ -6,14 +6,14 @@
   tasks:
 
     - name: Filter instance using name_regex
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         alicloud_region: '{{ alicloud_region }}'
         name_prefix: '{{ instance_name }}'
         filters: '{{ instance_filters }}'
       register: instances
 
     - name: Changed. Operation instance tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         alicloud_region: '{{ alicloud_region }}'
         state: '{{ state }}'
         resource_type: 'instance'
@@ -22,14 +22,14 @@
 
 
     - name: Filter security group using name_regex
-      ali_security_group_info:
+      alibaba.alicloud.ali_security_group_info:
         alicloud_region: '{{ alicloud_region }}'
         name_prefix: '{{ security_group_name }}'
         filters: '{{ security_group_filters }}'
       register: sgs
 
     - name: Changed. Operation security group Tags.
-      ali_ecs_tag:
+      alibaba.alicloud.ali_ecs_tag:
         alicloud_region: '{{ alicloud_region }}'
         state: '{{ state }}'
         resource_type: 'securitygroup'
@@ -38,14 +38,14 @@
 
 
     - name: Filter vpc using name_regex
-      ali_vpc_info:
+      alibaba.alicloud.ali_vpc_info:
         alicloud_region: '{{ alicloud_region }}'
         name_prefix: '{{ vpc_name }}'
         filters: '{{ vpc_filters }}'
       register: vpcs
 
     - name: Changed. Operation vpc tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         alicloud_region: '{{ alicloud_region }}'
         state: '{{ state }}'
         resource_type: 'vpc'
@@ -53,14 +53,14 @@
         tags: '{{ vpc_tags }}'
 
     - name: Filter the existing vswitch
-      ali_vswitch_info:
+      alibaba.alicloud.ali_vswitch_info:
         alicloud_region: '{{ alicloud_region }}'
         name_prefix: '{{ vswitch_name }}'
         filters: '{{ vswitch_filters }}'
       register: vswithes
 
     - name: Changed. Operation vswitch Tags.
-      ali_vpc_tag:
+      alibaba.alicloud.ali_vpc_tag:
         alicloud_region: '{{ alicloud_region }}'
         state: '{{ state }}'
         resource_type: 'vswitch'

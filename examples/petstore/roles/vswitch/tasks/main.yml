@@ -1,6 +1,6 @@
 ---
 - name: Create a new alicloud VSwitch resource
-  ali_vswitch:
+  alibaba.alicloud.ali_vswitch:
     alicloud_zone: '{{ item.0 }}'
     cidr_block: '{{ item.1 }}'
     vswitch_name: '{{ vswitch_name }}'
@@ -11,7 +11,7 @@
     - '{{ vswitch_cidrs }}'
 
 - name: Get the existing vswitch
-  ali_vswitch_info:
+  alibaba.alicloud.ali_vswitch_info:
     name_prefix: '{{ vswitch_name }}'
     filters:
       vpc_id: '{{vpc.vpc.id}}'

@@ -5,6 +5,6 @@
 
   tasks:
     - name: get all instecs
-      ali_instance_facts:
-        alicloud_region: cn-hangzhou
+      alibaba.alicloud.ali_instance_info:
+        alicloud_region: '{{ region_id }}'
       register: all_instance

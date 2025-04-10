@@ -3,7 +3,7 @@
 instance_name: ['Instance_From_Ansible_Petstore', 'a-Instance_From_Ansible_Petstore']
 instance_tags: {For: PetStore, Created: Ansible, From: example/deploy}
 image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
-instance_type: ecs.sn2ne.large
+instance_type: ecs.e-c1m1.large
 instance_description: "Create a new ECS instance resource via Ansible example deploy-ecs."
 host_name: "my-instance-from-ansible"
 password: Test12345
@@ -13,7 +13,7 @@ internet_charge_type: "PayByTraffic"
 max_bandwidth_in: 200
 max_bandwidth_out: 50
 
-system_disk_category: "cloud_ssd"
+system_disk_category: "cloud_essd_entry"
 system_disk_size: 50
 number_of_instances: 2
 

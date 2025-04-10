@@ -1,17 +1,18 @@
 ---
-- name: Get the existing vpc
-  ali_vpc_info:
-    region: '{{alicloud_region}}'
-    vpc_name: '{{vpc_name}}'
-  register: vpcs
-
 - name: Create a new alicloud VSwitch resource
-  ali_vswitch:
-    alicloud_region: '{{ alicloud_region }}'
-    alicloud_zone: '{{ alicloud_zone }}'
-    state: 'present'
+  alibaba.alicloud.ali_vswitch:
+    alicloud_region: '{{ region_id }}'
+    alicloud_zone: '{{ zone_id }}'
     cidr_block: '{{ vswitch_cidr }}'
-    vswitch_name: '{{ vswitch_name }}'
+    vswitch_name: '{{ name }}'
     description: '{{ vswitch_description }}'
-    vpc_id: '{{vpcs.vpcs.0.id}}'
+    vpc_id: '{{vpc.vpc.id}}'
   register: vswitch
+
+- name: Get the existing vswitch
+  alibaba.alicloud.ali_vswitch_info:
+    alicloud_region: '{{ region_id }}'
+    name_prefix: '{{ name }}'
+    filters:
+      vpc_id: '{{vpc.vpc.id}}'
+  register: vswitches

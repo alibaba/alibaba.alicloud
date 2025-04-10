@@ -1,19 +1,20 @@
 ---
-- name: Get the existing groups
-  ali_security_group_info:
-    region: '{{alicloud_region}}'
-    group_name: '{{ group_name }}'
+- name: Get the existing ECS instances
+  alibaba.alicloud.ali_instance_info:
+    alicloud_region: '{{ region_id }}'
+    name_prefix: '{{ name }}'
     filters:
-      vpc_id: '{{vpcs.vpcs.0.id}}'
-  register: sgs
+      vpc_id: '{{ vpcs.vpcs.0.id }}'
+      page_size: 100
+    tags: '{{ tags }}'
+  register: instances
 
 - name: Creating an ECS instance
-  ali_instance:
-    alicloud_region: '{{ alicloud_region }}'
-    alicloud_zone: '{{ alicloud_zone }}'
+  alibaba.alicloud.ali_instance:
+    alicloud_region: '{{ region_id }}'
     image: '{{ image_id }}'
     type: '{{ instance_type }}'
-    instance_name: '{{ instance_name }}'
+    instance_name: '{{ name }}'
     description: '{{ instance_description }}'
     host_name: '{{ host_name }}'
     password: '{{ password }}'
@@ -22,15 +23,29 @@
     internet_charge_type: '{{ internet_charge_type }}'
     max_bandwidth_in: '{{ max_bandwidth_in }}'
     max_bandwidth_out: '{{ max_bandwidth_out }}'
-    instance_tags: '{{ instance_tags }}'
 
     security_groups: ['{{ sgs.groups.0.id }}']
-    vswitch_id: '{{ vswitch.vswitch.id }}'
+    vswitch_id: '{{ vswitches.vswitches.0.id }}'
 
     system_disk_category: '{{ system_disk_category }}'
     system_disk_size: '{{ system_disk_size }}'
 
     state: 'present'
     count: '{{ number_of_instances }}'
-  when: sgs.groups
-  register: instance
+
+    tags: '{{ tags }}'
+
+    spot_price_limit: '{{ spot_price_limit }}'
+    spot_strategy: "{{ spot_strategy }}"
+    unique_suffix: '{{ unique_suffix }}'
+  when: not instances.instances
+
+- name: Get the existing ECS instances
+  alibaba.alicloud.ali_instance_info:
+    alicloud_region: '{{ region_id }}'
+    name_prefix: '{{ name }}'
+    filters:
+      vpc_id: '{{ vpcs.vpcs.0.id }}'
+      page_size: 100
+    tags: '{{ tags }}'
+  register: instances

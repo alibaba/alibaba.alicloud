@@ -8,6 +8,7 @@ product_suggestion_price: 0
 alicloud_region: cn-beijing
 availability_zone: cn-beijing-h
 instance_name: 'Instance_From_Ansible_Market'
+host_name: "my-instance-from-ansible"
 instance_tags: {For: Market, Created: Ansible, From: example/market}
 image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
 instance_type: ecs.g5.large
