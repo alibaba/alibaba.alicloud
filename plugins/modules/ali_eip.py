@@ -232,7 +232,7 @@ def find_eip(conn, module, ip_address, instance_id, allocation_id):
         eip = None
         eips = conn.describe_eip_addresses()
         for e in eips:
-            if instance_id and e.instance_id != instance_id:
+            if instance_id and e.instance_id != instance_id and not module.params['allow_reassociation']:
                 continue
             if ip_address and e.ip_address != ip_address:
                 continue
@@ -325,6 +325,7 @@ def main():
     if not eip:
         try:
             params = module.params
+            params['instance_id'] = None
             params['client_token'] = "Ansible-Alicloud-%s-%s" % (hash(str(module.params)), str(time.time()))
             eip = vpc.allocate_eip_address(**params)
             changed = True

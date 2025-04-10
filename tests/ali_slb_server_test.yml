@@ -12,6 +12,7 @@
     - vswitch
     - slb
     - security_group
+    - ram
     - instance
 
   tasks:

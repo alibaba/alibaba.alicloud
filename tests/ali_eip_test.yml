@@ -11,6 +11,7 @@
     - vpc
     - vswitch
     - security_group
+    - ram
     - instance
     - network_interface
 
@@ -150,6 +151,12 @@
       alibaba.alicloud.ali_eip_info:
         name_prefix: '{{name}}'
       register: eips
+
+    - name: Changed. Unassociate eips before releasing it.
+      alibaba.alicloud.ali_eip:
+        instance_id: "{{ eip.eip.instance_id }}"
+        ip_address: "{{ eip.eip.ip_address }}"
+        state: absent
 
     - name: Changed. Release ips.
       alibaba.alicloud.ali_eip:

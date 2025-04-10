@@ -78,7 +78,7 @@ EXAMPLES = """
 """
 
 RETURN = '''
-user:
+role:
     description: Returns an array of complex objects as described below.
     returned: always
     type: complex
