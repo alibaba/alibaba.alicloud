@@ -1,13 +1,13 @@
 ---
 - name: Get the existing ECS instances
-  ali_instance_info:
+  alibaba.alicloud.ali_instance_info:
     name_prefix: '{{ instance_name }}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
   register: instances
 
 - name: Creating two ECS instances
-  ali_instance:
+  alibaba.alicloud.ali_instance:
     image: '{{ image_id }}'
     type: '{{ instance_type }}'
     instance_name: '{{ item.1 }}'

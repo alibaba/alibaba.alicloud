@@ -10,17 +10,16 @@
 
   tasks:
     - name: Search products
-      ali_market_product_info:
+      alibaba.alicloud.ali_market_product_info:
         alicloud_region: '{{ alicloud_region }}'
         search_term: '{{ product_keyword }}'
-        supplier_name_keyword: '{{ product_supplier_keyword }}'
         product_type: MIRROR
-        category_id: '53616009'
-        suggested_price: '{{ product_suggestion_price }}'
+#        category_id: '53616009'
+#        suggested_price: '{{ product_suggestion_price }}'
       register: products
 
     - name: Get the existing ECS instances
-      ali_instance_info:
+      alibaba.alicloud.ali_instance_info:
         alicloud_region: '{{ alicloud_region }}'
         name_prefix: 'Instance_From_Ansible_Market'
         filters:
@@ -28,9 +27,9 @@
       register: instances
 
     - name: Creating an ECS instance
-      ali_instance:
+      alibaba.alicloud.ali_instance:
         alicloud_region: '{{ alicloud_region }}'
-        image: '{{ products.products.0.image_ids.2.value }}'
+        image: '{{ products.products.1.image_ids.0.value }}'
         type: '{{ instance_type }}'
         instance_name: '{{ instance_name }}'
         description: '{{ instance_description }}'

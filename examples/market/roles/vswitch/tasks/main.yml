@@ -1,6 +1,6 @@
 ---
 - name: Create a new alicloud VSwitch resource
-  ali_vswitch:
+  alibaba.alicloud.ali_vswitch:
     alicloud_region: '{{ alicloud_region }}'
     alicloud_zone: '{{ availability_zone }}'
     cidr_block: '{{ vswitch_cidr }}'
@@ -11,7 +11,7 @@
 
 
 - name: Get the existing vswitch
-  ali_vswitch_info:
+  alibaba.alicloud.ali_vswitch_info:
     alicloud_region: '{{ alicloud_region }}'
     name_prefix: '{{ vswitch_name }}'
     filters:
