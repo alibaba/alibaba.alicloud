@@ -26,6 +26,7 @@
     - name: Changed. Add Tags with load_balancer_id.
       alibaba.alicloud.ali_slb_lb:
         load_balancer_id: '{{ item.load_balancer_id }}'
+        load_balancer_name: '{{ item.load_balancer_name }}'
         tags:
           Test1: "add1"
           Test2: "add2"

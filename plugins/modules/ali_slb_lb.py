@@ -384,7 +384,7 @@ def main():
         module.fail_json(msg="The specified load balancer {0} is not exist. Please check your name and try again.".format(name))
 
     if not internet_charge_type:
-        internet_charge_type = str(matching.internet_charge_type).lower()
+        internet_charge_type = str(matching.internet_charge_type_alias).lower()
 
     bandwidth = module.params['bandwidth']
     if not bandwidth:
