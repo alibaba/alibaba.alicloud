@@ -231,6 +231,8 @@ def find_eip(conn, module, ip_address, instance_id, allocation_id):
     try:
         eip = None
         eips = conn.describe_eip_addresses()
+        if not ip_address and not instance_id and not allocation_id:
+            return eip, eips
         for e in eips:
             if instance_id and e.instance_id != instance_id and not module.params['allow_reassociation']:
                 continue
