@@ -132,7 +132,7 @@ products:
                       sample: m-2ze0ua7jvif73kxxxxx
 '''
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.alibaba.alicloud.plugins.module_utils.alicloud_ecs import ecs_argument_spec, market_connect
+from ansible.module_utils.alicloud_ecs import ecs_argument_spec, market_connect, ecs_connect
 
 HAS_FOOTMARK = False
 
@@ -180,6 +180,11 @@ def main():
     ids = module.params['ids']
 
     products = []
+    region_local_name = ""
+    for region in ecs_connect(module).describe_regions():
+        if region.id == module.params['alicloud_region']:
+            region_local_name = region.name
+
     try:
         for product in market_connect(module).describe_products(**module.params):
             if name_prefix and not product.name.startswith(name_prefix):
@@ -192,7 +197,7 @@ def main():
                 continue
             if ids and product.code not in ids:
                 continue
-            products.append(product.get().read())
+            products.append(product.get().read_with_region_name(region_local_name))
         module.exit_json(changed=False, products=products)
     except Exception as e:
         module.fail_json(msg=str("Unable to get products, error:{0}".format(e)))

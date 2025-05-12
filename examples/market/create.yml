@@ -29,7 +29,7 @@
     - name: Creating an ECS instance
       alibaba.alicloud.ali_instance:
         alicloud_region: '{{ alicloud_region }}'
-        image: '{{ products.products.1.image_ids.0.value }}'
+        image: '{{ products.products.1.images.0.value }}'
         type: '{{ instance_type }}'
         instance_name: '{{ instance_name }}'
         description: '{{ instance_description }}'
