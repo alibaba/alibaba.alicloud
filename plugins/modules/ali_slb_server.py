@@ -356,19 +356,13 @@ def main():
         load_balancer_id=dict(required=True, aliases=['lb_id'], type='str'),
     ))
 
-    # handling region parameter which is not required by this module
-    del argument_spec['alicloud_region']
-
     module = AnsibleModule(argument_spec=argument_spec)
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg="'footmark' is required for the module ali_slb_server. "
                              "Please install 'footmark' by using 'sudo pip install footmark'.")
 
-    # handling region parameter which is required by common utils file to login but not required by this module
-    module.params['alicloud_region'] = 'cn-hangzhou'
     slb = slb_connect(module)
-
     state = module.params['state']
     backend_servers = parse_server_ids(module.params['backend_servers'])
     load_balancer_id = module.params['load_balancer_id']
