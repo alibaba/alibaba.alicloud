@@ -10,6 +10,7 @@
     - vswitch
     - security_group
     - slb
+    - ram
     - instance
 
   tasks:
@@ -27,6 +28,7 @@
     - name: Changed. Add backend servers with vserver_group_id
       alibaba.alicloud.ali_slb_vsg:
         vserver_group_id: '{{ vsg.vserver_group.vserver_group_id }}'
+        vserver_group_name: '{{ vsg.vserver_group.vserver_group_name }}'
         lb_id: '{{ slbpri.load_balancer.id }}'
         backend_servers:
           - server_ids: ['{{instances.ids.1}}', '{{instances.ids.2}}']
@@ -174,7 +176,7 @@
         state: absent
 
     - name: Filter slb using name_regex
-      alibaba.alicloud.ali_slb_lb_facts:
+      alibaba.alicloud.ali_slb_lb_info:
         name_prefix: '{{name}}'
       register: slbs
 

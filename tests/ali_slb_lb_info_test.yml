@@ -19,6 +19,10 @@
     - name: Create a slb and used to test name_regex
       alibaba.alicloud.ali_slb_lb:
         name: '{{name}}regex'
+        internet_charge_type: '{{ internet_charge_type }}'
+        is_internet: True
+        spec: slb.s1.small
+        state: 'present'
 
     - name: Filter slb using name_regex
       alibaba.alicloud.ali_slb_lb_info:
