@@ -92,6 +92,8 @@ def main():
     user_name = module.params['user_name']
     try:
         profile = ram_connect(module).get_login_profile(user_name=user_name)
+        if not profile:
+            module.exit_json(changed=False, profile=None)
         module.exit_json(changed=False, profile=profile.read())
     except Exception as e:
         module.fail_json(msg=str("Unable to get profile, error:{0}".format(e)))
