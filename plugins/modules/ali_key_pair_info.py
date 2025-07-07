@@ -89,8 +89,9 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        key_pair_name=dict(type='str'), aliases=["name"]),
+        key_pair_name=dict(type='str', aliases=["name"]),
         key_pair_finger_print=dict(type="str")
+       )
     )
     module = AnsibleModule(argument_spec=argument_spec)
 
@@ -110,7 +111,7 @@ def main():
     key_pairs = []
     try:
         for key_pair in ecs_connect(module).describe_key_pairs(**filters):
-            key_pairs.append(key_pair.get().read())
+            key_pairs.append(key_pair.read())
 
     except ECSResponseError as e:
         module.fail_json(msg='Error in describe_key_pairs: {0}'.format(e))

@@ -9,5 +9,5 @@
         name: test
 
     - name: Get the existing key pair by finger print
-        alibaba.alicloud.ali_key_pair_info:
-          key_pair_finger_print: ""
+      alibaba.alicloud.ali_key_pair_info:
+        key_pair_finger_print: ""
