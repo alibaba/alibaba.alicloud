@@ -350,11 +350,16 @@ class EcsInventory(object):
 
         # Set the inventory name
         hostname = None
-        if self.hostname_variable:
-            if self.hostname_variable.startswith('tag_'):
-                hostname = instance.tags.get(self.hostname_variable[4:], None)
-            else:
-                hostname = getattr(instance, self.hostname_variable)
+        if isinstance(self.hostname_variable, (str, list)):
+            hostname_variable_compositions = []
+            if isinstance(self.hostname_variable, str):
+                self.hostname_variable = self.hostname_variable.split()
+            for hostname_variable_composition in self.hostname_variable:
+                if hostname_variable_composition.startswith('tag_'):
+                    hostname_variable_compositions.append(instance.tags.get(hostname_variable_composition[4:], None))
+                else:
+                    hostname_variable_compositions.append(getattr(instance, hostname_variable_composition))
+            hostname = "_".join(hostname_variable_compositions)
 
         # If we can't get a nice hostname, use the destination address
         if not hostname:
