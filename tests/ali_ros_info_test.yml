@@ -2,14 +2,44 @@
 - hosts: localhost
   remote_user: root
   tasks:
+  - name: Changed. Create Ros Stack
+    alibaba.alicloud.ali_ros_stack:
+      stack_name: vpc_2020-04-08_test_01
+      template: group_vars/ros_template.json
+      timeout_in_minutes: 60
+      template_parameters:
+        CidrBlock: 192.168.0.0/16
+        VpcName: DemoVpc-01
+    register: stack1
+
+  - name: Changed. Create another Ros Stack
+    alibaba.alicloud.ali_ros_stack:
+      stack_name: vpc_2020-04-08_test_02
+      template: group_vars/ros_template.json
+      timeout_in_minutes: 60
+      template_parameters:
+        CidrBlock: 192.168.0.0/16
+        VpcName: DemoVpc-02
+    register: stack2
+
   - name: Get ROS Stack Info By ids
     alibaba.alicloud.ali_ros_stack_info:
         stack_ids:
-          - f83226ec-b0f2-4c78-8139-99fe24f36f2b
-          - 0d87e1b4-c54f-4f3e-abed-2678e661c0a5
+          - '{{ stack1.stack.stack_id }}'
+          - '{{ stack2.stack.stack_id }}'
         outputs: true
 
   - name: Get ROS Stack Info By name_prefix
     alibaba.alicloud.ali_ros_stack_info:
-        name_prefix: kong_stack
+        name_prefix: vpc_2020-04-08
         outputs: true
+
+  - name: Changed. Delete Ros Stack
+    alibaba.alicloud.ali_ros_stack:
+      state: absent
+      stack_name: vpc_2020-04-08_test_01
+
+  - name: Changed. Delete Ros Stack
+    alibaba.alicloud.ali_ros_stack:
+      state: absent
+      stack_name: vpc_2020-04-08_test_02
