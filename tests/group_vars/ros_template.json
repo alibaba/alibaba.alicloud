@@ -1,0 +1,304 @@
+{
+  "Outputs": {
+    "RouteTableId": {
+      "Description": "The router table id of created VPC.",
+      "Value": {
+        "Fn::GetAtt": [
+          "Vpc",
+          "RouteTableId"
+        ]
+      }
+    },
+    "VpcId": {
+      "Description": "Id of created VPC.",
+      "Value": {
+        "Fn::GetAtt": [
+          "Vpc",
+          "VpcId"
+        ]
+      }
+    },
+    "VpcName": {
+      "Description": "The name of VPC",
+      "Value": {
+        "Fn::GetAtt": [
+          "Vpc",
+          "VpcName"
+        ]
+      }
+    },
+    "VRouterId": {
+      "Description": "Router id of created VPC.",
+      "Value": {
+        "Fn::GetAtt": [
+          "Vpc",
+          "VRouterId"
+        ]
+      }
+    }
+  },
+  "ROSTemplateFormatVersion": "2015-09-01",
+  "Parameters": {
+    "Description": {
+      "Description": {
+        "en": "Description of the vpc, [2, 256] characters. Do not fill or empty, the default is empty."
+      },
+      "Default": null,
+      "Required": false,
+      "Label": {
+        "zh-cn": "专有网络描述",
+        "en": "Description"
+      },
+      "AssociationProperty": "TextArea",
+      "Type": "String"
+    },
+    "Tags": {
+      "AssociationPropertyMetadata": {
+        "ListMetadata": {
+          "Order": [
+            "Key",
+            "Value"
+          ]
+        },
+        "Parameters": {
+          "Value": {
+            "Default": null,
+            "Required": false,
+            "Type": "String"
+          },
+          "Key": {
+            "Required": true,
+            "Type": "String"
+          }
+        }
+      },
+      "Description": {
+        "en": "Tags to attach to vpc. Max support 20 tags to add during create vpc. Each tag with two properties Key and Value, and Key is required."
+      },
+      "Default": null,
+      "Required": false,
+      "Label": {
+        "zh-cn": "标签",
+        "en": "Tags"
+      },
+      "MaxLength": 20,
+      "AssociationProperty": "List[Parameters]",
+      "Type": "Json"
+    },
+    "Ipv6CidrBlock": {
+      "AssociationPropertyMetadata": {
+        "Visible": {
+          "Condition": {
+            "Fn::Equals": [
+              "${EnableIpv6}",
+              true
+            ]
+          }
+        }
+      },
+      "Description": {
+        "en": "IPv6 network cidr of the VPC."
+      },
+      "Default": null,
+      "MinLength": 1,
+      "Required": false,
+      "Label": {
+        "zh-cn": "专有网络的IPv6网段",
+        "en": "Ipv6CidrBlock"
+      },
+      "Type": "String"
+    },
+    "EnableIpv6": {
+      "Default": false,
+      "Required": false,
+      "Type": "Boolean",
+      "Description": {
+        "en": "Whether to enable an IPv6 network cidr, the value is:False (default): not turned on.True: On."
+      },
+      "Label": {
+        "zh-cn": "是否开启IPv6网段",
+        "en": "EnableIpv6"
+      }
+    },
+    "ResourceGroupId": {
+      "Description": {
+        "en": "Resource group id."
+      },
+      "Default": null,
+      "Required": false,
+      "Label": {
+        "zh-cn": "资源组ID",
+        "en": "ResourceGroupId"
+      },
+      "AssociationProperty": "ALIYUN::ECS::ResourceGroup::ResourceGroupId",
+      "Type": "String"
+    },
+    "VpcName": {
+      "Description": {
+        "en": "The value contains 1 to 128 characters and cannot start with http:// or https://"
+      },
+      "Default": "ansible-test",
+      "Required": false,
+      "Label": {
+        "zh-cn": "专有网络名称",
+        "en": "VpcName"
+      },
+      "AllowedPattern": "^(?!http://|https://).{1,128}$",
+      "Type": "String"
+    },
+    "UserCidr": {
+      "Default": null,
+      "Required": false,
+      "Type": "String",
+      "Description": {
+        "en": "The user CIDR block. Separate multiple CIDR blocks with commas (,). At most three CIDR blocks are supported."
+      },
+      "Label": {
+        "zh-cn": "用户网段",
+        "en": "UserCidr"
+      }
+    },
+    "CidrBlock": {
+      "AssociationPropertyMetadata": {
+        "RecommendDescription": {
+          "zh-cn": "您可以选择以下值进行快速设置。",
+          "en": "You can choose the following values for quick setup."
+        },
+        "RecommendValues": [
+          "10.0.0.0/8",
+          "172.16.0.0/12",
+          "192.168.0.0/16"
+        ]
+      },
+      "Description": {
+        "zh-cn": "建议您使用RFC私网地址作为专有网络的网段如10.0.0.0/8，172.16.0.0/12，192.168.0.0/16。",
+        "en": "The IP address range of the VPC in the CIDR block form. You can use the following IP address ranges and their subnets:\n10.0.0.0/8\n172.16.0.0/12 (Default)\n192.168.0.0/16"
+      },
+      "Default": "10.0.0.0/8",
+      "Required": false,
+      "Label": {
+        "zh-cn": "专有网络网段",
+        "en": "CidrBlock"
+      },
+      "AssociationProperty": "ALIYUN::VPC::VPC::CidrBlock",
+      "Type": "String"
+    },
+    "Ipv6Isp": {
+      "AssociationPropertyMetadata": {
+        "Visible": {
+          "Condition": {
+            "Fn::Equals": [
+              "${EnableIpv6}",
+              true
+            ]
+          }
+        },
+        "AutoChangeType": false
+      },
+      "Description": {
+        "en": "The Internet service provider (ISP) for IPv6 addresses of the VPC. Valid values:\nBGP(default): Alibaba Cloud BGP IPv6\nChinaMobile: China Mobile (single line)\nChinaUnicom: China Unicom (single line)\nChinaTelecom: China Telecom (single line)\nNote If your Alibaba Cloud account is allowed to activate single-ISP bandwidth, you can set the parameter to ChinaTelecom, ChinaUnicom, and ChinaMobile."
+      },
+      "Default": null,
+      "Required": false,
+      "AllowedValues": [
+        "BGP",
+        "ChinaMobile",
+        "ChinaUnicom",
+        "ChinaTelecom"
+      ],
+      "Label": {
+        "zh-cn": "专有网络的IPv6地址段类型",
+        "en": "Ipv6Isp"
+      },
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "Vpc": {
+      "Type": "ALIYUN::ECS::VPC",
+      "Properties": {
+        "Description": {
+          "Ref": "Description"
+        },
+        "Tags": {
+          "Ref": "Tags"
+        },
+        "Ipv6CidrBlock": {
+          "Ref": "Ipv6CidrBlock"
+        },
+        "EnableIpv6": {
+          "Ref": "EnableIpv6"
+        },
+        "ResourceGroupId": {
+          "Ref": "ResourceGroupId"
+        },
+        "VpcName": {
+          "Ref": "VpcName"
+        },
+        "UserCidr": {
+          "Ref": "UserCidr"
+        },
+        "CidrBlock": {
+          "Ref": "CidrBlock"
+        },
+        "Ipv6Isp": {
+          "Ref": "Ipv6Isp"
+        }
+      }
+    }
+  },
+  "Metadata": {
+    "ALIYUN::ROS::Interface": {
+      "ParameterGroups": [
+        {
+          "Parameters": [
+            "CidrBlock",
+            "UserCidr"
+          ],
+          "Label": {
+            "default": {
+              "zh-cn": "IPV4 网络设置",
+              "en": "IPV4 Network Configuration"
+            }
+          }
+        },
+        {
+          "Parameters": [
+            "EnableIpv6",
+            "Ipv6CidrBlock",
+            "Ipv6Isp"
+          ],
+          "Label": {
+            "default": {
+              "zh-cn": "IPV6 网络设置",
+              "en": "IPV6 Network Configuration"
+            }
+          }
+        },
+        {
+          "Parameters": [
+            "VpcName",
+            "Description",
+            "ResourceGroupId",
+            "Tags"
+          ],
+          "Label": {
+            "default": {
+              "zh-cn": "基础设置",
+              "en": "Base Configuration"
+            }
+          }
+        },
+        {
+          "Parameters": [],
+          "Label": {
+            "default": {
+              "zh-cn": "其他设置",
+              "en": "Other Configuration"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -149,12 +149,14 @@ def get_template_body(template_path):
 
 
 def get_template_params(input_params):
+    if input_params is None:
+        return []
     template_parameters_dict = [{"ParameterKey": k, "ParameterValue": v} for k, v in input_params.items()]
     return template_parameters_dict
 
 
 def ros_exists(ros_conn, stack_name):
-    ros_stack = ros_conn.list_stacks(stack_names=[stack_name], get_one=True)
+    ros_stack = ros_conn.list_stacks(stack_name=[stack_name], get_one=True)
     if not ros_stack:
         return None
     else:
@@ -180,8 +182,7 @@ def main():
 
     try:
         stack_name = module.params.get('stack_name')
-        parameterss = get_template_params(module.params.get('template_parameters')) if \
-            module.params.get('template_parameters') else []
+        parameterss = get_template_params(module.params.get('template_parameters'))
         state = module.params.get('state')
         template_body = get_template_body(module.params.get('template')) if module.params.get('template') else None
         template_type = module.params.get('template').split('.')[1] if module.params.get(
@@ -225,7 +226,9 @@ def main():
                 update_res = ros_conn.update_stack(**params)
                 module.exit_json(changed=True, stack=update_res)
             except ROSResponseError as e:
-                module.fail_json(msg='Unable to update ros, error: {0}'.format(e))
+                if e.message.message.startswith('Update the completely same stack ' + stack_name + ' is not supported'):
+                    module.exit_json(changed=False, stack=ros_conn.get_stack(stack_id))
+                module.fail_json(msg='Unable to update ros, error: {0}'.format(e.message))
     except Exception as e:
         module.fail_json(msg="Manage ros stack failed, and got an error: {0}.".format(e))
 

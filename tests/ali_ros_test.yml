@@ -5,7 +5,7 @@
     - name: Changed. Create Ros Stack
       alibaba.alicloud.ali_ros_stack:
         stack_name: vpc_2020-04-08_test
-        template: /tmp/create_vpn.json
+        template: group_vars/ros_template.json
         timeout_in_minutes: 60
         template_parameters:
           CidrBlock: 192.168.0.0/16
@@ -14,7 +14,7 @@
     - name: Changed. Update Ros Stack
       alibaba.alicloud.ali_ros_stack:
         stack_name: vpc_2020-04-08_test
-        template: /tmp/update_vpc.json
+        template: group_vars/ros_template.json
         timeout_in_minutes: 60
         template_parameters:
           CidrBlock: 192.168.0.0/16
