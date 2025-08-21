@@ -89,6 +89,14 @@ There are some playbooks to create some alicloud resource or build infrastructur
 
 	  $ ansible-playbook xxx.yml
 	   
+## Build
+
+1. update the next version in galaxy.yml
+2. build the next version collection:
+
+    $    ansible-galaxy collection build
+3. login in https://galaxy.ansible.com/ui/namespaces/alibaba/ and upload the collection
+
 ## Refrence
 
 Ansible Document: https://docs.ansible.com/ansible/latest/

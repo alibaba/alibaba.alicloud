@@ -1,0 +1,27 @@
+---
+galaxy_info:
+  author: He Guimin (@xiaozhu36)
+  description: Alibaba Cloud Collection for Ansible
+  company: Alibaba Group
+  license: GPL-3.0-or-later
+  min_ansible_version: 2.9.0
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+        - jammy
+  galaxy_tags:
+    - alibaba
+    - alicloud
+    - aliyun
+    - cloud
+    - infrastructure
+    - networking
+    - compute
+    - storage
+    - database
