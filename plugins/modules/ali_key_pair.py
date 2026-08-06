@@ -38,13 +38,19 @@ options:
     type: str
   force:
     description:
-      - Force overwrite of already existing key pair if key has changed.
+      - Force overwrite of an existing key pair when C(public_key) is provided.
+      - Tag-only updates do not replace the key pair.
     default: True
     type: bool
   tags:
     description:
       - A hash/dictionaries of key pair tags. C({"key":"value"})
     type: dict
+  purge_tags:
+    description:
+      - Remove tags not declared in C(tags).
+    default: false
+    type: bool
 requirements:
     - "python >= 3.6"
     - "footmark >= 1.21.0"
@@ -119,7 +125,7 @@ key:
 
 import time
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
+from ansible_collections.alibaba.alicloud.plugins.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
 HAS_FOOTMARK = False
 
@@ -147,7 +153,8 @@ def main():
         name=dict(type='str', required=True),
         public_key=dict(type='str'),
         force=dict(type='bool', default=True),
-        tags=dict(type='dict')
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=False)
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
@@ -162,6 +169,8 @@ def main():
     key_pair_name = module.params['name']
     force = module.params['force']
     public_key = module.params.get('public_key', '')
+    tags = module.params['tags'] or {}
+    purge_tags = module.params['purge_tags']
 
     changed = False
     key_pair = key_pair_exists(ecs, module, key_pair_name)
@@ -178,11 +187,25 @@ def main():
     if str(key_pair_name).startswith('http://') or str(key_pair_name).startswith('https://'):
         module.fail_json(msg='key pair name can not start with http:// or https://')
 
-    if key_pair and force:
+    if key_pair and force and public_key:
         try:
             key_pair.delete()
+            key_pair = None
+            changed = True
         except ECSResponseError as ex:
             module.fail_json(msg='Unable to force delete key_pair: {0}, error: {1}'.format(key_pair.name, ex))
+
+    if key_pair:
+        try:
+            if purge_tags:
+                remove = {key: value for key, value in key_pair.tags.items() if key not in tags}
+                if remove and key_pair.remove_tags(remove):
+                    changed = True
+            if tags and key_pair.add_tags(tags):
+                changed = True
+            module.exit_json(changed=changed, key=key_pair.read())
+        except ECSResponseError as ex:
+            module.fail_json(msg='Unable to update key pair tags: {0}'.format(ex))
 
     if not key_pair:
         try:
@@ -193,7 +216,7 @@ def main():
                 key_pair = ecs.import_key_pair(**params)
             else:
                 key_pair = ecs.create_key_pair(**params)
-            module.exit_json(changed=True, key=key_pair)
+            module.exit_json(changed=True, key=key_pair.read())
         except ECSResponseError as e:
             module.fail_json(msg='Unable to create key pair, error: {0}'.format(e))
 
