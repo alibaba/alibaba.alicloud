@@ -49,7 +49,12 @@ options:
     type: str
   image_version:
     description:
-      - The version number of the image, with a length limit of [1, 40] English characters.   
+      - The version number passed to the ECS CreateImage API.
+      - This module passes the value through as a string without imposing a local
+        length or numeric-range restriction.
+      - When the source instance uses a Marketplace image, or a custom image
+        derived from one, the value must be empty or match the source image
+        version. This restriction is enforced by ECS.
     aliases: ['version']
     type: str
   disk_mapping:
@@ -225,14 +230,6 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
 
         if image_name.startswith('http://') or image_name.startswith('https://'):
             module.fail_json(msg='image_name can not start with http:// or https://')
-    if image_version:
-        if image_version.isdigit():
-            if int(image_version) < 1 or int(image_version) > 40:
-                module.fail_json(msg='The permitted range of image_version is between 1 - 40')
-        else:
-            module.fail_json(msg='The permitted range of image_version is between 1 - 40, entered value is {0}'
-                             .format(image_version))
-
     if disk_mapping:
         for mapping in disk_mapping:
             if mapping:

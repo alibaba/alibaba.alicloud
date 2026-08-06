@@ -1,0 +1,203 @@
+---
+- name: Validate encrypted instance and tagged custom image
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - ../group_vars/all
+
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    golden_test_name: ansible-aone-85044628-golden
+    test_zone_id: "{{ lookup('env', 'ALICLOUD_TEST_ZONE_ID') }}"
+    test_image_id: "{{ lookup('env', 'ALICLOUD_TEST_IMAGE_ID') }}"
+    test_instance_type: "{{ lookup('env', 'ALICLOUD_TEST_INSTANCE_TYPE') }}"
+    test_kms_key_id: "{{ lookup('env', 'ALICLOUD_TEST_KMS_KEY_ID') }}"
+
+  pre_tasks:
+    - name: Require dedicated test-account inputs
+      ansible.builtin.assert:
+        that:
+          - test_zone_id | length > 0
+          - test_image_id | length > 0
+          - test_instance_type | length > 0
+          - test_kms_key_id | length > 0
+
+  tasks:
+    - block:
+        - name: Create the temporary VPC
+          ansible.builtin.include_role:
+            name: vpc
+          no_log: true
+          vars:
+            name: '{{ golden_test_name }}'
+
+        - name: Create the temporary vSwitch
+          ansible.builtin.include_role:
+            name: vswitch
+          no_log: true
+          vars:
+            name: '{{ golden_test_name }}'
+            availability_zone: '{{ test_zone_id }}'
+
+        - name: Create the temporary security group
+          ansible.builtin.include_role:
+            name: security_group
+          no_log: true
+          vars:
+            name: '{{ golden_test_name }}'
+
+        - name: Create an instance with encrypted system and data disks
+          alibaba.alicloud.ali_instance:
+            image_id: '{{ test_image_id }}'
+            instance_type: '{{ test_instance_type }}'
+            instance_name: '{{ golden_test_name }}'
+            security_groups: ['{{ sgs.groups[0].id }}']
+            vswitch_id: '{{ vswitches.vswitches[0].id }}'
+            system_disk_category: cloud_essd
+            system_disk_size: 40
+            system_disk_encrypted: true
+            system_disk_kms_key_id: '{{ test_kms_key_id }}'
+            data_disks:
+              - category: cloud_essd
+                size: 40
+                encrypted: true
+                kms_key_id: '{{ test_kms_key_id }}'
+            tags:
+              ManagedBy: Ansible
+              TestCase: Aone-85044628
+          register: build_instance
+
+        - name: Read back the encrypted system and data disks
+          alibaba.alicloud.ali_disk_info:
+            filters:
+              instance_id: '{{ build_instance.instances[0].id }}'
+          register: encrypted_disks
+
+        - name: Verify both disks use the supplied CMK
+          ansible.builtin.assert:
+            that:
+              - encrypted_disks.total | int == 2
+              - encrypted_disks.disks | selectattr('encrypted', 'equalto', true) | list | length == 2
+              - encrypted_disks.disks | selectattr('kmskey_id', 'equalto', test_kms_key_id) | list | length == 2
+
+        - name: Create a tagged custom image from the encrypted instance
+          alibaba.alicloud.ali_image:
+            instance_id: '{{ build_instance.instances[0].id }}'
+            image_name: '{{ golden_test_name }}'
+            image_version: '2026.08'
+            wait: true
+            wait_timeout: 900
+            tags:
+              ManagedBy: Ansible
+              TestCase: Aone-85044628
+          register: golden_image
+
+        - name: Read back the created image and its creation tags
+          alibaba.alicloud.ali_image_info:
+            image_ids:
+              - '{{ golden_image.image_id }}'
+          register: golden_image_info
+
+        - name: Verify image tags were created with the image
+          ansible.builtin.assert:
+            that:
+              - golden_image_info.total | int == 1
+              - golden_image_info.images[0].tags.ManagedBy == 'Ansible'
+              - golden_image_info.images[0].tags.TestCase == 'Aone-85044628'
+              - golden_image_info.images[0].image_version == '2026.08'
+
+        - name: Add an image tag through ali_ecs_tag using the exact image ID
+          alibaba.alicloud.ali_ecs_tag:
+            resource_type: image
+            resource_ids:
+              - '{{ golden_image.image_id }}'
+            tags:
+              TaggedBy: AliEcsTag
+
+        - name: Read back the ali_ecs_tag image tag
+          alibaba.alicloud.ali_image_info:
+            image_ids:
+              - '{{ golden_image.image_id }}'
+          register: golden_image_tagged_info
+
+        - name: Verify ali_ecs_tag updated the requested custom image
+          ansible.builtin.assert:
+            that:
+              - golden_image_tagged_info.total | int == 1
+              - golden_image_tagged_info.images[0].tags.TaggedBy == 'AliEcsTag'
+
+        - name: Remove the image tag through ali_ecs_tag
+          alibaba.alicloud.ali_ecs_tag:
+            state: absent
+            resource_type: image
+            resource_ids:
+              - '{{ golden_image.image_id }}'
+            tags:
+              TaggedBy: AliEcsTag
+
+        - name: Verify ali_ecs_tag removed the image tag
+          alibaba.alicloud.ali_image_info:
+            image_ids:
+              - '{{ golden_image.image_id }}'
+          register: golden_image_untagged_info
+
+        - name: Assert the temporary image tag is absent
+          ansible.builtin.assert:
+            that:
+              - golden_image_untagged_info.total | int == 1
+              - "'TaggedBy' not in golden_image_untagged_info.images[0].tags"
+
+      always:
+        - name: Remove the custom image
+          alibaba.alicloud.ali_image:
+            image_id: '{{ golden_image.image_id }}'
+            state: absent
+          when: golden_image is defined and golden_image.image_id is defined
+
+        - name: Remove snapshots generated for the temporary image
+          ansible.builtin.command:
+            argv:
+              - aliyun
+              - ecs
+              - delete-snapshot
+              - --region
+              - '{{ lookup(''env'', ''ALICLOUD_REGION'') }}'
+              - --snapshot-id
+              - '{{ item.snapshot_id }}'
+          loop: '{{ golden_image.image.disk_device_mappings.disk_device_mapping | default([]) }}'
+          when: golden_image is defined and golden_image.image is defined
+          no_log: true
+
+        - name: Remove the encrypted instance
+          alibaba.alicloud.ali_instance:
+            instance_ids:
+              - '{{ build_instance.instances[0].id }}'
+            force: true
+            state: absent
+          when: build_instance is defined and build_instance.instances is defined
+
+        - name: Remove the test security group
+          alibaba.alicloud.ali_security_group:
+            name: '{{ item.group_name }}'
+            vpc_id: '{{ item.vpc_id }}'
+            state: absent
+          loop: '{{ sgs.groups | default([]) }}'
+          no_log: true
+
+        - name: Remove the test vSwitch
+          alibaba.alicloud.ali_vswitch:
+            vpc_id: '{{ item.vpc_id }}'
+            cidr_block: '{{ item.cidr_block }}'
+            state: absent
+          loop: '{{ vswitches.vswitches | default([]) }}'
+          no_log: true
+
+        - name: Remove the test VPC
+          alibaba.alicloud.ali_vpc:
+            name: '{{ item.vpc_name }}'
+            cidr_block: '{{ item.cidr_block }}'
+            state: absent
+          loop: '{{ vpcs.vpcs | default([]) }}'
+          no_log: true

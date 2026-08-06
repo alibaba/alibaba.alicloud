@@ -113,10 +113,14 @@ def disk_exists(module, conn):
 def image_exists(module, conn):
     try:
         image_l = []
-        result = conn.describe_images()
-        for res in result:
-            if res.id in module.params['resource_ids']:
-                image_l.append(res)
+        for image_id in module.params['resource_ids']:
+            # Query each requested image directly.  Scanning DescribeImages
+            # without a filter can miss self-owned images in large accounts
+            # and unnecessarily walks unrelated pages.
+            result = conn.get_all_images(image_id=image_id)
+            for res in result:
+                if res.id == image_id:
+                    image_l.append(res)
         return image_l
     except Exception as e:
         module.fail_json(msg="Failed to describe images: {0}".format(e))

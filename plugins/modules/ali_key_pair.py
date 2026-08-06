@@ -138,7 +138,9 @@ except ImportError:
 
 def key_pair_exists(conn, module, key_pair_name):
     try:
-        for kp in conn.describe_key_pairs():
+        # DescribeKeyPairs is paginated.  Query the exact name at the API
+        # boundary instead of searching only the first unfiltered page.
+        for kp in conn.describe_key_pairs(key_pair_name=key_pair_name):
             if key_pair_name and kp.name != key_pair_name:
                 continue
             return kp
@@ -209,10 +211,15 @@ def main():
 
     if not key_pair:
         try:
-            params = module.params
+            params = module.params.copy()
             params['client_token'] = "Ansible-Alicloud-{0}-{1}".format(hash(str(module.params)), str(time.time()))
             params['key_pair_name'] = key_pair_name
             if public_key:
+                # The ECS ImportKeyPair API expects PublicKeyBody.  Keep the
+                # module-facing name public_key, but do not send it as an
+                # unsupported PublicKey request parameter.
+                params.pop('public_key', None)
+                params['public_key_body'] = public_key
                 key_pair = ecs.import_key_pair(**params)
             else:
                 key_pair = ecs.create_key_pair(**params)

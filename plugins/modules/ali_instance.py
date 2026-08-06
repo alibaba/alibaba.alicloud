@@ -716,6 +716,15 @@ def run_instance(module, ecs, exact_count):
     if system_disk_kms_key_id and not system_disk_encrypted:
         module.fail_json(msg='system_disk_encrypted must be true when system_disk_kms_key_id is specified')
 
+    # RunInstances models the encryption settings as the SystemDisk struct.
+    # The legacy flat arguments have no generated SDK setters and were silently
+    # dropped by Footmark's request builder, creating an unencrypted system disk.
+    system_disk = {}
+    if system_disk_encrypted:
+        system_disk['Encrypted'] = True
+    if system_disk_kms_key_id:
+        system_disk['KMSKeyId'] = system_disk_kms_key_id
+
     client_token = "Ansible-Alicloud-{0}-{1}".format(hash(str(module.params)), str(time.time()))
 
     try:
@@ -727,8 +736,7 @@ def run_instance(module, ecs, exact_count):
                                       io_optimized='optimized', system_disk_category=system_disk_category,
                                       system_disk_size=system_disk_size, system_disk_disk_name=system_disk_name,
                                       system_disk_description=system_disk_description, vswitch_id=vswitch_id,
-                                      system_disk_encrypted=system_disk_encrypted,
-                                      system_disk_kms_key_id=system_disk_kms_key_id, data_disks=data_disks,
+                                      system_disk=system_disk or None, data_disks=data_disks,
                                       amount=exact_count, instance_charge_type=instance_charge_type, period=period, period_unit="Month",
                                       auto_renew=auto_renew, auto_renew_period=auto_renew_period, key_pair_name=key_name,
                                       user_data=user_data, client_token=client_token, ram_role_name=ram_role_name,
