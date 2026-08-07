@@ -88,19 +88,19 @@ EXAMPLES = '''
       image_owner_alias: marketplace
       page_size: 100
 
-# Golden Image flow: resolve a source image, provision an instance, then create a tagged image.
-- name: Resolve the RHEL Marketplace image
+# Golden Image flow: resolve a compatible source image, provision an instance, then create a tagged image.
+- name: Resolve a Linux system image compatible with the requested instance type
   alibaba.alicloud.ali_image_info:
-    image_names: ['Red Hat Enterprise Linux 9.6 64bit V*']
     filters:
-      image_owner_alias: marketplace
-      page_size: 100
-  register: rhel_images
+      image_owner_alias: system
+      instance_type: '{{ instance_type }}'
+      os_type: linux
+  register: compatible_images
 
 - name: Create an encrypted build instance
   alibaba.alicloud.ali_instance:
-    image_id: '{{ rhel_images.images[0].image_id }}'
-    instance_type: ecs.g7.large
+    image_id: '{{ compatible_images.images[0].image_id }}'
+    instance_type: '{{ instance_type }}'
     security_groups: ['{{ security_group_id }}']
     vswitch_id: '{{ vswitch_id }}'
     system_disk_encrypted: true
@@ -117,7 +117,7 @@ EXAMPLES = '''
 - name: Create a tagged Golden Image
   alibaba.alicloud.ali_image:
     instance_id: '{{ build_instance.instances[0].id }}'
-    image_name: rhel-9-6-golden
+    image_name: ansible-golden-image
     tags:
       Purpose: golden-image
 '''
