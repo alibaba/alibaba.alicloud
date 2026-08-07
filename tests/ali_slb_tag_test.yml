@@ -51,7 +51,7 @@
 
     - name: Changed. Deleting slbs
       alibaba.alicloud.ali_slb_lb:
-        name: '{{ name }}'
+        name: '{{ test_resource_name }}'
         state: absent
 
     - name: Changed. Deleting vswitches

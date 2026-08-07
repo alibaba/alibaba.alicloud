@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_vswitch-module
+    test_resource_name: ansible-testacc-ali_vswitch-module
 
   roles:
     - vpc
@@ -16,7 +16,7 @@
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
         vswitch_id: '{{ item.id}}'
-        name: '{{ name }}-modified'
+        name: '{{ test_resource_name }}-modified'
       with_items: '{{vswitches.vswitches}}'
 
     - name: Changed. Add Tags.
@@ -35,7 +35,7 @@
 
     - name: Get the existing vswitch
       alibaba.alicloud.ali_vswitch_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
         filters:
           vpc_id: '{{vpc.vpc.id}}'
       register: vswitches
@@ -60,7 +60,7 @@
 
     - name: Get the existing vswitch
       alibaba.alicloud.ali_vswitch_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
         filters:
           vpc_id: '{{vpc.vpc.id}}'
       register: vswitches
@@ -85,7 +85,7 @@
 
     - name: Get the existing vswitch
       alibaba.alicloud.ali_vswitch_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
         filters:
           vpc_id: '{{vpc.vpc.id}}'
       register: vswitches
@@ -108,7 +108,7 @@
       alibaba.alicloud.ali_vswitch:
         vpc_id: '{{ item.vpc_id}}'
         cidr_block: '{{ item.cidr_block}}'
-        name: '{{ name }}'
+        name: '{{ test_resource_name }}'
         description: '{{ vswitch_description }}'
       with_items: '{{vswitches.vswitches}}'
 

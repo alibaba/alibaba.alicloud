@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_instance_facts-module
+    test_resource_name: ansible-testacc-ali_instance_facts-module
 
   roles:
     - vpc
@@ -22,7 +22,7 @@
       alibaba.alicloud.ali_instance:
         image: '{{ image_id }}'
         type: '{{ instance_type }}'
-        instance_name: '{{name}}-name-regex'
+        instance_name: '{{ test_resource_name}}-name-regex'
         description: 'New instance for testing name regex.'
         host_name: '{{ host_name }}'
         password: '{{ password }}'
@@ -42,18 +42,18 @@
 
     - name: Filter instance using name_regex
       alibaba.alicloud.ali_instance_info:
-        name_prefix: '{{name}}-name'
+        name_prefix: '{{ test_resource_name}}-name'
 
     - name: Retrieving instance using tags
       alibaba.alicloud.ali_instance_info:
-        tags: '{{tags}}'
+        tags: '{{ test_resource_tags}}'
 
     - name: Retrieving all instances
       alibaba.alicloud.ali_instance_info:
 
     - name: Retrieving all instances based on the name regex
       alibaba.alicloud.ali_instance_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: all_instances
 
     # Delete all of resource

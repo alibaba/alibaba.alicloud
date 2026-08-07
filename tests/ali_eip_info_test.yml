@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_eip_facts-module
+    test_resource_name: ansible-testacc-ali_eip_facts-module
 
   roles:
     - eip
@@ -12,7 +12,7 @@
   tasks:
     - name: Filter eip using name_regex
       alibaba.alicloud.ali_eip_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: eips
 
     - name: Filter eip using ip address regex

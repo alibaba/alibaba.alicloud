@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_vswitch_facts-module
+    test_resource_name: ansible-testacc-ali_vswitch_facts-module
 
   roles:
     - vpc
@@ -18,21 +18,21 @@
     - name: Add a vswitch and used to test name_regex
       alibaba.alicloud.ali_vswitch:
         cidr_block: '172.16.2.0/24'
-        name: '{{name}}regex'
+        name: '{{ test_resource_name}}regex'
         zone_id: '{{ availability_zone }}'
         vpc_id: '{{vpcs.vpcs.0.id}}'
         description: '{{vswitch_description}} name regex.'
 
     - name: Filter vswitch using name_regex
       alibaba.alicloud.ali_vswitch_info:
-        name_prefix: '{{name}}regex'
+        name_prefix: '{{ test_resource_name}}regex'
 
     - name: Retrieving all vswitches
       alibaba.alicloud.ali_vswitch_info:
 
     - name: Retrieving all vswitches based on name_regex
       alibaba.alicloud.ali_vswitch_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: vswitches
 
     - name: Changed. Deleting vswitches

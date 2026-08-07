@@ -5,7 +5,7 @@
 
   vars:
     allocate_public_ip: False
-    name: ansible-testacc-ali_eip-module
+    test_resource_name: ansible-testacc-ali_eip-module
 
   roles:
     - vpc
@@ -82,20 +82,20 @@
 
     - name: Changed. Associate new elastic IP with name and description
       alibaba.alicloud.ali_eip:
-        name: "{{ name }}-ali-eip"
+        name: "{{ test_resource_name }}-ali-eip"
         description: "{{ description }}-ali-eip"
       register: eip
 
     - name: No Changed. There is no any attribute need to modify.
       alibaba.alicloud.ali_eip:
         ip_address: "{{ eip.eip.ip_address }}"
-        name: "{{ name }}-ali-eip"
+        name: "{{ test_resource_name }}-ali-eip"
         description: "{{ description }}-ali-eip"
 
     - name: Changed. Modify eip attribute
       alibaba.alicloud.ali_eip:
         ip_address: "{{ eip.eip.ip_address }}"
-        name: "{{ name }}-ali-eip-updated"
+        name: "{{ test_resource_name }}-ali-eip-updated"
         description: "{{ description }}-ali-eip"
         bandwidth: 2
 
@@ -113,7 +113,7 @@
 
     - name: Get the existing eip
       alibaba.alicloud.ali_eip_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
 
     - name: Changed. Modify Tags.
       alibaba.alicloud.ali_eip:
@@ -131,7 +131,7 @@
 
     - name: Get the existing eip
       alibaba.alicloud.ali_eip_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
 
     - name: Changed. Removing tags.
       alibaba.alicloud.ali_eip:
@@ -149,7 +149,7 @@
 
     - name: Get the existing eip
       alibaba.alicloud.ali_eip_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: eips
 
     - name: Changed. Unassociate eips before releasing it.

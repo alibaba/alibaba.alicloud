@@ -17,7 +17,7 @@
     - name: Changed. Modifying name, host name and description when C(present)
       alibaba.alicloud.ali_instance:
         instance_ids: '{{ instances.ids}}'
-        name: '{{ name }}-modified'
+        name: '{{ test_resource_name }}-modified'
         description: 'Test modify name, host name and description'
         host_name: 'modify-host-name'
 
@@ -44,14 +44,14 @@
       alibaba.alicloud.ali_instance:
         state: running
         instance_ids: '{{ instances.ids}}'
-        name: '{{ name }}'
+        name: '{{ test_resource_name }}'
         description: '{{instance_description}}'
         host_name: 'modify-host-name'
 
     - name: No Changed. There is no any attribute changed
       alibaba.alicloud.ali_instance:
         instance_ids: '{{ instances.ids}}'
-        name: '{{ name }}'
+        name: '{{ test_resource_name }}'
         description: '{{instance_description}}'
         host_name: 'modify-host-name'
         password: 'Test12345'
@@ -93,6 +93,22 @@
           Test1: "add1"
           Test2: "add2"
 
+    - name: Query a Linux system image compatible with the CMK test instance type
+      alibaba.alicloud.ali_image_info:
+        filters:
+          image_owner_alias: system
+          instance_type: '{{ instance_type }}'
+          os_type: linux
+      register: cmk_compatible_linux_images
+
+    - name: Verify that a compatible Linux system image was found for CMK testing
+      ansible.builtin.assert:
+        that:
+          - cmk_compatible_linux_images.total | int > 0
+        fail_msg: >-
+          No Linux system image is compatible with instance type {{ instance_type }}
+          in the configured region.
+
     - name: Require the CMK test input
       ansible.builtin.assert:
         that:
@@ -101,9 +117,9 @@
 
     - name: Create an instance with encrypted system and data disks
       alibaba.alicloud.ali_instance:
-        image_id: '{{ image_id }}'
+        image_id: '{{ cmk_compatible_linux_images.images[0].image_id }}'
         instance_type: '{{ instance_type }}'
-        instance_name: '{{ name }}-cmk'
+        instance_name: '{{ test_resource_name }}-cmk'
         security_groups: ['{{ sgs.groups[0].id }}']
         vswitch_id: '{{ vswitches.vswitches[0].id }}'
         system_disk_category: cloud_essd

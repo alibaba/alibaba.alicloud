@@ -1,18 +1,36 @@
 ---
 - name: Get the existing ECS instances
   alibaba.alicloud.ali_instance_info:
-    name_prefix: '{{ name }}'
+    name_prefix: '{{ test_resource_name }}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
       page_size: 100
-    tags: '{{ tags }}'
+    tags: '{{ test_resource_tags }}'
   register: instances
+
+- name: Query a Linux system image compatible with the instance type
+  alibaba.alicloud.ali_image_info:
+    filters:
+      image_owner_alias: system
+      instance_type: '{{ instance_type }}'
+      os_type: linux
+  register: compatible_linux_images
+  when: not instances.instances
+
+- name: Verify that a compatible Linux system image was found
+  ansible.builtin.assert:
+    that:
+      - compatible_linux_images.total | int > 0
+    fail_msg: >-
+      No Linux system image is compatible with instance type {{ instance_type }}
+      in the configured region.
+  when: not instances.instances
 
 - name: Creating an ECS instance
   alibaba.alicloud.ali_instance:
-    image: '{{ image_id }}'
+    image: '{{ compatible_linux_images.images[0].image_id }}'
     type: '{{ instance_type }}'
-    instance_name: '{{ name }}'
+    instance_name: '{{ test_resource_name }}'
     description: '{{ instance_description }}'
     host_name: '{{ host_name }}'
     password: '{{ password }}'
@@ -31,7 +49,7 @@
     state: 'present'
     count: '{{ number_of_instances }}'
 
-    tags: '{{ tags }}'
+    tags: '{{ test_resource_tags }}'
     ram_role_name: '{{ ram_role.role.role_name }}'
 
     spot_price_limit: '{{ spot_price_limit }}'
@@ -41,9 +59,9 @@
 
 - name: Get the existing ECS instances
   alibaba.alicloud.ali_instance_info:
-    name_prefix: '{{ name }}'
+    name_prefix: '{{ test_resource_name }}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
       page_size: 100
-    tags: '{{ tags }}'
+    tags: '{{ test_resource_tags }}'
   register: instances

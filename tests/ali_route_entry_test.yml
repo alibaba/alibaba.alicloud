@@ -4,8 +4,8 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_vpc-module
-#    availability_zone: cn-hangzhou-b
+    test_resource_name: ansible-testacc-ali_vpc-module
+#    availability_zone: cn-beijing-h
 
   roles:
     - vpc
@@ -73,5 +73,3 @@
         cidr_block: '{{ item.cidr_block }}'
         state: absent
       with_items: '{{ vpcs.vpcs }}'
-
-

@@ -45,6 +45,14 @@ options:
             - Selects the image owner scope.
             - Set to C(marketplace) to query Marketplace images.
           type: str
+        instance_type:
+          description:
+            - Returns images compatible with the specified ECS instance type.
+          type: str
+        os_type:
+          description:
+            - Filters images by operating system type, for example C(linux).
+          type: str
         page_size:
           description:
             - Number of results requested from each C(DescribeImages) page.

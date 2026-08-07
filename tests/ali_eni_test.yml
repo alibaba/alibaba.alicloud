@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_eni-module
+    test_resource_name: ansible-testacc-ali_eni-module
 
   roles:
     - vpc
@@ -18,7 +18,7 @@
     - name: Changed. Modifying name.
       alibaba.alicloud.ali_eni:
         id: '{{ item}}'
-        name: '{{ name }}-modified'
+        name: '{{ test_resource_name }}-modified'
       with_items: '{{enis.ids}}'
 
     - name: Changed. Modifying description.
@@ -30,20 +30,20 @@
     - name: No Changed. There is no any attribute changed
       alibaba.alicloud.ali_eni:
         id: '{{ item}}'
-        name: '{{ name }}-modified'
+        name: '{{ test_resource_name }}-modified'
         description: '{{description}}-modified'
       with_items: '{{enis.ids}}'
 
     - name: Changed. Go back init value.
       alibaba.alicloud.ali_eni:
         id: '{{item}}'
-        name: '{{ name }}'
+        name: '{{ test_resource_name }}'
         description: '{{description}}'
       with_items: '{{enis.ids}}'
 
     - name: Creating a new security group
       alibaba.alicloud.ali_security_group:
-        name: '{{ name }}-group-eni'
+        name: '{{ test_resource_name }}-group-eni'
         vpc_id: '{{vpcs.vpcs.0.id}}'
       register: group
 
@@ -57,7 +57,7 @@
 
     - name: Get the existing groups
       alibaba.alicloud.ali_security_group_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
         filters:
           vpc_id: '{{vpcs.vpcs.0.id}}'
       register: sgs

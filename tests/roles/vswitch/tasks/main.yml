@@ -3,14 +3,14 @@
   alibaba.alicloud.ali_vswitch:
     alicloud_zone: '{{ availability_zone }}'
     cidr_block: '{{ vswitch_cidr }}'
-    vswitch_name: '{{ name }}'
+    vswitch_name: '{{ test_resource_name }}'
     description: '{{ vswitch_description }}'
     vpc_id: '{{vpc.vpc.id}}'
   register: vswitch
 
 - name: Get the existing vswitch
   alibaba.alicloud.ali_vswitch_info:
-    name_prefix: '{{ name }}'
+    name_prefix: '{{ test_resource_name }}'
     filters:
       vpc_id: '{{vpc.vpc.id}}'
   register: vswitches

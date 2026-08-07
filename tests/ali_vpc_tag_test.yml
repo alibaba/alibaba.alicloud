@@ -11,7 +11,7 @@
   tasks:
     - name: Get the existing vpc
       alibaba.alicloud.ali_vpc_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: vpcs
 
     - name: Changed. Add VPC Tags.
@@ -50,7 +50,7 @@
 
     - name: Get the existing vswitch
       alibaba.alicloud.ali_vswitch_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
         filters:
           vpc_id: '{{vpc.vpc.id}}'
       register: vswitches
@@ -91,7 +91,7 @@
 
     - name: Get the existing eip
       alibaba.alicloud.ali_eip_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: eips
 
     - name: Changed. Add EIP Tags.

@@ -14,7 +14,7 @@
   tasks:
     - name: Filter instance using name_regex
       alibaba.alicloud.ali_instance_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
         filters:
           vpc_id: '{{ vpcs.vpcs[0].id }}'
       register: instances
@@ -55,7 +55,7 @@
 
     - name: Filter security group using name_regex
       alibaba.alicloud.ali_security_group_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
       register: sgs
 
     - name: Changed. Add security group Tags.
@@ -94,7 +94,7 @@
 
     - name: Filter eni using name_regex
       alibaba.alicloud.ali_eni_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
       register: enis
 
     - name: Changed. Add eni Tags.
@@ -138,7 +138,7 @@
     - name: Create a custom image for exact image ID tag testing
       alibaba.alicloud.ali_image:
         instance_id: '{{ instances.ids[0] }}'
-        image_name: '{{ name }}-image-tag'
+        image_name: '{{ test_resource_name }}-image-tag'
         wait: true
         wait_timeout: 900
       register: tagged_image
