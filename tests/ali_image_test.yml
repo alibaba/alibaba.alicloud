@@ -97,7 +97,13 @@
               - '{{ lookup(''env'', ''ALICLOUD_REGION'') }}'
               - --snapshot-id
               - '{{ item.snapshot_id }}'
-          loop: '{{ semver_image.image.disk_device_mappings.disk_device_mapping | default([]) }}'
+          loop: >-
+            {{
+              (semver_image | default({}))
+              .get('image', {})
+              .get('disk_device_mappings', {})
+              .get('disk_device_mapping', [])
+            }}
           when: semver_image is defined and semver_image.image is defined
           no_log: true
 
