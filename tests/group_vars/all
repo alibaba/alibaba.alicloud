@@ -1,6 +1,6 @@
 ---
 # common parameters
-availability_zone: cn-beijing-c
+availability_zone: cn-hangzhou-b
 name: ansible-testAcc
 description: "Test ansible module "
 tags: {For: testAcc, Created: Ansible, From: provider/tests}
@@ -49,8 +49,8 @@ group_outboundRules:
     priority: 2
 
 # create ECS instance parameters
-image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
-instance_type: ecs.sn2ne.xlarge
+image_id: "aliyun_3_x64_20G_alibase_20260625.vhd"
+instance_type: ecs.e-c1m1.large
 instance_description: "Create a new ECS instance resource via Ansible example alicloud-ecs-vpc."
 host_name: "my-instance-from-ansible"
 password: "Test12345"

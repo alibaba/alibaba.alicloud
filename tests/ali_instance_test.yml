@@ -3,6 +3,9 @@
   hosts: localhost
   remote_user: root
 
+  vars:
+    test_kms_key_id: "{{ lookup('ansible.builtin.env', 'ALICLOUD_TEST_KMS_KEY_ID') }}"
+
   roles:
     - vpc
     - vswitch
@@ -90,6 +93,43 @@
           Test1: "add1"
           Test2: "add2"
 
+    - name: Require the CMK test input
+      ansible.builtin.assert:
+        that:
+          - test_kms_key_id | length > 0
+        fail_msg: ALICLOUD_TEST_KMS_KEY_ID is required for the encryption test.
+
+    - name: Create an instance with encrypted system and data disks
+      alibaba.alicloud.ali_instance:
+        image_id: '{{ image_id }}'
+        instance_type: '{{ instance_type }}'
+        instance_name: '{{ name }}-cmk'
+        security_groups: ['{{ sgs.groups[0].id }}']
+        vswitch_id: '{{ vswitches.vswitches[0].id }}'
+        system_disk_category: cloud_essd
+        system_disk_size: 40
+        system_disk_encrypted: true
+        system_disk_kms_key_id: '{{ test_kms_key_id }}'
+        data_disks:
+          - category: cloud_essd
+            size: 40
+            encrypted: true
+            kms_key_id: '{{ test_kms_key_id }}'
+      register: encrypted_instance
+
+    - name: Read encrypted system and data disks
+      alibaba.alicloud.ali_disk_info:
+        filters:
+          instance_id: '{{ encrypted_instance.instances[0].id }}'
+      register: encrypted_disks
+
+    - name: Verify both disks use the requested CMK
+      ansible.builtin.assert:
+        that:
+          - encrypted_disks.total | int == 2
+          - encrypted_disks.disks | selectattr('encrypted', 'equalto', true) | list | length == 2
+          - encrypted_disks.disks | selectattr('kmskey_id', 'equalto', test_kms_key_id) | list | length == 2
+
 #    - name: Changed. Modifying instance charge type
 #      alibaba.alicloud.ali_instance:
 #        instance_ids: '{{ instances.ids }}'
@@ -109,6 +149,13 @@
 #      alibaba.alicloud.ali_instance:
 #        instance_ids: '{{ instances.ids }}'
 #        instance_charge_type: 'PostPaid'
+
+    - name: Delete the encrypted CMK test instance
+      alibaba.alicloud.ali_instance:
+        instance_ids:
+          - '{{ encrypted_instance.instances[0].id }}'
+        force: True
+        state: absent
 
     # Delete all of resource
     - name: Changed. Deleting instances

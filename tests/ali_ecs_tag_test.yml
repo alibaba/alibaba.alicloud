@@ -14,7 +14,9 @@
   tasks:
     - name: Filter instance using name_regex
       alibaba.alicloud.ali_instance_info:
-        name_prefix: 'ansible'
+        name_prefix: '{{ name }}'
+        filters:
+          vpc_id: '{{ vpcs.vpcs[0].id }}'
       register: instances
 
     - name: Changed. Add Tags.
@@ -133,6 +135,72 @@
           "Ansible": "Add tags"
         }
 
+    - name: Create a custom image for exact image ID tag testing
+      alibaba.alicloud.ali_image:
+        instance_id: '{{ instances.ids[0] }}'
+        image_name: '{{ name }}-image-tag'
+        wait: true
+        wait_timeout: 900
+      register: tagged_image
+
+    - name: Add a tag to the custom image by its exact ID
+      alibaba.alicloud.ali_ecs_tag:
+        resource_type: image
+        resource_ids:
+          - '{{ tagged_image.image_id }}'
+        tags:
+          Ansible: ImageTag
+
+    - name: Read the tagged custom image
+      alibaba.alicloud.ali_image_info:
+        image_ids:
+          - '{{ tagged_image.image_id }}'
+      register: tagged_image_info
+
+    - name: Verify the exact custom image was tagged
+      ansible.builtin.assert:
+        that:
+          - tagged_image_info.total | int == 1
+          - tagged_image_info.images[0].tags.Ansible == 'ImageTag'
+
+    - name: Remove the custom image tag by its exact ID
+      alibaba.alicloud.ali_ecs_tag:
+        state: absent
+        resource_type: image
+        resource_ids:
+          - '{{ tagged_image.image_id }}'
+        tags:
+          Ansible: ImageTag
+
+    - name: Verify the custom image tag was removed
+      alibaba.alicloud.ali_image_info:
+        image_ids:
+          - '{{ tagged_image.image_id }}'
+      register: untagged_image_info
+
+    - name: Assert the custom image tag is absent
+      ansible.builtin.assert:
+        that:
+          - "'Ansible' not in untagged_image_info.images[0].tags"
+
+    - name: Delete the custom image used by the image tag test
+      alibaba.alicloud.ali_image:
+        image_id: '{{ tagged_image.image_id }}'
+        state: absent
+
+    - name: Delete the snapshot generated for the image tag test
+      ansible.builtin.command:
+        argv:
+          - aliyun
+          - ecs
+          - delete-snapshot
+          - --region
+          - '{{ lookup(''env'', ''ALICLOUD_REGION'') }}'
+          - --snapshot-id
+          - '{{ item.snapshot_id }}'
+      loop: '{{ tagged_image.image.disk_device_mappings.disk_device_mapping }}'
+      no_log: true
+
     # Delete all of resource
     - name: Changed. Deleting enis
       alibaba.alicloud.ali_eni:
@@ -172,4 +240,3 @@
         cidr_block: '{{item.cidr_block}}'
         state: absent
       with_items: '{{vpcs.vpcs}}'
-
