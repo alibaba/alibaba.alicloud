@@ -112,6 +112,47 @@ options:
       description:
         - Description of the system disk.
       type: str
+    system_disk_encrypted:
+      description:
+        - Whether to encrypt the system disk when an instance is created.
+        - This setting only applies at creation time.
+      type: bool
+      default: false
+    system_disk_kms_key_id:
+      description:
+        - Custom KMS key ID used to encrypt the system disk.
+        - Requires C(system_disk_encrypted=true).
+      type: str
+    data_disks:
+      description:
+        - Data disks to create with the instance. These settings only apply at creation time.
+      type: list
+      elements: dict
+      suboptions:
+        category:
+          description: Disk category, for example C(cloud_essd).
+          type: str
+        size:
+          description: Disk size in GiB.
+          type: int
+        disk_name:
+          description: Name of the data disk.
+          type: str
+        description:
+          description: Description of the data disk.
+          type: str
+        delete_with_instance:
+          description: Whether ECS deletes the disk when the instance is deleted.
+          type: bool
+        snapshot_id:
+          description: Snapshot used to create the data disk.
+          type: str
+        encrypted:
+          description: Whether to encrypt the data disk.
+          type: bool
+        kms_key_id:
+          description: Custom KMS key ID for the encrypted data disk; requires C(encrypted=true).
+          type: str
     count:
       description:
         - The number of the new instance. An integer value which indicates how many instances that match I(count_tag)
@@ -639,6 +680,9 @@ def run_instance(module, ecs, exact_count):
     system_disk_size = module.params['system_disk_size']
     system_disk_name = module.params['system_disk_name']
     system_disk_description = module.params['system_disk_description']
+    system_disk_encrypted = module.params['system_disk_encrypted']
+    system_disk_kms_key_id = module.params['system_disk_kms_key_id']
+    data_disks = normalize_data_disks(module, module.params['data_disks'])
     allocate_public_ip = module.params['allocate_public_ip']
     period = module.params['period']
     auto_renew = module.params['auto_renew']
@@ -669,6 +713,17 @@ def run_instance(module, ecs, exact_count):
         module.fail_json(msg='The parameter security_groups should be a list, aborting')
     if len(security_groups) <= 0:
         module.fail_json(msg='Expected the parameter security_groups is non-empty when create new ECS instances, aborting')
+    if system_disk_kms_key_id and not system_disk_encrypted:
+        module.fail_json(msg='system_disk_encrypted must be true when system_disk_kms_key_id is specified')
+
+    # RunInstances models the encryption settings as the SystemDisk struct.
+    # The legacy flat arguments have no generated SDK setters and were silently
+    # dropped by Footmark's request builder, creating an unencrypted system disk.
+    system_disk = {}
+    if system_disk_encrypted:
+        system_disk['Encrypted'] = True
+    if system_disk_kms_key_id:
+        system_disk['KMSKeyId'] = system_disk_kms_key_id
 
     client_token = "Ansible-Alicloud-{0}-{1}".format(hash(str(module.params)), str(time.time()))
 
@@ -681,6 +736,7 @@ def run_instance(module, ecs, exact_count):
                                       io_optimized='optimized', system_disk_category=system_disk_category,
                                       system_disk_size=system_disk_size, system_disk_disk_name=system_disk_name,
                                       system_disk_description=system_disk_description, vswitch_id=vswitch_id,
+                                      system_disk=system_disk or None, data_disks=data_disks,
                                       amount=exact_count, instance_charge_type=instance_charge_type, period=period, period_unit="Month",
                                       auto_renew=auto_renew, auto_renew_period=auto_renew_period, key_pair_name=key_name,
                                       user_data=user_data, client_token=client_token, ram_role_name=ram_role_name,
@@ -691,6 +747,30 @@ def run_instance(module, ecs, exact_count):
         module.fail_json(msg='Unable to create instance, error: {0}'.format(e))
 
     return instances
+
+
+def normalize_data_disks(module, data_disks):
+    field_map = {
+        'category': 'Category',
+        'size': 'Size',
+        'disk_name': 'DiskName',
+        'description': 'Description',
+        'delete_with_instance': 'DeleteWithInstance',
+        'snapshot_id': 'SnapshotId',
+        'encrypted': 'Encrypted',
+        'kms_key_id': 'KMSKeyId',
+    }
+    normalized = []
+    for index, disk in enumerate(data_disks, 1):
+        unknown = set(disk).difference(field_map)
+        if unknown:
+            module.fail_json(msg='Unsupported data_disks[{0}] fields: {1}'.format(
+                index - 1, ', '.join(sorted(unknown))))
+        if disk.get('kms_key_id') and not disk.get('encrypted'):
+            module.fail_json(msg='data_disks[{0}].encrypted must be true when kms_key_id is specified'.format(index - 1))
+        normalized.append({api_name: value for name, api_name in field_map.items()
+                           for value in [disk.get(name)] if value is not None})
+    return normalized
 
 
 def modify_instance(module, instance):
@@ -771,6 +851,9 @@ def main():
         system_disk_size=dict(type='int', default=40),
         system_disk_name=dict(type='str'),
         system_disk_description=dict(type='str'),
+        system_disk_encrypted=dict(type='bool', default=False),
+        system_disk_kms_key_id=dict(type='str'),
+        data_disks=dict(type='list', elements='dict', default=[]),
         force=dict(type='bool', default=False),
         tags=dict(type='dict', aliases=['instance_tags']),
         purge_tags=dict(type='bool', default=False),

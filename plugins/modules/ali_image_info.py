@@ -16,12 +16,15 @@ module: ali_image_info
 short_description: Gather facts on images of Alibaba Cloud ECS.
 description:
      - This module fetches data from the Open API in Alicloud.
-       The module must be called from within the ECS image itself.
+       Results include every page returned by C(DescribeImages).
+     - C(image_names) accepts C(*) wildcards and ECS performs case-insensitive matching.
+     - An empty query result is returned as an empty C(images) list; it is not retried indefinitely.
 
 options:
     image_ids:
       description:
         - A list of ECS image ids.
+        - Do not combine this option with C(image_names); image IDs take precedence when both are supplied.
       aliases: ["ids"]
       type: list
       elements: str
@@ -31,6 +34,30 @@ options:
       aliases: ["names"]
       type: list
       elements: str
+    filters:
+      description:
+        - Additional C(DescribeImages) request options, expressed in snake_case.
+        - The module follows every API page; C(page_size) changes the number requested in each page, not the total result limit.
+      type: dict
+      suboptions:
+        image_owner_alias:
+          description:
+            - Selects the image owner scope.
+            - Set to C(marketplace) to query Marketplace images.
+          type: str
+        instance_type:
+          description:
+            - Returns images compatible with the specified ECS instance type.
+          type: str
+        os_type:
+          description:
+            - Filters images by operating system type, for example C(linux).
+          type: str
+        page_size:
+          description:
+            - Number of results requested from each C(DescribeImages) page.
+            - Valid values are from C(1) to C(100); the default is C(100).
+          type: int
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
@@ -52,6 +79,47 @@ EXAMPLES = '''
 - name: Find all images in the specified region by image names
   alibaba.alicloud.ali_image_info:
     image_names: '{{ image_names }}'
+
+- name: Find Marketplace images by name
+  alibaba.alicloud.ali_image_info:
+    image_names:
+      - 'Red Hat Enterprise Linux 9.6 64bit V*'
+    filters:
+      image_owner_alias: marketplace
+      page_size: 100
+
+# Golden Image flow: resolve a compatible source image, provision an instance, then create a tagged image.
+- name: Resolve a Linux system image compatible with the requested instance type
+  alibaba.alicloud.ali_image_info:
+    filters:
+      image_owner_alias: system
+      instance_type: '{{ instance_type }}'
+      os_type: linux
+  register: compatible_images
+
+- name: Create an encrypted build instance
+  alibaba.alicloud.ali_instance:
+    image_id: '{{ compatible_images.images[0].image_id }}'
+    instance_type: '{{ instance_type }}'
+    security_groups: ['{{ security_group_id }}']
+    vswitch_id: '{{ vswitch_id }}'
+    system_disk_encrypted: true
+    system_disk_kms_key_id: '{{ kms_key_id }}'
+    data_disks:
+      - category: cloud_essd
+        size: 40
+        encrypted: true
+        kms_key_id: '{{ kms_key_id }}'
+    tags:
+      Purpose: golden-image-build
+  register: build_instance
+
+- name: Create a tagged Golden Image
+  alibaba.alicloud.ali_image:
+    instance_id: '{{ build_instance.instances[0].id }}'
+    image_name: ansible-golden-image
+    tags:
+      Purpose: golden-image
 '''
 
 RETURN = '''
@@ -61,9 +129,25 @@ image_ids:
     type: list
     sample: ["m-2zeddnvf7uhw3xwcr6dl", "m-2zeirrrgvh8co3z364f0"]
 images:
-    description: Details about the ecs images.
+    description: Details about the ECS images. C(product_code) identifies the Marketplace product and C(platform) identifies the operating system family.
     returned: when success
     type: list
+    contains:
+        image_id:
+            description: ECS image ID.
+            type: str
+        image_owner_alias:
+            description: Owner scope, for example C(self) or C(marketplace).
+            type: str
+        product_code:
+            description: Marketplace product code when supplied by ECS.
+            type: str
+        platform:
+            description: Operating system family reported by ECS.
+            type: str
+        tags:
+            description: Image tags as key-value pairs.
+            type: dict
     sample: [
         {
             "architecture": "x86_64",
@@ -196,6 +280,7 @@ def main():
     argument_spec.update(dict(
         image_ids=dict(type='list', elements='str', aliases=['ids']),
         image_names=dict(type='list', elements='str', aliases=['names']),
+        filters=dict(type='dict', default={}),
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -204,38 +289,39 @@ def main():
 
     image_ids = module.params['image_ids']
     image_names = module.params['image_names']
+    filters = module.params['filters']
     result = []
     ids = []
 
-    if image_ids and (not isinstance(image_ids, list) or len(image_ids)) < 1:
+    if image_ids and (not isinstance(image_ids, list) or len(image_ids) < 1):
         module.fail_json(msg='image_ids should be a list of image id, aborting')
 
-    if image_names and (not isinstance(image_names, list) or len(image_names)) < 1:
+    if image_names and (not isinstance(image_names, list) or len(image_names) < 1):
         module.fail_json(msg='image_names should be a list of image name, aborting')
 
     try:
         ecs = ecs_connect(module)
         if image_ids:
             image_id = ",".join(image_ids)
-            for image in ecs.get_all_images(image_id=image_id):
+            for image in ecs.get_all_images(image_id=image_id, filters=filters):
                 result.append(get_info(image))
                 ids.append(image.image_id)
 
         elif image_names:
             for name in image_names:
-                for image in ecs.get_all_images(image_name=name):
+                for image in ecs.get_all_images(image_name=name, filters=filters):
                     if image:
                         result.append(get_info(image))
                         ids.append(image.image_id)
 
         else:
-            for image in ecs.get_all_images():
+            for image in ecs.get_all_images(filters=filters):
                 result.append(get_info(image))
                 ids.append(image.image_id)
 
         module.exit_json(changed=False, image_ids=ids, images=result, total=len(result))
 
-    except ECSResponseError as e:
+    except (ECSResponseError, ValueError) as e:
         module.fail_json(msg='Error in describe images: %s' % str(e))
 
 

@@ -1,0 +1,30 @@
+---
+- name: Validate module ali_market_product_info
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+
+  tasks:
+    - name: Search Marketplace products without creating cloud resources
+      alibaba.alicloud.ali_market_product_info:
+        search_term: Wordpress
+        product_type: MIRROR
+      register: market_products
+      no_log: true
+
+    - name: Verify the product query completed successfully
+      ansible.builtin.assert:
+        that:
+          - market_products.changed == false
+          - market_products.products is defined
+          - market_products.products | length > 0
+          # The Market endpoint caps each response at 50 items; this confirms
+          # the module collects subsequent pages instead of returning only one.
+          - market_products.products | length > 50
+
+    - name: Report product count for CLI comparison
+      ansible.builtin.debug:
+        msg: "market_product_count={{ market_products.products | length }}"

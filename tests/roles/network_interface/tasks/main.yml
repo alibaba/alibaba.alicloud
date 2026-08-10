@@ -1,7 +1,7 @@
 ---
 - name: Get the existing network interfaces
   alibaba.alicloud.ali_eni_info:
-    name_prefix: '{{name}}'
+    name_prefix: '{{ test_resource_name}}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
   register: enis
@@ -10,24 +10,24 @@
   alibaba.alicloud.ali_eni:
     vswitch_id: '{{ vswitches.vswitches.0.id }}'
     security_groups: ['{{ sgs.groups.0.id }}']
-    name: '{{ name }}'
+    name: '{{ test_resource_name }}'
     description: '{{description}}'
-    tags: '{{tags}}'
+    tags: '{{ test_resource_tags}}'
   when: not enis.interfaces
 
 - name: Creating a network interface with private ip
   alibaba.alicloud.ali_eni:
     vswitch_id: '{{ vswitches.vswitches.0.id }}'
     security_groups: ['{{ sgs.groups.0.id }}']
-    name: '{{ name }}-ip'
+    name: '{{ test_resource_name }}-ip'
     description: '{{description}}'
     private_ip: '172.16.1.10'
-    tags: '{{tags}}'
+    tags: '{{ test_resource_tags}}'
   when: not enis.interfaces
 
 - name: Get the existing network interfaces
   alibaba.alicloud.ali_eni_info:
-    name_prefix: '{{name}}'
+    name_prefix: '{{ test_resource_name}}'
     filters:
       vpc_id: '{{ vpcs.vpcs.0.id }}'
   register: enis

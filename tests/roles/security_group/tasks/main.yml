@@ -2,7 +2,7 @@
 - name: Create a VPC security group
   alibaba.alicloud.ali_security_group:
     state: 'present'
-    name: '{{ name }}'
+    name: '{{ test_resource_name }}'
     description: '{{ group_description }}'
     vpc_id: '{{vpc.vpc.id}}'
     rules: '{{ group_inboundRules }}'
@@ -11,7 +11,7 @@
 
 - name: Get the existing groups
   alibaba.alicloud.ali_security_group_info:
-    name_prefix: '{{ name }}'
+    name_prefix: '{{ test_resource_name }}'
     filters:
       vpc_id: '{{vpcs.vpcs.0.id}}'
   register: sgs

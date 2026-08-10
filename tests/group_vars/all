@@ -1,9 +1,9 @@
 ---
 # common parameters
-availability_zone: cn-beijing-c
-name: ansible-testAcc
+availability_zone: cn-beijing-h
+test_resource_name: ansible-testAcc
 description: "Test ansible module "
-tags: {For: testAcc, Created: Ansible, From: provider/tests}
+test_resource_tags: {For: testAcc, Created: Ansible, From: provider/tests}
 policy: '{"Statement": [{"Action": ["*"],"Effect": "Allow","Resource": ["*"]}],"Version":"1"}'
 
 # create vpc parameters
@@ -50,7 +50,7 @@ group_outboundRules:
 
 # create ECS instance parameters
 image_id: "ubuntu_18_04_64_20G_alibase_20190624.vhd"
-instance_type: ecs.sn2ne.xlarge
+instance_type: ecs.c9i.large
 instance_description: "Create a new ECS instance resource via Ansible example alicloud-ecs-vpc."
 host_name: "my-instance-from-ansible"
 password: "Test12345"
@@ -60,7 +60,7 @@ internet_charge_type: "PayByTraffic"
 max_bandwidth_in: 200
 max_bandwidth_out: 50
 
-system_disk_category: "cloud_ssd"
+system_disk_category: "cloud_essd"
 system_disk_size: 50
 
 number_of_instances: 2

@@ -3,7 +3,7 @@
   hosts: localhost
   remote_user: root
   vars:
-    name: ansible-testacc-ali_security_group_facts-module
+    test_resource_name: ansible-testacc-ali_security_group_facts-module
   roles:
     - vpc
     - security_group
@@ -15,20 +15,20 @@
 
     - name: Add a group and used to test name_regex
       alibaba.alicloud.ali_security_group:
-        name: '{{name}}regex'
+        name: '{{ test_resource_name}}regex'
         description: '{{group_description}} name regex.'
         vpc_id: '{{vpcs.vpcs.0.id}}'
 
     - name: Filter security group using name_regex
       alibaba.alicloud.ali_security_group_info:
-        name_prefix: '{{name}}regex'
+        name_prefix: '{{ test_resource_name}}regex'
 
     - name: Retrieving all security groups
       alibaba.alicloud.ali_security_group_info:
 
     - name: Retrieving all security groups based on name_regex
       alibaba.alicloud.ali_security_group_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: sgs
 
     - name: Changed. Deleting security groups

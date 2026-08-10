@@ -1,20 +1,48 @@
 ---
 - name: Validate module ali_key_pair
   hosts: localhost
-  remote_user: root
+  connection: local
+  gather_facts: false
+
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    key_pair_name: ansible-aone-85044628-tags
 
   tasks:
     - name: Changed. Create a new key pair
       alibaba.alicloud.ali_key_pair:
-        name: ansible
-        comments: create for ansible
+        name: '{{ key_pair_name }}'
+        # A test-only public key makes the create operation import a known key
+        # and avoids emitting a generated private key in test output.
+        public_key: >-
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCibIodhXykB2hWs3vMeKqn5sn7SSXX27X2sCm0X9T5qMmLF9OZr8wh6IoHrnYKn2TP2LA5FJqkPUbBFmE20di2REKPkXxWBT41cgzZLgIXhofZjAm/5H/5/TbPd0m3DA8xGo4FygekvV53fsJmTwpAj65Y+spGQZju4d1rgJ292rJ5TMbiTENfKNRYuykFV2zklKX14UV2/s0Set/7iA6B9bJRLf6jGLMr2e0S8DecQS+3iPHVCjC6FmHnAlW3dyVYZk/cQVjxKy7j51z7ohbkED7u0DemKbIZacwB5Jnpt/UG08/qLPoYoenfDcO0FNPZkO85tJNgaanu20u/v/Qr
+        tags:
+          ManagedBy: Ansible
+          TestCase: Aone-85044628
 
-    - name: Changed. Force update key pair
+    - name: Changed. Update key pair tags without replacing the key pair
       alibaba.alicloud.ali_key_pair:
-        name: ansible
+        name: '{{ key_pair_name }}'
         force: yes
+        purge_tags: yes
+        tags:
+          ManagedBy: Ansible
+          TestCase: Aone-85044628-updated
+
+    - name: Query the key pair after the tag-only update
+      alibaba.alicloud.ali_key_pair_info:
+        name: '{{ key_pair_name }}'
+      register: key_pairs
+
+    - name: Verify the key pair was retained and tags were updated
+      ansible.builtin.assert:
+        that:
+          - key_pairs.key_pairs | length == 1
+          - key_pairs.key_pairs[0].name == key_pair_name
+          - key_pairs.key_pairs[0].tags.ManagedBy == 'Ansible'
+          - key_pairs.key_pairs[0].tags.TestCase == 'Aone-85044628-updated'
 
     - name: Changed. Remove key pair
       alibaba.alicloud.ali_key_pair:
-        name: ansible
+        name: '{{ key_pair_name }}'
         state: absent

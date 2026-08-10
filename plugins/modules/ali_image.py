@@ -49,7 +49,12 @@ options:
     type: str
   image_version:
     description:
-      - The version number of the image, with a length limit of [1, 40] English characters.   
+      - The version number passed to the ECS CreateImage API.
+      - This module passes the value through as a string without imposing a local
+        length or numeric-range restriction.
+      - When the source instance uses a Marketplace image, or a custom image
+        derived from one, the value must be empty or match the source image
+        version. This restriction is enforced by ECS.
     aliases: ['version']
     type: str
   disk_mapping:
@@ -65,6 +70,16 @@ options:
           - Size of the disk, in the range [5-2000GB]
     type: list
     elements: dict
+  tags:
+    description:
+      - Desired tags for the image.
+      - Tags are applied when the image is created and reconciled when an existing image is selected.
+    type: dict
+  purge_tags:
+    description:
+      - Remove tags not declared in C(tags) when the image already exists.
+    default: false
+    type: bool
   wait:
     description:
       - wait for the Image to be available.     
@@ -112,6 +127,14 @@ EXAMPLES = '''
     disk_mapping: '{{ disk_mapping }}'
     wait: '{{ wait }}'
     wait_timeout: '{{ wait_timeout }}'
+
+- name: Reconcile Golden Image tags
+  alibaba.alicloud.ali_image:
+    image_id: '{{ image_id }}'
+    tags:
+      Purpose: golden-image
+      ManagedBy: ansible
+    purge_tags: true
 
 - name: delete image
   alibaba.alicloud.ali_image:
@@ -184,7 +207,7 @@ def get_image_detail(image):
 
 
 def create_image(module, ecs, snapshot_id, image_name, image_version, description, instance_id,
-                 disk_mapping, client_token, wait, wait_timeout):
+                 disk_mapping, tags, client_token, wait, wait_timeout):
     """
     Create a user-defined image with snapshots.
     :param module: Ansible module object
@@ -207,14 +230,6 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
 
         if image_name.startswith('http://') or image_name.startswith('https://'):
             module.fail_json(msg='image_name can not start with http:// or https://')
-    if image_version:
-        if image_version.isdigit():
-            if int(image_version) < 1 or int(image_version) > 40:
-                module.fail_json(msg='The permitted range of image_version is between 1 - 40')
-        else:
-            module.fail_json(msg='The permitted range of image_version is between 1 - 40, entered value is {0}'
-                             .format(image_version))
-
     if disk_mapping:
         for mapping in disk_mapping:
             if mapping:
@@ -247,7 +262,7 @@ def create_image(module, ecs, snapshot_id, image_name, image_version, descriptio
     try:
         changed, image_id, results, request_id = ecs.create_image(snapshot_id=snapshot_id, image_name=image_name,
                                                                   image_version=image_version, description=description,
-                                                                  instance_id=instance_id, disk_mapping=disk_mapping,
+                                                                  instance_id=instance_id, disk_mapping=disk_mapping, tags=tags,
                                                                   client_token=client_token, wait=wait,
                                                                   wait_timeout=wait_timeout)
 
@@ -268,6 +283,8 @@ def main():
         image_name=dict(type='str', aliases=['name']),
         image_version=dict(type='str', aliases=['version']),
         disk_mapping=dict(type='list', elements='dict'),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=False),
         instance_id=dict(aliases=['instance']),
         state=dict(default='present', choices=['present', 'absent'], type='str'),
         wait=dict(default=False, type='bool'),
@@ -282,6 +299,8 @@ def main():
     state = module.params['state']
     image_id = module.params['image_id']
     image_name = module.params['image_name']
+    tags = module.params['tags'] or {}
+    purge_tags = module.params['purge_tags']
 
     changed = False
     current_image = None
@@ -336,7 +355,7 @@ def main():
             changed, image_id, results, request_id = create_image(module=module, ecs=ecs, snapshot_id=snapshot_id,
                                                                   image_name=image_name, image_version=image_version,
                                                                   description=description, instance_id=instance_id,
-                                                                  disk_mapping=disk_mapping, client_token=client_token,
+                                                                  disk_mapping=disk_mapping, tags=tags, client_token=client_token,
                                                                   wait=wait, wait_timeout=wait_timeout)
             images = ecs.get_all_images(image_id=image_id)
             if images:
@@ -346,6 +365,18 @@ def main():
             module.exit_json(changed=changed, image_id=image_id, image=get_image_detail(current_image) )
         except Exception as e:
             module.fail_json(msg='Creating a new image is failed, error: {0}'.format(e))
+
+    try:
+        changed = False
+        if purge_tags:
+            remove = {key: value for key, value in current_image.tags.items() if key not in tags}
+            if remove and current_image.remove_tags(remove):
+                changed = True
+        if tags and current_image.add_tags(tags):
+            changed = True
+        module.exit_json(changed=changed, image_id=current_image.id, image=get_image_detail(current_image))
+    except Exception as e:
+        module.fail_json(msg='Updating image tags failed: {0}'.format(e))
 
 
 if __name__ == '__main__':

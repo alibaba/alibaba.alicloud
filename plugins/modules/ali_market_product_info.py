@@ -132,7 +132,7 @@ products:
                       sample: m-2ze0ua7jvif73kxxxxx
 '''
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import ecs_argument_spec, market_connect, ecs_connect
+from ansible_collections.alibaba.alicloud.plugins.module_utils.alicloud_ecs import ecs_argument_spec, market_connect, ecs_connect
 
 HAS_FOOTMARK = False
 
@@ -146,7 +146,7 @@ except ImportError:
 def main():
     argument_spec = ecs_argument_spec()
     argument_spec.update(dict(
-        name_prefix=dict(typr='str'),
+        name_prefix=dict(type='str'),
         search_term=dict(type='str'),
         sort=dict(type='str', choices=['user_count-desc', 'created_on-desc', 'price-desc', 'score-desc']),
         category_id=dict(type='str'),
@@ -154,7 +154,7 @@ def main():
         suggested_price=dict(type='float'),
         supplier_id=dict(type='str'),
         supplier_name_keyword=dict(type='str'),
-        ids=dict(typr='list', elements='str')
+        ids=dict(type='list', elements='str')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -191,7 +191,7 @@ def main():
                 continue
             if supplier_id and str(product.supplier_id) != supplier_id:
                 continue
-            if supplier_name_keyword and product.supplier_name_keyword.find(supplier_name_keyword) == -1:
+            if supplier_name_keyword and supplier_name_keyword not in getattr(product, 'supplier_name', ''):
                 continue
             if (suggested_price or suggested_price == 0) and not product.suggested_price.startswith(str(suggested_price).replace('.0', '') if str(suggested_price).endswith('.0') else str(suggested_price)):
                 continue

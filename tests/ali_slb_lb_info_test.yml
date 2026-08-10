@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_slb_lb_facts
+    test_resource_name: ansible-testacc-ali_slb_lb_facts
 
   roles:
     - vpc
@@ -18,7 +18,7 @@
 
     - name: Create a slb and used to test name_regex
       alibaba.alicloud.ali_slb_lb:
-        name: '{{name}}regex'
+        name: '{{ test_resource_name}}regex'
         internet_charge_type: '{{ internet_charge_type }}'
         is_internet: True
         spec: slb.s1.small
@@ -26,14 +26,14 @@
 
     - name: Filter slb using name_regex
       alibaba.alicloud.ali_slb_lb_info:
-        name_prefix: '{{name}}regex'
+        name_prefix: '{{ test_resource_name}}regex'
 
     - name: Retrieving all slbs
       alibaba.alicloud.ali_slb_lb_info:
 
     - name: Retrieving all slbs based on name_regex
       alibaba.alicloud.ali_slb_lb_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: slbs
 
     - name: Changed. Deleting slbs

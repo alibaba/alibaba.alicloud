@@ -1,0 +1,44 @@
+---
+- name: Validate module ali_image_info
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    marketplace_image_pattern: "{{ lookup('ansible.builtin.env', 'ALICLOUD_TEST_MARKETPLACE_IMAGE_PATTERN') | default('Alibaba Cloud Linux*', true) }}"
+    missing_image_pattern: 'ansible-image-example-does-not-exist-*'
+
+  tasks:
+    - name: Query Marketplace images through paginated results
+      alibaba.alicloud.ali_image_info:
+        image_names:
+          - '{{ marketplace_image_pattern }}'
+        filters:
+          image_owner_alias: marketplace
+          page_size: 10
+      register: marketplace_images
+
+    - name: Verify Marketplace results were aggregated from every page
+      ansible.builtin.assert:
+        that:
+          - marketplace_images.changed == false
+          - marketplace_images.total | int > 10
+          - marketplace_images.images | length == marketplace_images.total | int
+          - marketplace_images.images | map(attribute='image_owner_alias') | select('equalto', 'marketplace') | list | length == marketplace_images.total | int
+
+    - name: Query a Marketplace image name that does not exist
+      alibaba.alicloud.ali_image_info:
+        image_names:
+          - '{{ missing_image_pattern }}'
+        filters:
+          image_owner_alias: marketplace
+          page_size: 10
+      register: missing_images
+
+    - name: Verify an empty query returns immediately with an empty result
+      ansible.builtin.assert:
+        that:
+          - missing_images.changed == false
+          - missing_images.total | int == 0
+          - missing_images.images | length == 0

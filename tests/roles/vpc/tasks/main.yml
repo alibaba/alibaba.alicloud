@@ -3,11 +3,11 @@
   alibaba.alicloud.ali_vpc:
     state: 'present'
     cidr_block: '{{ vpc_cidr }}'
-    vpc_name: '{{ name }}'
+    vpc_name: '{{ test_resource_name }}'
     description: '{{ vpc_description }}'
   register: vpc
 
 - name: Get the existing vpc
   alibaba.alicloud.ali_vpc_info:
-    name_prefix: '{{name}}'
+    name_prefix: '{{ test_resource_name}}'
   register: vpcs

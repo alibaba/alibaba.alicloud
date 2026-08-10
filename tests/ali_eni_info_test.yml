@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_eni_facts-module
+    test_resource_name: ansible-testacc-ali_eni_facts-module
 
   roles:
     - vpc
@@ -21,14 +21,14 @@
       alibaba.alicloud.ali_eni:
         vswitch_id: '{{ vswitches.vswitches.0.id }}'
         security_groups: ['{{ sgs.groups.0.id }}']
-        name: '{{ name }}regex'
+        name: '{{ test_resource_name }}regex'
         description: '{{description}}-name-regex-ali_eni'
         tags:
           Test: tags
 
     - name: Filter instance using name_regex
       alibaba.alicloud.ali_eni_info:
-        name_prefix: '{{name}}regex'
+        name_prefix: '{{ test_resource_name}}regex'
 
     - name: Retrieving instance using tags
       alibaba.alicloud.ali_eni_info:
@@ -40,7 +40,7 @@
 
     - name: Retrieving all enis based on name_regex
       alibaba.alicloud.ali_eni_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: enis
 
     # Delete all of resource

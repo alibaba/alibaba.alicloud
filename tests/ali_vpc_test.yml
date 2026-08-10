@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_vpc-module
+    test_resource_name: ansible-testacc-ali_vpc-module
 
   roles:
     - vpc
@@ -13,7 +13,7 @@
     - name: Changed. Create a new vpc with user_cidrs
       alibaba.alicloud.ali_vpc:
         cidr_block: '{{ vpc_cidr }}'
-        vpc_name: '{{ name }}-user_cidrs'
+        vpc_name: '{{ test_resource_name }}-user_cidrs'
         description: '{{ vpc_description }}'
         user_cidrs:
           - 172.16.100.0/24
@@ -21,7 +21,7 @@
 
     - name: Get the existing vpc
       alibaba.alicloud.ali_vpc_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: vpcs
 
 # At present, it does not support modifying name
@@ -43,7 +43,7 @@
 
     - name: Get the existing vpc
       alibaba.alicloud.ali_vpc_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
 
     - name: Filter vpc using tags
       alibaba.alicloud.ali_vpc_info:
@@ -70,7 +70,7 @@
 
     - name: Get the existing vpc
       alibaba.alicloud.ali_vpc_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
 
     - name: Changed. Removing tags.
       alibaba.alicloud.ali_vpc:
@@ -92,7 +92,7 @@
 
     - name: Get the existing vpc
       alibaba.alicloud.ali_vpc_info:
-        name_prefix: '{{ name }}'
+        name_prefix: '{{ test_resource_name }}'
 
     - name: Changed. Modify description with vpc id.
       alibaba.alicloud.ali_vpc:
@@ -112,7 +112,7 @@
 
     - name: Get the existing vpc
       alibaba.alicloud.ali_vpc_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: vpcs
 
     - name: Changed. Deleting vpcs

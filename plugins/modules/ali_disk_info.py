@@ -16,7 +16,7 @@ module: ali_disk_info
 short_description: Gather facts on disks of Alibaba Cloud ECS.
 description:
      - This module fetches data from the Open API in Alicloud.
-       The module must be called from within the ECS disk itself.
+       It returns ECS disk details in the configured region.
 options:
   name_prefix:
     description:
@@ -69,6 +69,15 @@ disks:
     description: Details about the ecs disks that were created.
     returned: when success
     type: list
+    contains:
+        encrypted:
+            description: Whether the disk is encrypted.
+            returned: when success
+            type: bool
+        kmskey_id:
+            description: KMS key ID reported for an encrypted disk. Empty when ECS does not return a customer-managed key.
+            returned: when returned by ECS
+            type: str
     sample: [
     {
         "attached_time": "2017-08-15T06:47:55Z",
@@ -82,6 +91,7 @@ disks:
         "disk_charge_type": "PostPaid",
         "enable_auto_snapshot": true,
         "encrypted": false,
+        "kmskey_id": "",
         "id": "d-2ze8ohezcyvm4omrabud",
         "image_id": "ubuntu_140405_32_40G_cloudinit_20161115.vhd",
         "instance_id": "i-2zegc3s8ihxq2pcysekk",
@@ -110,6 +120,7 @@ disks:
         "disk_charge_type": "PostPaid",
         "enable_auto_snapshot": true,
         "encrypted": false,
+        "kmskey_id": "",
         "id": "d-2zeakwizkdjdu4q4lfco",
         "image_id": "ubuntu_140405_64_40G_cloudinit_20161115.vhd",
         "instance_id": "i-2zeenj8meljkoi85lz3c",

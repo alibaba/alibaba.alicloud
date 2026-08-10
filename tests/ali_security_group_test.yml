@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_security_group-module
+    test_resource_name: ansible-testacc-ali_security_group-module
 
   roles:
     - vpc
@@ -35,7 +35,7 @@
 
     - name: Creating a new security group for source/dest group
       alibaba.alicloud.ali_security_group:
-        name: '{{ name }}-for-rule'
+        name: '{{ test_resource_name }}-for-rule'
         description: '{{ group_description }}-for-rule'
         vpc_id: '{{vpc.vpc.id}}'
       register: dest

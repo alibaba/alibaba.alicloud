@@ -4,13 +4,13 @@
   remote_user: root
 
   vars:
-    name: ansible-testacc-ali_oos_template
+    test_resource_name: ansible-testacc-ali_oos_template
 
   tasks:
     - name: Changed. Create a new template
       alibaba.alicloud.ali_oos_template:
         content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances of given status", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\{\{ Status \}\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
-        template_name: '{{ name }}'
+        template_name: '{{ test_resource_name }}'
         tags:
           From: 'ansible'
 
@@ -31,4 +31,4 @@
     - name: Changed. Delete template
       alibaba.alicloud.ali_oos_template:
         state: absent
-        template_name: '{{ name }}'
+        template_name: '{{ test_resource_name }}'

@@ -1,0 +1,137 @@
+---
+- name: Validate module ali_image
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    image_test_name: ansible-image-example
+
+  roles:
+    - vpc
+    - vswitch
+    - security_group
+
+  tasks:
+    - block:
+        - name: Query a system image compatible with the instance type
+          alibaba.alicloud.ali_image_info:
+            filters:
+              image_owner_alias: system
+              instance_type: '{{ instance_type }}'
+              os_type: linux
+          register: compatible_images
+
+        - name: Verify that a compatible system image was found
+          ansible.builtin.assert:
+            that:
+              - compatible_images.total | int > 0
+            fail_msg: >-
+              No system image is compatible with instance type {{ instance_type }}
+              in the configured region.
+
+        - name: Create an instance used to build custom images
+          alibaba.alicloud.ali_instance:
+            image_id: '{{ compatible_images.images[0].image_id }}'
+            instance_type: '{{ instance_type }}'
+            instance_name: '{{ image_test_name }}'
+            security_groups: ['{{ sgs.groups[0].id }}']
+            vswitch_id: '{{ vswitches.vswitches[0].id }}'
+            system_disk_category: '{{ system_disk_category }}'
+            system_disk_size: 20
+          register: image_instance
+
+        - name: Create a tagged custom image with a semantic version
+          alibaba.alicloud.ali_image:
+            instance_id: '{{ image_instance.instances[0].id }}'
+            image_name: '{{ image_test_name }}-semver'
+            image_version: '1.0.0'
+            wait: true
+            wait_timeout: 900
+            tags:
+              ManagedBy: Ansible
+              LegacyTag: remove-me
+          register: semver_image
+
+        - name: Reconcile tags for the existing custom image
+          alibaba.alicloud.ali_image:
+            image_id: '{{ semver_image.image_id }}'
+            purge_tags: true
+            tags:
+              ManagedBy: Ansible
+              TestCase: ImageModuleExample
+              Reconciled: 'true'
+
+        - name: Read back the reconciled image
+          alibaba.alicloud.ali_image_info:
+            image_ids:
+              - '{{ semver_image.image_id }}'
+          register: semver_image_info
+
+        - name: Verify image tags and semantic image version
+          ansible.builtin.assert:
+            that:
+              - semver_image_info.total | int == 1
+              - semver_image_info.images[0].image_version == '1.0.0'
+              - semver_image_info.images[0].tags.ManagedBy == 'Ansible'
+              - semver_image_info.images[0].tags.TestCase == 'ImageModuleExample'
+              - semver_image_info.images[0].tags.Reconciled == 'true'
+              - "'LegacyTag' not in semver_image_info.images[0].tags"
+
+      always:
+        - name: Delete images created by the ali_image test
+          alibaba.alicloud.ali_image:
+            image_id: '{{ item.image_id }}'
+            state: absent
+          loop:
+            - '{{ semver_image | default({}) }}'
+          when: item.image_id is defined
+
+        - name: Delete snapshots created for the semantic version image
+          ansible.builtin.command:
+            argv:
+              - aliyun
+              - ecs
+              - delete-snapshot
+              - --region
+              - '{{ lookup(''env'', ''ALICLOUD_REGION'') }}'
+              - --snapshot-id
+              - '{{ item.snapshot_id }}'
+          loop: >-
+            {{
+              (semver_image | default({}))
+              .get('image', {})
+              .get('disk_device_mappings', {})
+              .get('disk_device_mapping', [])
+            }}
+          when: semver_image is defined and semver_image.image is defined
+          no_log: true
+
+        - name: Delete the image test instance
+          alibaba.alicloud.ali_instance:
+            instance_ids:
+              - '{{ image_instance.instances[0].id }}'
+            force: true
+            state: absent
+          when: image_instance is defined and image_instance.instances is defined
+
+        - name: Delete image test security groups
+          alibaba.alicloud.ali_security_group:
+            name: '{{ item.group_name }}'
+            vpc_id: '{{ item.vpc_id }}'
+            state: absent
+          loop: '{{ sgs.groups | default([]) }}'
+
+        - name: Delete image test vSwitches
+          alibaba.alicloud.ali_vswitch:
+            vpc_id: '{{ item.vpc_id }}'
+            cidr_block: '{{ item.cidr_block }}'
+            state: absent
+          loop: '{{ vswitches.vswitches | default([]) }}'
+
+        - name: Delete image test VPCs
+          alibaba.alicloud.ali_vpc:
+            name: '{{ item.vpc_name }}'
+            cidr_block: '{{ item.cidr_block }}'
+            state: absent
+          loop: '{{ vpcs.vpcs | default([]) }}'

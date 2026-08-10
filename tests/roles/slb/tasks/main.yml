@@ -1,7 +1,7 @@
 ---
 - name: Creating a public SLB instance
   alibaba.alicloud.ali_slb_lb:
-    name: '{{ name }}-public'
+    name: '{{ test_resource_name }}-public'
     internet_charge_type: '{{ internet_charge_type }}'
     is_internet: True
     spec: slb.s1.small
@@ -10,7 +10,7 @@
 
 - name: Creating a private SLB instance
   alibaba.alicloud.ali_slb_lb:
-    name: '{{ name }}-private'
+    name: '{{ test_resource_name }}-private'
     internet_charge_type: '{{ internet_charge_type }}'
     spec: slb.s1.small
     vswitch_id: '{{ vswitches.vswitches.0.id }}'

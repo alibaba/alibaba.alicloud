@@ -75,7 +75,7 @@ key_pairs:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
+from ansible_collections.alibaba.alicloud.plugins.module_utils.alicloud_ecs import ecs_argument_spec, ecs_connect
 
 HAS_FOOTMARK = False
 

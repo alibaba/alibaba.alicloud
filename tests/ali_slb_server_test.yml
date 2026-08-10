@@ -5,7 +5,7 @@
 
   vars:
     number_of_instances: 4
-    name: ansible-testacc-ali_slb_lb
+    test_resource_name: ansible-testacc-ali_slb_lb
 
   roles:
     - vpc
@@ -29,7 +29,7 @@
 
     - name: Filter slb using name_regex
       alibaba.alicloud.ali_slb_lb_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: slbs
 
     - name: Remove backend servers
@@ -44,7 +44,7 @@
 
     - name: Filter slb using name_regex
       alibaba.alicloud.ali_slb_lb_info:
-        name_prefix: '{{name}}'
+        name_prefix: '{{ test_resource_name}}'
       register: slbs
 
     - name: Changed. Delete ecs instances
