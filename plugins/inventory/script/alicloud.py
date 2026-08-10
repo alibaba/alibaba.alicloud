@@ -2,6 +2,28 @@
 
 # Copyright (c) 2017-present Alibaba Group Holding Limited. He Guimin <heguimin36@163.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+DOCUMENTATION = '''
+name: alicloud
+plugin_type: script
+short_description: Legacy dynamic inventory script for Alibaba Cloud ECS
+description:
+    - This is a legacy dynamic inventory script for Alibaba Cloud ECS.
+    - It is deprecated. Use the modern inventory plugin C(alibaba.alicloud.alicloud_ecs) instead.
+deprecated:
+    removed_in: "2.0.0"
+    why: Use the modern inventory plugin alibaba.alicloud.alicloud_ecs instead.
+    alternative: Use M(alibaba.alicloud.alicloud_ecs) inventory plugin.
+author:
+    - "He Guimin (@xiaozhu36)"
+requirements:
+    - python >= 2.6
+    - footmark
+'''
+
 #
 #  This file is part of Ansible
 #

@@ -28,7 +28,7 @@ options:
     type: str
   role_name:
     description:
-      - The name of the RAM role. The specified name can be up to 64 characters in length. Format(^[a-zA-Z0-9\. @\-]+$)
+      - The name of the RAM role. The specified name can be up to 64 characters in length. Format C(^[a-zA-Z0-9. @-]+$)
       - One of I(role_name) and I(role_id) must be specified when operate existing role.
     aliases: ['name']
     type: str
