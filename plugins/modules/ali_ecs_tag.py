@@ -36,7 +36,7 @@ options:
       - A hash/dictionaries of resource tags. C({"key":"value"})
 requirements:
     - "python >= 3.6"
-    - "footmark >= 1.17.0"
+    - "footmark >= 1.26.0"
 extends_documentation_fragment:
     - alibaba.alicloud.alicloud
 author:
