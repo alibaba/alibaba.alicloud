@@ -68,7 +68,7 @@ EXAMPLES = """
 
 - name: Changed. Create a new template with json
   alibaba.alicloud.ali_oos_template:
-    content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances of given status", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\{\{ Status \}\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
+    content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances of given status", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\\{\\{ Status \\}\\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
     template_name: 'template_name'
     tags:
       From: 'ansible'
@@ -85,7 +85,7 @@ EXAMPLES = """
       Tasks:
         - Properties:
             Parameters:
-              Status: '\{\{ Status \}\}'
+              Status: '\\{\\{ Status \\}\\}'
             API: DescribeInstances
             Service: Ecs
           Name: foo
@@ -96,7 +96,7 @@ EXAMPLES = """
 
 - name: Changed. Update template
   alibaba.alicloud.ali_oos_template:
-    content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\{\{ Status \}\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
+    content: '{"FormatVersion": "OOS-2019-06-01", "Description": "Describe instances", "Parameters": {"Status": {"Type": "String", "Description": "(Required) The status of the Ecs instance."}}, "Tasks": [{"Properties": {"Parameters": {"Status": "\\{\\{ Status \\}\\}"}, "API": "DescribeInstances", "Service": "Ecs"}, "Name": "foo", "Action": "ACS::ExecuteApi"}]}'
     template_name: 'template_name'
 
 - name: Changed. Delete template

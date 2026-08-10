@@ -111,25 +111,25 @@ products:
             type: str
             sample: MIRROR
         images:
-            description: The type of the product.
+            description: The images of the product.
             returned: always
             type: list
             contains:
-                - display_name:
-                      description: The display name of image.
-                      returned: always
-                      type: str
-                      sample: 华北 1_V1.1
-                - type:
-                      description: The type of the image.
-                      returned: always
-                      type: str
-                      sample: single_string
-                - value:
-                      description: The id of image.
-                      returned: always
-                      type: str
-                      sample: m-2ze0ua7jvif73kxxxxx
+                display_name:
+                    description: The display name of image.
+                    returned: always
+                    type: str
+                    sample: 华北 1_V1.1
+                type:
+                    description: The type of the image.
+                    returned: always
+                    type: str
+                    sample: single_string
+                value:
+                    description: The id of image.
+                    returned: always
+                    type: str
+                    sample: m-2ze0ua7jvif73kxxxxx
 '''
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.alicloud.plugins.module_utils.alicloud_ecs import ecs_argument_spec, market_connect, ecs_connect

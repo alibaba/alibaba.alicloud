@@ -98,7 +98,7 @@ stacks:
             returned: always
             type: str
             sample: Stack CREATE completed successfully
-        timeout_in_minutes: 60
+        timeout_in_minutes:
             description: ROS stack resources create timeout time.
             returned: always
             type: int

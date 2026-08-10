@@ -52,28 +52,28 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = """
-  - name: Changed. Create Ros Stack
-    alibaba.alicloud.ali_ros_stack:
-      stack_name: vpc_2020-04-08_test
-      template: /tmp/create_vpn.json
-      timeout_in_minutes: 60
-      template_parameters:
-        CidrBlock: 192.168.0.0/16
-        VpcName: DemoVpc
+- name: Changed. Create Ros Stack
+  alibaba.alicloud.ali_ros_stack:
+    stack_name: vpc_2020-04-08_test
+    template: /tmp/create_vpn.json
+    timeout_in_minutes: 60
+    template_parameters:
+      CidrBlock: 192.168.0.0/16
+      VpcName: DemoVpc
 
-  - name: Changed. Update Ros Stack
-      alibaba.alicloud.ali_ros_stack:
-        stack_name: vpc_2020-04-08_test
-        template: /tmp/update_vpc.json
-        timeout_in_minutes: 60
-        template_parameters:
-          CidrBlock: 192.168.0.0/16
-          VpcName: UpdateVpc
+- name: Changed. Update Ros Stack
+  alibaba.alicloud.ali_ros_stack:
+    stack_name: vpc_2020-04-08_test
+    template: /tmp/update_vpc.json
+    timeout_in_minutes: 60
+    template_parameters:
+      CidrBlock: 192.168.0.0/16
+      VpcName: UpdateVpc
 
-  - name: Changed. Delete Ros Stack
-      alibaba.alicloud.ali_ros_stack:      
-        state: absent        
-        stack_name: vpc_2020-04-08_test
+- name: Changed. Delete Ros Stack
+  alibaba.alicloud.ali_ros_stack:
+    state: absent
+    stack_name: vpc_2020-04-08_test
 """
 RETURN = """
 stack:
@@ -116,7 +116,7 @@ stack:
             returned: always
             type: str
             sample: Stack CREATE completed successfully
-        timeout_in_minutes: 60
+        timeout_in_minutes:
             description: Ros stack resources create timeout time.
             returned: always
             type: int
@@ -188,7 +188,7 @@ def main():
         template_type = module.params.get('template').split('.')[1] if module.params.get(
             'template') and '.' in module.params.get('template') else ""
         timeout_in_minutes = module.params.get('timeout_in_minutes')
-        if not re.search('^[a-zA-Z][a-zA-Z0-9_\-]{0,255}$', stack_name):
+        if not re.search(r'^[a-zA-Z][a-zA-Z0-9_\-]{0,255}$', stack_name):
             module.fail_json(
                 msg='Stack name "%s" is invalid and exceeds 255 character limit. Stack names must contain only '
                     'alphanumeric characters and hyphens and must start with an alphabetic character.' % stack_name)
