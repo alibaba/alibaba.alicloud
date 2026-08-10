@@ -137,7 +137,7 @@ group:
     returned: expect absent
     type: dict
     sample: {
-        "configuration_id": asc-2ze4zleeettwd4sfnrkk,
+        "configuration_id": "asc-2ze4zleeettwd4sfnrkk",
         "cooldown": 300,
         "creation_time": "2018-01-08T05:42Z",
         "db_ids": null,
@@ -149,9 +149,7 @@ group:
         "status": "active",
         "vswitch_ids": [
             "vsw-2zevfsoh2v7en50w9up6u"
-        ],
-        "id": "asg-2zefe4bi0jpc3tqi8mn8",
-        "name": "foo"
+        ]
     }
 '''
 
