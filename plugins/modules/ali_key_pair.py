@@ -55,7 +55,7 @@ requirements:
     - "python >= 3.6"
     - "footmark >= 1.26.0"
 extends_documentation_fragment:
-    - alicloud
+    - alibaba.alicloud.alicloud
 author:
   - "Yang Liu (@liuyangc3)"
 """

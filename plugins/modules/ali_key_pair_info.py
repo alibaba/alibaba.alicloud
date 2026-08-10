@@ -30,7 +30,7 @@ requirements:
     - "python >= 2.6"
     - "footmark"
 extends_documentation_fragment:
-    - alicloud
+    - alibaba.alicloud.alicloud
 '''
 
 EXAMPLES = '''

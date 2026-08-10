@@ -15,7 +15,7 @@ requirements:
 extends_documentation_fragment:
     - inventory_cache
     - constructed
-    - alicloud
+    - alibaba.alicloud.alicloud
 description:
     - Get inventory hosts from Alicloud ECS.
     - Uses a yaml configuration file that ends with C(alicloud.(yml|yaml)).
