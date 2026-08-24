@@ -184,14 +184,15 @@ def main():
     for disk in ecs.describe_disks(**filters):
         if name_prefix and not str(disk.name).startswith(name_prefix):
             continue
-        if tags:
-            flag = False
-            for key, value in list(tags.items()):
-                if key in list(disk.tags.keys()) and value == disk.tags[key]:
-                    flag = True
-            if not flag:
-                continue
-        disks.append(disk.read())
+        # Footmark's Disk parser reads the legacy TagKey/TagValue spelling,
+        # while current ECS responses are normalized to tag_key/tag_value.
+        # Fetch tags from ListTagResources so callers receive the real set.
+        disk_tags = ecs.list_tag_resources(resource_ids=[disk.id], resource_type='disk') or {}
+        if tags and not all(disk_tags.get(key) == value for key, value in tags.items()):
+            continue
+        disk_detail = disk.read()
+        disk_detail['tags'] = disk_tags
+        disks.append(disk_detail)
         disk_ids.append(disk.id)
 
     module.exit_json(changed=False, disk_ids=disk_ids, disks=disks, total=len(disks))
