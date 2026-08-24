@@ -1,0 +1,312 @@
+---
+- name: Validate module ali_disk
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  environment:
+    ALICLOUD_REGION: '{{ disk_test_region }}'
+
+  vars:
+    disk_test_region: "{{ lookup('ansible.builtin.env', 'ALICLOUD_TEST_REGION') | default('cn-beijing', true) }}"
+    disk_test_zone: "{{ lookup('ansible.builtin.env', 'ALICLOUD_TEST_ZONE') | default('cn-beijing-f', true) }}"
+    disk_test_name: "ansible-testacc-ali-disk-encrypted-{{ lookup('pipe', 'date +%s') }}"
+    essd_disk_test_name: "ansible-testacc-ali-disk-essd-{{ lookup('pipe', 'date +%s') }}"
+    essd_entry_disk_test_name: "ansible-testacc-ali-disk-essd-entry-{{ lookup('pipe', 'date +%s') }}"
+    regional_disk_test_name: "ansible-testacc-ali-disk-regional-{{ lookup('pipe', 'date +%s') }}"
+    autopl_disk_test_name: "ansible-testacc-ali-disk-autopl-{{ lookup('pipe', 'date +%s') }}"
+    test_kms_key_id: "{{ lookup('ansible.builtin.env', 'ALICLOUD_TEST_KMS_KEY_ID') }}"
+    test_resource_group_id: "{{ lookup('ansible.builtin.env', 'ALICLOUD_TEST_RESOURCE_GROUP_ID') }}"
+    initial_disk_tags:
+      ManagedBy: ansible
+      Legacy: remove
+    reconciled_disk_tags:
+      ManagedBy: ansible
+      Environment: test
+
+  tasks:
+    - name: Require the disk feature test inputs
+      ansible.builtin.assert:
+        that:
+          - test_kms_key_id | length > 0
+          - test_resource_group_id | length > 0
+        fail_msg: >-
+          ALICLOUD_TEST_KMS_KEY_ID and ALICLOUD_TEST_RESOURCE_GROUP_ID are required
+          for the ali_disk feature test.
+
+    - block:
+        - name: Reject a KMS key without disk encryption
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_name: 'ansible-invalid-kms-{{ lookup("pipe", "date +%s") }}'
+            size: 20
+            kms_key_id: '{{ test_kms_key_id }}'
+          register: kms_without_encryption
+          failed_when: false
+
+        - name: Assert a KMS key requires disk encryption
+          ansible.builtin.assert:
+            that:
+              - "'encrypted must be true' in kms_without_encryption.msg"
+
+        - name: Reject an overlong KMS key ID
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_name: 'ansible-invalid-kms-length-{{ lookup("pipe", "date +%s") }}'
+            size: 20
+            encrypted: true
+            kms_key_id: '{{ "x" * 65 }}'
+          register: overlong_kms_key
+          failed_when: false
+
+        - name: Assert the KMS key ID length is validated
+          ansible.builtin.assert:
+            that:
+              - "'kms_key_id must not exceed 64 characters' in overlong_kms_key.msg"
+
+        - name: Create an encrypted efficient disk with a customer-managed CMK
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_name: '{{ disk_test_name }}'
+            description: 'Validate ali_disk creation capabilities'
+            size: 20
+            disk_category: cloud_efficiency
+            encrypted: true
+            kms_key_id: '{{ test_kms_key_id }}'
+            resource_group_id: '{{ test_resource_group_id }}'
+            delete_auto_snapshot: true
+            enable_auto_snapshot: false
+            disk_tags: '{{ initial_disk_tags }}'
+            purge_tags: true
+          register: created_disk
+
+        - name: Read the encrypted efficient disk
+          ali_disk_info:
+            filters:
+              disk_ids:
+                - '{{ created_disk.disk_id }}'
+          register: disk_info
+
+        - name: Assert encrypted efficient disk creation capabilities
+          ansible.builtin.assert:
+            that:
+              - created_disk.encrypted | bool
+              - created_disk.kms_key_id == test_kms_key_id
+              - created_disk.resource_group_id == test_resource_group_id
+              - created_disk.delete_auto_snapshot | bool
+              - not (created_disk.enable_auto_snapshot | bool)
+              - disk_info.total | int == 1
+              - disk_info.disks[0].encrypted | bool
+              - disk_info.disks[0].kmskey_id == test_kms_key_id
+              - disk_info.disks[0].resource_group_id == test_resource_group_id
+              - disk_info.disks[0].delete_auto_snapshot | bool
+              - not (disk_info.disks[0].enable_auto_snapshot | bool)
+              - disk_info.disks[0].tags.ManagedBy == initial_disk_tags.ManagedBy
+              - disk_info.disks[0].tags.Legacy == initial_disk_tags.Legacy
+
+        - name: Filter the disk by all declared tags
+          ali_disk_info:
+            tags: '{{ initial_disk_tags }}'
+          register: tagged_disk_info
+
+        - name: Assert tag filtering finds the created disk
+          ansible.builtin.assert:
+            that:
+              - created_disk.disk_id in tagged_disk_info.disk_ids
+
+        - name: Update automatic snapshot attributes on the existing efficient disk
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_id: '{{ created_disk.disk_id }}'
+            delete_auto_snapshot: false
+            enable_auto_snapshot: true
+          register: updated_disk
+
+        - name: Read the efficient disk after updating automatic snapshot attributes
+          ali_disk_info:
+            filters:
+              disk_ids:
+                - '{{ created_disk.disk_id }}'
+          register: updated_disk_info
+
+        - name: Assert automatic snapshot attributes were updated
+          ansible.builtin.assert:
+            that:
+              - updated_disk.changed | bool
+              - not (updated_disk_info.disks[0].delete_auto_snapshot | bool)
+              - updated_disk_info.disks[0].enable_auto_snapshot | bool
+
+        - name: Reconcile tags on the existing efficient disk
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_id: '{{ created_disk.disk_id }}'
+            disk_tags: '{{ reconciled_disk_tags }}'
+            purge_tags: true
+          register: reconciled_disk
+
+        - name: Read the efficient disk after reconciling tags
+          ali_disk_info:
+            filters:
+              disk_ids:
+                - '{{ created_disk.disk_id }}'
+          register: reconciled_disk_info
+
+        - name: Assert efficient disk tags match the declared set
+          ansible.builtin.assert:
+            that:
+              - reconciled_disk.changed | bool
+              - reconciled_disk_info.disks[0].tags.ManagedBy == reconciled_disk_tags.ManagedBy
+              - reconciled_disk_info.disks[0].tags.Environment == reconciled_disk_tags.Environment
+              - "'Legacy' not in reconciled_disk_info.disks[0].tags"
+
+        - name: Create an ESSD with an explicit performance level
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_name: '{{ essd_disk_test_name }}'
+            description: 'Validate ali_disk ESSD performance level during creation'
+            size: 20
+            disk_category: cloud_essd
+            performance_level: PL1
+            resource_group_id: '{{ test_resource_group_id }}'
+          register: created_essd_disk
+
+        - name: Read the ESSD disk
+          ali_disk_info:
+            filters:
+              disk_ids:
+                - '{{ created_essd_disk.disk_id }}'
+          register: essd_disk_info
+
+        - name: Assert the ESSD performance level was applied
+          ansible.builtin.assert:
+            that:
+              - essd_disk_info.total | int == 1
+              - essd_disk_info.disks[0].category == 'cloud_essd'
+              - essd_disk_info.disks[0].performance_level == 'PL1'
+
+        - name: Create an ESSD Entry disk
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_name: '{{ essd_entry_disk_test_name }}'
+            description: 'Validate ali_disk ESSD Entry category during creation'
+            size: 20
+            disk_category: cloud_essd_entry
+            resource_group_id: '{{ test_resource_group_id }}'
+          register: created_essd_entry_disk
+
+        - name: Read the ESSD Entry disk
+          ali_disk_info:
+            filters:
+              disk_ids:
+                - '{{ created_essd_entry_disk.disk_id }}'
+          register: essd_entry_disk_info
+
+        - name: Assert the ESSD Entry category was applied
+          ansible.builtin.assert:
+            that:
+              - essd_entry_disk_info.total | int == 1
+              - essd_entry_disk_info.disks[0].category == 'cloud_essd_entry'
+
+        - name: Create an ESSD regional disk without a zone
+          ali_disk:
+            disk_name: '{{ regional_disk_test_name }}'
+            description: 'Validate ali_disk ESSD regional category during creation'
+            size: 20
+            disk_category: cloud_regional_disk_auto
+            resource_group_id: '{{ test_resource_group_id }}'
+          register: created_regional_disk
+
+        - name: Read the ESSD regional disk
+          ali_disk_info:
+            filters:
+              disk_ids:
+                - '{{ created_regional_disk.disk_id }}'
+          register: regional_disk_info
+
+        - name: Assert the ESSD regional category was applied
+          ansible.builtin.assert:
+            that:
+              - regional_disk_info.total | int == 1
+              - regional_disk_info.disks[0].category == 'cloud_regional_disk_auto'
+
+        - name: Create an ESSD AutoPL disk with burst performance
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_name: '{{ autopl_disk_test_name }}'
+            description: 'Validate ali_disk AutoPL settings during creation'
+            size: 20
+            disk_category: cloud_auto
+            bursting_enabled: false
+            provisioned_iops: 100
+            resource_group_id: '{{ test_resource_group_id }}'
+          register: created_autopl_disk
+
+        - name: Read the AutoPL disk
+          ali_disk_info:
+            filters:
+              disk_ids:
+                - '{{ created_autopl_disk.disk_id }}'
+          register: autopl_disk_info
+
+        - name: Assert burst performance and provisioned IOPS were applied
+          ansible.builtin.assert:
+            that:
+              - autopl_disk_info.total | int == 1
+              - autopl_disk_info.disks[0].category == 'cloud_auto'
+              - not (autopl_disk_info.disks[0].bursting_enabled | bool)
+              - autopl_disk_info.disks[0].provisioned_iops | int == 100
+              - autopl_disk_info.disks[0].resource_group_id == test_resource_group_id
+
+        - name: Enable burst performance on the existing AutoPL disk
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_id: '{{ created_autopl_disk.disk_id }}'
+            bursting_enabled: true
+          register: updated_autopl_disk
+
+        - name: Read the AutoPL disk after enabling burst performance
+          ali_disk_info:
+            filters:
+              disk_ids:
+                - '{{ created_autopl_disk.disk_id }}'
+          register: updated_autopl_disk_info
+
+        - name: Assert burst performance was updated
+          ansible.builtin.assert:
+            that:
+              - updated_autopl_disk.changed | bool
+              - updated_autopl_disk_info.disks[0].bursting_enabled | bool
+
+      always:
+        - name: Delete the AutoPL test disk
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_id: '{{ created_autopl_disk.disk_id }}'
+            state: absent
+          when: created_autopl_disk is defined and created_autopl_disk.disk_id is defined
+
+        - name: Delete the ESSD Entry test disk
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_id: '{{ created_essd_entry_disk.disk_id }}'
+            state: absent
+          when: created_essd_entry_disk is defined and created_essd_entry_disk.disk_id is defined
+
+        - name: Delete the ESSD regional test disk
+          ali_disk:
+            disk_id: '{{ created_regional_disk.disk_id }}'
+            state: absent
+          when: created_regional_disk is defined and created_regional_disk.disk_id is defined
+
+        - name: Delete the ESSD test disk
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_id: '{{ created_essd_disk.disk_id }}'
+            state: absent
+          when: created_essd_disk is defined and created_essd_disk.disk_id is defined
+
+        - name: Delete the encrypted efficient test disk
+          ali_disk:
+            alicloud_zone: '{{ disk_test_zone }}'
+            disk_id: '{{ created_disk.disk_id }}'
+            state: absent
+          when: created_disk is defined and created_disk.disk_id is defined
