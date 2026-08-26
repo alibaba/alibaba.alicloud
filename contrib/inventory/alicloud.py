@@ -308,16 +308,7 @@ class EcsInventory(object):
         ''' List ECS instances in a specified region '''
 
         conn = connect_to_acs(footmark.ecs, region, **self.credentials)
-        instances = []
-        page_number = 1
-        while True:
-            self.ecs_instance_filters['page_number'] = page_number
-            insts = conn.describe_instances(**self.ecs_instance_filters)
-            instances.extend(insts)
-            if insts and len(insts) == self.ecs_instance_filters['page_size']:
-                page_number += 1
-                continue
-            break
+        instances = conn.describe_instances(**self.ecs_instance_filters)
 
         for instance in instances:
             self.add_instance(instance, region)
